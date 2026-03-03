@@ -1,0 +1,246 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <!--The IDs for all the commands exposed by VisualStudio. -->
+  <Extern href="stdidcmd.h" />
+
+  <!--The IDs for the menus provided by the shell. -->
+  <Extern href="vsshlids.h" />
+
+  <Commands package="guidSharpenPackage">
+
+    <Menus>
+      <!-- Sharpen Menu on the Tools Menu. -->
+      <Menu guid="guidSharpenGroupOnTheToolsMenu" id="idSharpenGroupOnTheToolsMenu" type="Menu" priority="0x400">
+        <Parent guid="guidSHLMainMenu" id="IDG_VS_TOOLS_OTHER2" />
+        <Strings>
+          <ButtonText>Sharpen</ButtonText>
+        </Strings>
+      </Menu>
+    </Menus>
+
+    <Groups>
+
+      <!-- Sharpen Groups on the Tools Menu. -->
+      <Group guid="guidAnalyzeGroup" id="idAnalyzeGroup" priority="0x100">
+        <Parent guid="guidSharpenGroupOnTheToolsMenu" id="idSharpenGroupOnTheToolsMenu" />
+      </Group>
+      <Group guid="guidOptionsGroup" id="idOptionsGroup" priority="0x200">
+        <Parent guid="guidSharpenGroupOnTheToolsMenu" id="idSharpenGroupOnTheToolsMenu" />
+      </Group>
+      <Group guid="guidSharpenResultsGroup" id="idSharpenResultsGroup" priority="0x300">
+        <Parent guid="guidSharpenGroupOnTheToolsMenu" id="idSharpenGroupOnTheToolsMenu" />
+      </Group>
+
+      <!-- Sharpen Group on the File Context Menu. -->
+      <Group guid="guidFileContextMenuGroup" id="idFileContextMenuGroup" priority="0x400"/>
+
+      <!-- Sharpen Group on the Solution Context Menu. -->
+      <Group guid="guidSolutionContextMenuGroup" id="idSolutionContextMenuGroup" priority="0x400"/>
+
+      <!-- Sharpen Group on the Project Context Menu. -->
+      <Group guid="guidProjectsContextMenuGroup" id="idProjectsContextMenuGroup" priority="0x400"/>
+
+      <!-- Sharpen Group on the File Context Menu. -->
+      <Group guid="guidFilesContextMenuGroup" id="idFilesContextMenuGroup" priority="0x400"/>
+
+      <!-- Sharpen Group on the Folder Context Menu. -->
+      <Group guid="guidFoldersContextMenuGroup" id="idFoldersContextMenuGroup" priority="0x400"/>
+
+    </Groups>
+    
+    <Buttons>
+
+      <!-- Buttons on the Analyze Group. -->
+      <Button guid="guidAnalyzeGroup" id="cmdidAnalyzeSolution" priority="0x0100" type="Button">
+        <Strings>
+          <ButtonText>Analyze &amp;Solution</ButtonText>
+        </Strings>
+      </Button>
+      
+      <Button guid="guidAnalyzeGroup" id="cmdidAnalyzeSelectedProjects" priority="0x0200" type="Button">
+        <Strings>
+          <ButtonText>Analyze Selected &amp;Projects...</ButtonText>
+        </Strings>
+      </Button>
+
+      <!-- Buttons on the Options Group. -->
+      <Button guid="guidOptionsGroup" id="cmdidOptions" priority="0x0100" type="Button">
+        <Strings>
+          <ButtonText>&amp;Options...</ButtonText>
+        </Strings>
+      </Button>
+
+      <!-- Buttons on the Sharpen Results Group. -->
+      <Button guid="guidSharpenResultsGroup" id="cmdidSharpenResults" priority="0x0100" type="Button">
+        <Strings>
+          <ButtonText>Sharpen &amp;Results</ButtonText>
+        </Strings>
+      </Button>
+
+      <!-- Buttons on the File Context Menu Group. -->
+      <Button guid="guidFileContextMenuGroup" id="cmdidAnalyzeCurrentDocument" priority="0x0100" type="Button">
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <Strings>
+          <ButtonText>Analyze with &amp;Sharpen</ButtonText>
+        </Strings>
+      </Button>
+
+      <!-- Buttons on the Solution Context Menu Group. -->
+      <Button guid="guidSolutionContextMenuGroup" id="cmdidAnalyzeSolutionContextMenu" priority="0x0100" type="Button">
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <Strings>
+          <ButtonText>Analyze with &amp;Sharpen</ButtonText>
+        </Strings>
+      </Button>
+
+      <!-- Buttons on the Projects Context Menu Group. -->
+      <Button guid="guidProjectsContextMenuGroup" id="cmdidAnalyzeProjectsContextMenu" priority="0x0100" type="Button">
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <Strings>
+          <ButtonText>Analyze with &amp;Sharpen</ButtonText>
+        </Strings>
+      </Button>
+
+      <!-- Buttons on the Files Context Menu Group. -->
+      <Button guid="guidFilesContextMenuGroup" id="cmdidAnalyzeFilesContextMenu" priority="0x0100" type="Button">
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <Strings>
+          <ButtonText>Analyze with &amp;Sharpen</ButtonText>
+        </Strings>
+      </Button>
+
+      <!-- Buttons on the Folders Context Menu Group. -->
+      <Button guid="guidFoldersContextMenuGroup" id="cmdidAnalyzeFoldersContextMenu" priority="0x0100" type="Button">
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <Strings>
+          <ButtonText>Analyze with &amp;Sharpen</ButtonText>
+        </Strings>
+      </Button>
+
+    </Buttons>
+
+  </Commands>
+  
+  <CommandPlacements>
+
+    <CommandPlacement guid="guidAnalyzeGroup" id="cmdidAnalyzeSolution" priority="0x100">
+      <Parent guid="guidAnalyzeGroup" id="idAnalyzeGroup" />
+    </CommandPlacement>
+    <CommandPlacement guid="guidAnalyzeGroup" id="cmdidAnalyzeSelectedProjects" priority="0x200">
+      <Parent guid="guidAnalyzeGroup" id="idAnalyzeGroup" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="guidOptionsGroup" id="cmdidOptions" priority="0x100">
+      <Parent guid="guidOptionsGroup" id="idOptionsGroup" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="guidSharpenResultsGroup" id="cmdidSharpenResults" priority="0x100">
+      <Parent guid="guidSharpenResultsGroup" id="idSharpenResultsGroup" />
+    </CommandPlacement>
+    <CommandPlacement guid="guidSharpenResultsGroup" id="cmdidSharpenResults" priority="0x600">
+      <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1" />
+    </CommandPlacement>
+
+    <CommandPlacement guid="guidFileContextMenuGroup" id="idFileContextMenuGroup" priority="0x100">
+      <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN"/>
+    </CommandPlacement>
+    <CommandPlacement guid="guidFileContextMenuGroup" id="cmdidAnalyzeCurrentDocument" priority="0x100">
+      <Parent guid="guidFileContextMenuGroup" id="idFileContextMenuGroup"/>
+    </CommandPlacement>
+
+    <CommandPlacement guid="guidSolutionContextMenuGroup" id="idSolutionContextMenuGroup" priority="0x100">
+      <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_SOLNNODE"/>
+    </CommandPlacement>
+    <CommandPlacement guid="guidSolutionContextMenuGroup" id="cmdidAnalyzeSolutionContextMenu" priority="0x100">
+      <Parent guid="guidSolutionContextMenuGroup" id="idSolutionContextMenuGroup"/>
+    </CommandPlacement>
+
+    <CommandPlacement guid="guidProjectsContextMenuGroup" id="idProjectsContextMenuGroup" priority="0x100">
+      <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_PROJNODE"/>
+    </CommandPlacement>
+    <CommandPlacement guid="guidProjectsContextMenuGroup" id="idProjectsContextMenuGroup" priority="0x100">
+      <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_WEBPROJECT"/>
+    </CommandPlacement>
+    <CommandPlacement guid="guidProjectsContextMenuGroup" id="idProjectsContextMenuGroup" priority="0x100">
+      <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_XPROJ_MULTIPROJ"/>
+    </CommandPlacement>
+    <CommandPlacement guid="guidProjectsContextMenuGroup" id="cmdidAnalyzeProjectsContextMenu" priority="0x100">
+      <Parent guid="guidProjectsContextMenuGroup" id="idProjectsContextMenuGroup"/>
+    </CommandPlacement>
+
+    <CommandPlacement guid="guidFilesContextMenuGroup" id="idFilesContextMenuGroup" priority="0x100">
+      <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_ITEMNODE"/>
+    </CommandPlacement>
+    <CommandPlacement guid="guidFilesContextMenuGroup" id="idFilesContextMenuGroup" priority="0x100">
+      <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_WEBITEMNODE"/>
+    </CommandPlacement>
+    <CommandPlacement guid="guidFilesContextMenuGroup" id="cmdidAnalyzeFilesContextMenu" priority="0x100">
+      <Parent guid="guidFilesContextMenuGroup" id="idFilesContextMenuGroup"/>
+    </CommandPlacement>
+
+    <CommandPlacement guid="guidFoldersContextMenuGroup" id="idFoldersContextMenuGroup" priority="0x100">
+      <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_FOLDERNODE"/>
+    </CommandPlacement>
+    <CommandPlacement guid="guidFoldersContextMenuGroup" id="cmdidAnalyzeFoldersContextMenu" priority="0x100">
+      <Parent guid="guidFoldersContextMenuGroup" id="idFoldersContextMenuGroup"/>
+    </CommandPlacement>
+
+  </CommandPlacements>
+
+  <Symbols>
+
+    <GuidSymbol name="guidSharpenPackage" value="{01263ec2-7232-4367-a2cd-3982380b3985}" />
+
+    <GuidSymbol name="guidSharpenGroupOnTheToolsMenu" value ="{b5e43671-9e80-4169-beb1-74b688b21375}">
+      <IDSymbol name="idSharpenGroupOnTheToolsMenu" value="0x100" />
+    </GuidSymbol>
+
+    <GuidSymbol name="guidAnalyzeGroup" value ="{8E0186D5-53C8-4662-A6B7-BEC6CDDC08DD}">
+      <IDSymbol name="idAnalyzeGroup" value="0x100" />
+      <IDSymbol name="cmdidAnalyzeSolution" value="0x200" />
+      <IDSymbol name="cmdidAnalyzeSelectedProjects" value="0x300" />
+    </GuidSymbol>
+
+    <GuidSymbol name="guidOptionsGroup" value ="{B977FCAF-B5A3-49D8-9009-E0BDFDB1EFB6}">
+      <IDSymbol name="idOptionsGroup" value="0x100" />
+      <IDSymbol name="cmdidOptions" value="0x200" />
+    </GuidSymbol>
+
+    <GuidSymbol name="guidSharpenResultsGroup" value ="{89079AFD-E03C-46B1-A2F4-EE0C3611D9DB}">
+      <IDSymbol name="idSharpenResultsGroup" value="0x100" />
+      <IDSymbol name="cmdidSharpenResults" value="0x200" />
+    </GuidSymbol>
+
+    <GuidSymbol name="guidFileContextMenuGroup" value ="{F343DB77-7F1C-4BAD-89FB-39E74DD7BD20}">
+      <IDSymbol name="idFileContextMenuGroup" value="0x100" />
+      <IDSymbol name="cmdidAnalyzeCurrentDocument" value="0x200" />
+    </GuidSymbol>
+
+    <GuidSymbol name="guidSolutionContextMenuGroup" value ="{BE887A1D-5356-4D04-8D61-65479E35BB3C}">
+      <IDSymbol name="idSolutionContextMenuGroup" value="0x100" />
+      <IDSymbol name="cmdidAnalyzeSolutionContextMenu" value="0x200" />
+    </GuidSymbol>
+
+    <GuidSymbol name="guidProjectsContextMenuGroup" value ="{4E66CB31-B0E2-4974-A8FC-0667A6CC399D}">
+      <IDSymbol name="idProjectsContextMenuGroup" value="0x100" />
+      <IDSymbol name="cmdidAnalyzeProjectsContextMenu" value="0x200" />
+    </GuidSymbol>
+
+    <GuidSymbol name="guidFilesContextMenuGroup" value ="{44C626A3-69B6-4A5A-9C56-DB9CC85AF4F9}">
+      <IDSymbol name="idFilesContextMenuGroup" value="0x100" />
+      <IDSymbol name="cmdidAnalyzeFilesContextMenu" value="0x200" />
+    </GuidSymbol>
+
+    <GuidSymbol name="guidFoldersContextMenuGroup" value ="{D5F51202-BC76-4306-A911-E8B74B87B998}">
+      <IDSymbol name="idFoldersContextMenuGroup" value="0x100" />
+      <IDSymbol name="cmdidAnalyzeFoldersContextMenu" value="0x200" />
+    </GuidSymbol>
+
+  </Symbols>
+</CommandTable>

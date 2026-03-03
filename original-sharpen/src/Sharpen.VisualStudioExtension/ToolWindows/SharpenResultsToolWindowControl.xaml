@@ -1,0 +1,108 @@
+﻿<UserControl x:Class="Sharpen.VisualStudioExtension.ToolWindows.SharpenResultsToolWindowControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:vsp="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
+             xmlns:converters="clr-namespace:Sharpen.VisualStudioExtension.Converters"
+             mc:Ignorable="d"
+             x:ClassModifier="internal">
+    <UserControl.Resources>
+        <converters:NullToCollapsedConverter x:Key="NullToCollapsedConverter"/>
+    </UserControl.Resources>
+    <!--
+        If the WpfToolkit is not used in the code, the compiler will ignore the references
+        and an exception will be thrown at runtime with the message:
+        "Could not load file or assembly 'Xceed.Wpf.Toolkit, PublicKeyToken=...' or one of its dependencies. [...]"
+        To force the referencing of the assembly, we add a dummy name here which creates a field in the code behind.
+        This workaround has been taken from the following answer on StackOverflow:
+            https://stackoverflow.com/a/41605335/7025570
+    -->
+    <!-- ReSharper disable once UnusedMember.Global -->
+    <xctk:BusyIndicator x:Name="DummyNameToGetAReferenceInTheCodeBehind"
+                        IsBusy="{Binding AnalysisIsRunning}"
+                        DisplayAfter="00:00:01.00"
+                        BusyContent="Analyzing code. Please wait..."
+                        Foreground="{DynamicResource VsBrush.WindowText}"
+                        Background="{DynamicResource VsBrush.Window}">
+        <xctk:BusyIndicator.ProgressBarStyle>
+            <!--
+                The original styles are defined inside of a setter of setter of setter of... OMG!
+                See it here:
+                    https://github.com/xceedsoftware/wpftoolkit/blob/master/ExtendedWPFToolkitSolution/Src/Xceed.Wpf.Toolkit/BusyIndicator/Themes/Generic.xaml
+                I have no clue how to reference those nested nested whatever style definitions in
+                the BasedOn property. Nor I want to spend the rest of my life searching through
+                StackOverflow posts that might help me.
+                So I'm copying the original styles here below and extending and chaning them with my own.
+            -->
+            <Style TargetType="ProgressBar">
+                <!-- Copied. -->
+                <Setter Property="Height" Value="15" />
+                <Setter Property="Margin" Value="8,0,8,8" />
+                <!-- My stuff. -->
+                <Setter Property="IsIndeterminate" Value="False" />
+                <Setter Property="Minimum" Value="0" />
+                <Setter Property="Maximum" Value="{Binding AnalysisMaximumProgress}" />
+                <Setter Property="Value" Value="{Binding AnalysisCurrentProgress}" />
+            </Style>
+        </xctk:BusyIndicator.ProgressBarStyle>
+        <xctk:BusyIndicator.OverlayStyle>
+            <Style TargetType="Rectangle">
+                <!-- Copied. -->
+                <Setter Property="Opacity" Value="0.5" />
+                <!-- My stuff. -->
+                <Setter Property="Fill" Value="{DynamicResource VsBrush.Window}"/>
+            </Style>
+        </xctk:BusyIndicator.OverlayStyle>
+        <Grid>
+            <TreeView ItemsSource="{Binding AnalysisResults}"
+                      Background="{DynamicResource VsBrush.Window}"
+                      MouseDoubleClick="OnResultTreeViewMouseDoubleClick"
+                      KeyUp="OnResultTreeViewKeyUp">
+                <TreeView.Resources>
+                  <!-- Override the colors used by the item container style with the VS colors. -->
+                  <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="{DynamicResource {x:Static vsp:TreeViewColors.SelectedItemActiveColorKey}}" />
+                  <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="{DynamicResource {x:Static vsp:TreeViewColors.SelectedItemActiveTextColorKey}}" />
+                  <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}" Color="{DynamicResource {x:Static vsp:TreeViewColors.SelectedItemInactiveColorKey}}" />
+                  <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="{DynamicResource {x:Static vsp:TreeViewColors.SelectedItemInactiveTextColorKey}}" />
+                </TreeView.Resources>
+                <TreeView.ItemContainerStyle>
+                    <Style TargetType="{x:Type TreeViewItem}">
+                        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                        <Setter Property="Foreground" Value="{DynamicResource VsBrush.WindowText}" />
+                        <Setter Property="FontWeight" Value="Normal" />
+                    </Style>
+                </TreeView.ItemContainerStyle>
+
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Text}"  />
+                            <TextBlock Text="{Binding NumberOfItems}" 
+                                       Visibility="{Binding NumberOfItems, Converter={StaticResource NullToCollapsedConverter}}"
+                                       FontStyle="Italic"
+                                       Padding="4,0,0,0"/>
+                            <TextBlock x:Name="LearnMore"
+                                       Visibility="Collapsed"
+                                       Padding="4,0,0,0" >
+                                <Hyperlink NavigateUri="{Binding LearnMoreUrl}" 
+                                           RequestNavigate="OnLearnMoreRequestNavigate"
+                                           Foreground="{Binding RelativeSource={RelativeSource AncestorType={x:Type TreeViewItem}}, Path=Foreground}"
+                                           Focusable="False">
+                                    <Run Text="{Binding LearnMoreDisplayText, Mode=OneWay}" />
+                                </Hyperlink>
+                            </TextBlock>
+                          </StackPanel>
+                        <HierarchicalDataTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="LearnMore" Property="Visibility" Value="{Binding LearnMoreUrl, Converter={StaticResource NullToCollapsedConverter}}"/>
+                            </Trigger>
+                        </HierarchicalDataTemplate.Triggers>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+        </Grid>
+    </xctk:BusyIndicator>
+</UserControl>

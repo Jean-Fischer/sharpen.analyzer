@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{5E704A34-DDD4-410C-A118-5B470053ADFA}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CSharp60</RootNamespace>
+    <AssemblyName>CSharp60</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <LangVersion>7.1</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ExpressionBodiedMembers\UseExpressionBodyForGetOnlyIndexers\GetOnlyIndexersThatAlreadyHaveExpressionBody.cs" />
+    <Compile Include="ExpressionBodiedMembers\UseExpressionBodyForGetOnlyIndexers\GetOnlyIndexersThatAreCandidatesToHaveExpressionBody.cs" />
+    <Compile Include="ExpressionBodiedMembers\UseExpressionBodyForGetOnlyIndexers\GetOnlyIndexersThatAreNotCandidatesToHaveExpressionBody.cs" />
+    <Compile Include="ExpressionBodiedMembers\UseExpressionBodyForGetOnlyProperties\EmptyGetOnlyProperties.cs" />
+    <Compile Include="ExpressionBodiedMembers\UseExpressionBodyForGetOnlyProperties\GetOnlyPropertiesThatAlreadyHaveExpressionBody.cs" />
+    <Compile Include="ExpressionBodiedMembers\UseExpressionBodyForGetOnlyProperties\GetOnlyPropertiesThatAreCandidatesToHaveExpressionBody.cs" />
+    <Compile Include="ExpressionBodiedMembers\UseExpressionBodyForGetOnlyProperties\GetOnlyPropertiesThatAreNotCandidatesToHaveExpressionBody.cs" />
+    <Compile Include="NameofExpressions\UseNameofExpressionForThrowingArgumentExceptions\ArgumentExceptionsInMethodsThatAreCandidatesToUseNameofExpression.cs" />
+    <Compile Include="NameofExpressions\UseNameofExpressionForThrowingArgumentExceptions\ArgumentExceptionsInConstructorsThatAreCandidatesToUseNameofExpression.cs" />
+    <Compile Include="NameofExpressions\UseNameofExpressionForThrowingArgumentExceptions\ArgumentExceptionsInPropertiesThatAreCandidatesToUseNameofExpression.cs" />
+    <Compile Include="NameofExpressions\UseNameofExpressionForThrowingArgumentExceptions\ArgumentExceptionsInIndexersThatAreCandidatesToUseNameofExpression.cs" />
+    <Compile Include="NameofExpressions\UseNameofExpressionForThrowingArgumentExceptions\ArgumentExceptionsInSimpleLambdasThatAreCandidatesToUseNameofExpression.cs" />
+    <Compile Include="NameofExpressions\UseNameofExpressionForThrowingArgumentExceptions\ArgumentExceptionsInParenthesizedLambdasThatAreCandidatesToUseNameofExpression.cs" />
+    <Compile Include="NameofExpressions\UseNameofExpressionForThrowingArgumentExceptions\ArgumentExceptionsInAnonymousDelegatesThatAreCandidatesToUseNameofExpression.cs" />
+    <Compile Include="NameofExpressions\UseNameofExpressionForThrowingArgumentExceptions\ArgumentExceptionsThatAreNotCandidatesToUseNameofExpression.cs" />
+    <Compile Include="NameofExpressions\UseNameofExpressionForThrowingArgumentExceptions\ArgumentExceptionsInEventsThatAreCandidatesToUseNameofExpression.cs" />
+    <Compile Include="NameofExpressions\UseNameofExpressionForThrowingArgumentExceptions\SomeEnum.cs" />
+    <Compile Include="NameofExpressions\UseNameofExpressionInDependencyPropertyDeclarations\DependencyPropertyDeclarationsInConstructorThatAreCandidatesToUseNameofExpression.cs" />
+    <Compile Include="NameofExpressions\UseNameofExpressionInDependencyPropertyDeclarations\DependencyPropertyDeclarationsThatAreNotCandidatesToUseNameofExpression.cs" />
+    <Compile Include="NameofExpressions\UseNameofExpressionInDependencyPropertyDeclarations\DependencyPropertyDeclarationsInSingleFieldDeclarationThatAreCandidatesToUseNameofExpression.cs" />
+    <Compile Include="NameofExpressions\UseNameofExpressionInDependencyPropertyDeclarations\DependencyPropertyDeclarationsInFieldsDeclarationsThatAreCandidatesToUseNameofExpression.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
