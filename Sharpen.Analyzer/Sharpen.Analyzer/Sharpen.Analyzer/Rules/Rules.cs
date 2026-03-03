@@ -14,6 +14,106 @@ public static class Rules
         description: "Using 'var' improves readability and reduces redundancy when the type is obvious from the right-hand side."
     );
 
+    public static readonly DiagnosticDescriptor ReplaceUsingStatementWithUsingDeclarationRule = new DiagnosticDescriptor(
+        id: "SHARPEN025",
+        title: "Replace using statement with using declaration",
+        messageFormat: "Replace using statement with using declaration",
+        category: "Sharpen.CSharp8",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "C# 8 allows using declarations which can reduce nesting and improve readability."
+    );
+
+    public static readonly DiagnosticDescriptor ReplaceSwitchStatementWithSwitchExpressionRule = new DiagnosticDescriptor(
+        id: "SHARPEN026",
+        title: "Replace switch statement with switch expression",
+        messageFormat: "Replace switch statement with switch expression",
+        category: "Sharpen.CSharp8",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "C# 8 switch expressions can reduce boilerplate and improve readability."
+    );
+
+    public static readonly DiagnosticDescriptor EnableNullableContextAndDeclareIdentifierAsNullableRule = new DiagnosticDescriptor(
+        id: "SHARPEN033",
+        title: "Enable nullable context and declare identifier as nullable",
+        messageFormat: "Enable nullable context and declare identifier as nullable",
+        category: "Sharpen.CSharp8",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "C# 8 introduces nullable reference types. Enabling nullable context and marking identifiers as nullable can improve null-safety."
+    );
+
+    public static readonly DiagnosticDescriptor UseIndexFromTheEndRule = new DiagnosticDescriptor(
+        id: "SHARPEN034",
+        title: "Use index from the end",
+        messageFormat: "Use index from the end",
+        category: "Sharpen.CSharp8",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "C# 8 introduces indices and ranges. This rule is currently a placeholder for the migrated legacy analyzer."
+    );
+
+    public static readonly DiagnosticDescriptor UseNullCoalescingAssignmentOperatorInsteadOfAssigningResultOfTheNullCoalescingOperatorRule = new DiagnosticDescriptor(
+        id: "SHARPEN031",
+        title: "Use ??= operator instead of assigning result of the ?? operator",
+        messageFormat: "Use ??= operator instead of assigning result of the ?? operator",
+        category: "Sharpen.CSharp8",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "C# 8 introduces the ??= operator which can simplify null-coalescing assignments."
+    );
+
+    public static readonly DiagnosticDescriptor ConsiderUsingNullCoalescingAssignmentOperatorInsteadOfAssigningResultOfTheNullCoalescingOperatorRule = new DiagnosticDescriptor(
+        id: "SHARPEN032",
+        title: "Consider using ??= operator instead of assigning result of the ?? operator",
+        messageFormat: "Consider using ??= operator instead of assigning result of the ?? operator",
+        category: "Sharpen.CSharp8",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "This assignment may be replaceable with ??=, but conversion could change semantics due to side effects."
+    );
+
+    public static readonly DiagnosticDescriptor ConsiderReplacingSwitchStatementContainingOnlyAssignmentsWithSwitchExpressionRule = new DiagnosticDescriptor(
+        id: "SHARPEN027",
+        title: "Consider replacing switch statement with switch expression",
+        messageFormat: "Consider replacing switch statement with switch expression",
+        category: "Sharpen.CSharp8",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "This switch statement may be convertible to a switch expression, but conversion could change semantics."
+    );
+
+    public static readonly DiagnosticDescriptor ReplaceSwitchStatementContainingOnlyAssignmentsWithSwitchExpressionRule = new DiagnosticDescriptor(
+        id: "SHARPEN028",
+        title: "Replace switch statement with switch expression",
+        messageFormat: "Replace switch statement with switch expression",
+        category: "Sharpen.CSharp8",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "This switch statement can be safely replaced with a switch expression."
+    );
+
+    public static readonly DiagnosticDescriptor ConsiderReplacingSwitchStatementContainingOnlyReturnsWithSwitchExpressionRule = new DiagnosticDescriptor(
+        id: "SHARPEN029",
+        title: "Consider replacing switch statement with switch expression",
+        messageFormat: "Consider replacing switch statement with switch expression",
+        category: "Sharpen.CSharp8",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "This switch statement may be convertible to a switch expression, but conversion could change semantics."
+    );
+
+    public static readonly DiagnosticDescriptor ReplaceSwitchStatementContainingOnlyReturnsWithSwitchExpressionRule = new DiagnosticDescriptor(
+        id: "SHARPEN030",
+        title: "Replace switch statement with switch expression",
+        messageFormat: "Replace switch statement with switch expression",
+        category: "Sharpen.CSharp8",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "This switch statement can be safely replaced with a switch expression."
+    );
+
     public static readonly DiagnosticDescriptor AwaitEquivalentAsynchronousMethodRule = new DiagnosticDescriptor(
         id: "SHARPEN003",
         title: "Use async equivalent",

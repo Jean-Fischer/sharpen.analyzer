@@ -22,4 +22,4 @@
 ## Documentation / Spec Sync
 
 - [x] Ensure the change artifacts are complete: [`openspec/changes/csharp-8/proposal.md`](openspec/changes/csharp-8/proposal.md), [`openspec/changes/csharp-8/design.md`](openspec/changes/csharp-8/design.md), and specs under [`openspec/changes/csharp-8/specs/`](openspec/changes/csharp-8/specs/)
-- [x] (Later) Sync finalized specs into [`openspec/specs/`](openspec/specs/) once implementation is complete
+- [ ] (Later) Sync finalized specs into [`openspec/specs/`](openspec/specs/) once implementation is complete
