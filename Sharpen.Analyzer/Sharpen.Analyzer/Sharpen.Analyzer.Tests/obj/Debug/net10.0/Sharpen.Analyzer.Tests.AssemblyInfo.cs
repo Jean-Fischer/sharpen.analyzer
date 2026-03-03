@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Sharpen.Analyzer.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+38df807475adba9e37601e4afa71dd288e2c9269")]
 [assembly: System.Reflection.AssemblyProductAttribute("Sharpen.Analyzer.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Sharpen.Analyzer.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

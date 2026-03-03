@@ -31,8 +31,8 @@ namespace Sharpen.Engine.SharpenSuggestions.Common.AsyncAwaitAndAsyncStreams
             CallerMustNotYield
         }
 
-        private class KnownAwaitableTypeInfo : KnownTypeInfo
-        {            
+        internal class KnownAwaitableTypeInfo : KnownTypeInfo
+        {
             public enum ReturnTypeWrappingKind
             {
                 /// <summary>

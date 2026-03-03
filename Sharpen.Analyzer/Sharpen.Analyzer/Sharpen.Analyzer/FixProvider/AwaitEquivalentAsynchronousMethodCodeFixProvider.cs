@@ -1,40 +1,44 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
-using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
+using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Sharpen.Analyzer.Rules;
 using Sharpen.Engine.SharpenSuggestions.Common.AsyncAwaitAndAsyncStreams;
+
+namespace Sharpen.Analyzer;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(AwaitEquivalentAsynchronousMethodCodeFixProvider))]
 [Shared]
 public class AwaitEquivalentAsynchronousMethodCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.AwaitEquivalentAsynchronousMethodRule.Id);
+        ImmutableArray.Create(Rules.Rules.AwaitEquivalentAsynchronousMethodRule.Id);
 
     public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
 
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken);
+        var root = await context.Document
+            .GetSyntaxRootAsync(context.CancellationToken)
+            .ConfigureAwait(false);
+        if (root is null) return;
+
         var diagnostic = context.Diagnostics.First();
         var invocation = root.FindNode(diagnostic.Location.SourceSpan) as InvocationExpressionSyntax;
-        if (invocation == null) return;
+        if (invocation is null) return;
 
         context.RegisterCodeFix(
             CodeAction.Create(
                 title: "Use async equivalent",
                 createChangedDocument: c => ApplyAsyncEquivalentAsync(context.Document, invocation, c),
-                equivalenceKey: "UseAsyncEquivalent"
-            ),
-            diagnostic
-        );
+                equivalenceKey: "UseAsyncEquivalent"),
+            diagnostic);
     }
 
     private async Task<Document> ApplyAsyncEquivalentAsync(
@@ -42,112 +46,120 @@ public class AwaitEquivalentAsynchronousMethodCodeFixProvider : CodeFixProvider
         InvocationExpressionSyntax invocation,
         CancellationToken ct)
     {
-        var semanticModel = await document.GetSemanticModelAsync(ct);
-        var method = semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
-        if (method == null) return document;
+        var semanticModel = await document.GetSemanticModelAsync(ct).ConfigureAwait(false);
+        if (semanticModel is null) return document;
 
-        // Find the async equivalent (reuse your logic)
-        var asyncMethodName = method.Name + "Async";
-        var asyncMethod = method.ContainingType.GetMembers(asyncMethodName)
-            .OfType<IMethodSymbol>()
-            .FirstOrDefault(m => IsAsyncEquivalent(m, method, semanticModel));
+        var asyncEquivalent = EquivalentAsynchronousMethodResolver.ResolveAsyncEquivalent(invocation, semanticModel);
+        if (asyncEquivalent is null) return document;
 
-        if (asyncMethod == null) return document;
+        var rewrittenInvocation = RewriteInvocation(invocation, asyncEquivalent.Name);
+        if (rewrittenInvocation is null) return document;
 
-        // Rewrite the invocation to use the async method
-        var newInvocation = RewriteInvocation(invocation, asyncMethodName);
+        var root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
+        if (root is null) return document;
 
-        // Add `await` if the enclosing method is async
-        var root = await document.GetSyntaxRootAsync(ct);
-        var enclosingMethod = invocation.FirstAncestorOrSelf<MethodDeclarationSyntax>();
-        if (enclosingMethod != null)
-        {
-            var enclosingMethodSymbol = semanticModel.GetDeclaredSymbol(enclosingMethod);
-            if (enclosingMethodSymbol.IsAsync)
-            {
-                newInvocation = SyntaxFactory.AwaitExpression(newInvocation)
-                    .WithLeadingTrivia(invocation.GetLeadingTrivia())
-                    .WithTrailingTrivia(invocation.GetTrailingTrivia());
-            }
-        }
+        // Await insertion rules (conservative):
+        // - avoid double-await
+        // - only apply in known-safe contexts
+        var replacementExpression = ApplyAwaitIfNeeded(invocation, rewrittenInvocation, semanticModel);
 
-        var newRoot = root.ReplaceNode(invocation, newInvocation);
+        var newRoot = root.ReplaceNode(invocation, replacementExpression);
         return document.WithSyntaxRoot(newRoot);
     }
 
-    private bool IsAsyncEquivalent(IMethodSymbol asyncMethod, IMethodSymbol syncMethod, SemanticModel semanticModel)
-    {
-        // Reuse your logic from `IsAsynchronousEquivalent` in `EquivalentAsynchronousMethodFinder`
-        // (simplified for brevity)
-        if (asyncMethod.ReturnType == null || syncMethod.ReturnType == null)
-            return false;
-
-        // Check return type compatibility
-        var isReturnTypeCompatible = CheckReturnTypeCompatibility(asyncMethod, syncMethod, semanticModel);
-        if (!isReturnTypeCompatible)
-            return false;
-
-        // Check parameter compatibility
-        var isParameterCompatible = CheckParameterCompatibility(asyncMethod, syncMethod);
-        if (!isParameterCompatible)
-            return false;
-
-        return true;
-    }
-
-    private bool CheckReturnTypeCompatibility(IMethodSymbol asyncMethod, IMethodSymbol syncMethod, SemanticModel semanticModel)
-    {
-        if (syncMethod.ReturnsVoid)
-        {
-            return EquivalentAsynchronousMethodFinder.KnownAwaitableTypes
-                .Any(t => t.IsVoidEquivalent && t.RepresentsType(asyncMethod.ReturnType));
-        }
-        else
-        {
-            var asyncReturnType = asyncMethod.ReturnType as INamedTypeSymbol;
-            if (asyncReturnType == null || asyncReturnType.TypeArguments.Length == 0)
-                return false;
-
-            return EquivalentAsynchronousMethodFinder.KnownAwaitableTypes
-                .Any(t => t.RepresentsType(asyncReturnType.ConstructedFrom) &&
-                          CheckGenericTypeCompatibility(t, asyncReturnType, syncMethod));
-        }
-    }
-
-    private bool CheckGenericTypeCompatibility(
-        EquivalentAsynchronousMethodFinder.KnownAwaitableTypeInfo awaitableType,
-        INamedTypeSymbol asyncReturnType,
-        IMethodSymbol syncMethod)
-    {
-        if (awaitableType.WrapsReturnType())
-        {
-            // For Task<T>, ValueTask<T>: T should match sync return type
-            return syncMethod.ReturnType.Equals(asyncReturnType.TypeArguments[0]);
-        }
-        else // WrapsReturnTypeTypeParameter
-        {
-            // For IAsyncEnumerable<T>: T should match sync return type's generic parameter
-            var syncReturnType = syncMethod.ReturnType as INamedTypeSymbol;
-            if (syncReturnType == null || syncReturnType.TypeArguments.Length == 0)
-                return false;
-
-            return syncReturnType.TypeArguments[0].Equals(asyncReturnType.TypeArguments[0]);
-        }
-    }
-
-    private SyntaxNode RewriteInvocation(InvocationExpressionSyntax invocation, string asyncMethodName)
+    private static InvocationExpressionSyntax RewriteInvocation(InvocationExpressionSyntax invocation, string asyncMethodName)
     {
         if (invocation.Expression is MemberAccessExpressionSyntax memberAccess)
         {
             return invocation.WithExpression(
-                memberAccess.WithName(SyntaxFactory.IdentifierName(asyncMethodName))
-            );
+                memberAccess.WithName(SyntaxFactory.IdentifierName(asyncMethodName)));
         }
-        else
+
+        if (invocation.Expression is IdentifierNameSyntax)
         {
-            return invocation.WithExpression(
-                SyntaxFactory.IdentifierName(asyncMethodName)
-            );
+            return invocation.WithExpression(SyntaxFactory.IdentifierName(asyncMethodName));
         }
+
+        // Unknown invocation shape (e.g., conditional access). Skip.
+        return null;
+    }
+
+    private static ExpressionSyntax ApplyAwaitIfNeeded(
+        InvocationExpressionSyntax originalInvocation,
+        InvocationExpressionSyntax rewrittenInvocation,
+        SemanticModel semanticModel)
+    {
+        // Preserve trivia on the invocation itself.
+        rewrittenInvocation = rewrittenInvocation
+            .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
+            .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
+
+        // 3.1 Avoid double-await.
+        if (originalInvocation.Parent is AwaitExpressionSyntax)
+        {
+            return rewrittenInvocation;
+        }
+
+        // Only add await when inside an async method/local function.
+        if (!IsWithinAsyncCallable(originalInvocation, semanticModel))
+        {
+            return rewrittenInvocation;
+        }
+
+        // 3.2 Expression statement: `X();` -> `await XAsync();`
+        if (originalInvocation.Parent is ExpressionStatementSyntax)
+        {
+            return SyntaxFactory.AwaitExpression(rewrittenInvocation)
+                .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
+                .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
+        }
+
+        // 3.3 Assignment RHS: `x = X();` -> `x = await XAsync();`
+        if (originalInvocation.Parent is AssignmentExpressionSyntax assignment &&
+            assignment.Right == originalInvocation)
+        {
+            return SyntaxFactory.AwaitExpression(rewrittenInvocation)
+                .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
+                .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
+        }
+
+        // 3.4 Variable initializer: `var x = X();` -> `var x = await XAsync();`
+        if (originalInvocation.Parent is EqualsValueClauseSyntax equalsValue &&
+            equalsValue.Value == originalInvocation)
+        {
+            return SyntaxFactory.AwaitExpression(rewrittenInvocation)
+                .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
+                .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
+        }
+
+        // 3.5 Return statement: `return X();` -> `return await XAsync();`
+        if (originalInvocation.Parent is ReturnStatementSyntax)
+        {
+            return SyntaxFactory.AwaitExpression(rewrittenInvocation)
+                .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
+                .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
+        }
+
+        // 3.6 Guardrails: unknown context, don't add await.
+        return rewrittenInvocation;
+    }
+
+    private static bool IsWithinAsyncCallable(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
+    {
+        var localFunction = invocation.FirstAncestorOrSelf<LocalFunctionStatementSyntax>();
+        if (localFunction != null)
+        {
+            var symbol = semanticModel.GetDeclaredSymbol(localFunction) as IMethodSymbol;
+            return symbol?.IsAsync == true;
+        }
+
+        var method = invocation.FirstAncestorOrSelf<MethodDeclarationSyntax>();
+        if (method != null)
+        {
+            var symbol = semanticModel.GetDeclaredSymbol(method) as IMethodSymbol;
+            return symbol?.IsAsync == true;
+        }
+
+        return false;
     }
 }
