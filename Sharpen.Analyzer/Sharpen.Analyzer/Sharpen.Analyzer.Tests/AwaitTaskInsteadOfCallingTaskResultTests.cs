@@ -1,0 +1,96 @@
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Testing;
+using Xunit;
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
+    Sharpen.Analyzer.Analyzers.AwaitTaskInsteadOfCallingTaskResultAnalyzer,
+    Sharpen.Analyzer.FixProvider.AwaitTaskInsteadOfCallingTaskResultCodeFixProvider>;
+
+public class AwaitTaskInsteadOfCallingTaskResultTests
+{
+    [Fact]
+    public async Task ReportsDiagnostic_AndFixes_SimpleAssignment()
+    {
+        const string original = @"
+using System.Threading.Tasks;
+
+public class Example
+{
+    public async Task TestAsync(Task<int> task)
+    {
+        var result = task.Result;
+    }
+}";
+
+        const string fixedText = @"
+using System.Threading.Tasks;
+
+public class Example
+{
+    public async Task TestAsync(Task<int> task)
+    {
+        var result = await task;
+    }
+}";
+
+        var expected = Verifier.Diagnostic().WithSpan(8, 27, 8, 33);
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
+    }
+
+    [Fact]
+    public async Task ReportsDiagnostic_ButNoFix_ForComplexExpression()
+    {
+        const string original = @"
+using System.Threading.Tasks;
+
+public class Example
+{
+    public async Task TestAsync(Task<int> task)
+    {
+        var result = task.Result + 100;
+    }
+}";
+
+        var expected = Verifier.Diagnostic().WithSpan(8, 27, 8, 33);
+        await Verifier.VerifyAnalyzerAsync(original, expected);
+    }
+
+    [Fact]
+    public async Task NoDiagnostic_InNonAsyncMethod()
+    {
+        const string original = @"
+using System.Threading.Tasks;
+
+public class Example
+{
+    public void Test(Task<int> task)
+    {
+        var result = task.Result;
+    }
+}";
+
+        await Verifier.VerifyAnalyzerAsync(original);
+    }
+
+    [Fact]
+    public async Task DiagnosticButNoFix_WhenAwaitNotLegal_LockStatement()
+    {
+        const string original = @"
+using System.Threading.Tasks;
+
+public class Example
+{
+    private readonly object _gate = new object();
+
+    public async Task TestAsync(Task<int> task)
+    {
+        lock (_gate)
+        {
+            var result = task.Result;
+        }
+    }
+}";
+
+        var expected = Verifier.Diagnostic().WithSpan(12, 31, 12, 37);
+        await Verifier.VerifyAnalyzerAsync(original, expected);
+    }
+}

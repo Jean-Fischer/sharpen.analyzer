@@ -2660,11 +2660,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "e:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
+      "projectUniqueName": "E:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
       "projectName": "Sharpen.Analyzer.Tests",
-      "projectPath": "e:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
+      "projectPath": "E:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
       "packagesPath": "C:\\Users\\Administrator\\.nuget\\packages\\",
-      "outputPath": "e:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\obj\\",
+      "outputPath": "E:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Administrator\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -2679,8 +2679,8 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "e:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.csproj": {
-              "projectPath": "e:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.csproj"
+            "E:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.csproj": {
+              "projectPath": "E:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.csproj"
             }
           }
         }

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "e:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Sample\\Sharpen.Analyzer.Sample.csproj": {}
+    "E:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Sample\\Sharpen.Analyzer.Sample.csproj": {}
   },
   "projects": {
-    "e:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Sample\\Sharpen.Analyzer.Sample.csproj": {
+    "E:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Sample\\Sharpen.Analyzer.Sample.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "e:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Sample\\Sharpen.Analyzer.Sample.csproj",
+        "projectUniqueName": "E:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Sample\\Sharpen.Analyzer.Sample.csproj",
         "projectName": "Sharpen.Analyzer.Sample",
-        "projectPath": "e:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Sample\\Sharpen.Analyzer.Sample.csproj",
+        "projectPath": "E:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Sample\\Sharpen.Analyzer.Sample.csproj",
         "packagesPath": "C:\\Users\\Administrator\\.nuget\\packages\\",
-        "outputPath": "e:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Sample\\obj\\",
+        "outputPath": "E:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Sample\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Administrator\\AppData\\Roaming\\NuGet\\NuGet.Config"

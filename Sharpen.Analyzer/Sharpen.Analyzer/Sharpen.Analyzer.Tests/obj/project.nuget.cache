@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "U6X3EMIt7oc=",
+  "dgSpecHash": "c4RMpotoJDk=",
   "success": true,
-  "projectFilePath": "e:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
+  "projectFilePath": "E:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Administrator\\.nuget\\packages\\diffplex\\1.5.0\\diffplex.1.5.0.nupkg.sha512",
     "C:\\Users\\Administrator\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
@@ -59,9 +59,9 @@
       "code": "NU1903",
       "level": "Warning",
       "message": "Package 'NuGet.Common' 5.6.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-6qmf-mmc7-6c2p",
-      "projectPath": "e:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
+      "projectPath": "E:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
       "warningLevel": 1,
-      "filePath": "e:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
+      "filePath": "E:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
       "libraryId": "NuGet.Common",
       "targetGraphs": [
         "net10.0"
@@ -71,9 +71,9 @@
       "code": "NU1904",
       "level": "Warning",
       "message": "Package 'NuGet.Packaging' 5.6.0 has a known critical severity vulnerability, https://github.com/advisories/GHSA-68w7-72jg-6qpp",
-      "projectPath": "e:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
+      "projectPath": "E:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
       "warningLevel": 1,
-      "filePath": "e:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
+      "filePath": "E:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
       "libraryId": "NuGet.Packaging",
       "targetGraphs": [
         "net10.0"
@@ -83,9 +83,9 @@
       "code": "NU1903",
       "level": "Warning",
       "message": "Package 'NuGet.Protocol' 5.6.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-6qmf-mmc7-6c2p",
-      "projectPath": "e:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
+      "projectPath": "E:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
       "warningLevel": 1,
-      "filePath": "e:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
+      "filePath": "E:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
       "libraryId": "NuGet.Protocol",
       "targetGraphs": [
         "net10.0"
@@ -95,9 +95,9 @@
       "code": "NU1903",
       "level": "Warning",
       "message": "Package 'NuGet.Protocol' 5.6.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-g3q9-xf95-8hp5",
-      "projectPath": "e:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
+      "projectPath": "E:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
       "warningLevel": 1,
-      "filePath": "e:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
+      "filePath": "E:\\Projets\\sharpen.analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer\\Sharpen.Analyzer.Tests\\Sharpen.Analyzer.Tests.csproj",
       "libraryId": "NuGet.Protocol",
       "targetGraphs": [
         "net10.0"
