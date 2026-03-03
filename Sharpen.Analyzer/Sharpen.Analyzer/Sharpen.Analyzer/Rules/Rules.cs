@@ -123,4 +123,84 @@ public static class Rules
         isEnabledByDefault: true,
         description: "Using nameof avoids magic strings and keeps dependency property names refactoring-safe."
     );
+
+    public static readonly DiagnosticDescriptor UseExpressionBodyForGetAccessorsInPropertiesRule = new DiagnosticDescriptor(
+        id: "SHARPEN014",
+        title: "Use expression-bodied member for get accessor in property",
+        messageFormat: "Use expression-bodied member syntax for this get accessor",
+        category: "Sharpen.CSharp7",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "Expression-bodied members can improve readability for simple property accessors."
+    );
+
+    public static readonly DiagnosticDescriptor UseExpressionBodyForConstructorsRule = new DiagnosticDescriptor(
+        id: "SHARPEN015",
+        title: "Use expression-bodied member for constructor",
+        messageFormat: "Use expression-bodied member syntax for this constructor",
+        category: "Sharpen.CSharp7",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "Expression-bodied members can improve readability for simple constructors."
+    );
+
+    public static readonly DiagnosticDescriptor UseExpressionBodyForDestructorsRule = new DiagnosticDescriptor(
+        id: "SHARPEN016",
+        title: "Use expression-bodied member for destructor",
+        messageFormat: "Use expression-bodied member syntax for this destructor",
+        category: "Sharpen.CSharp7",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "Expression-bodied members can improve readability for simple destructors."
+    );
+
+    public static readonly DiagnosticDescriptor UseExpressionBodyForLocalFunctionsRule = new DiagnosticDescriptor(
+        id: "SHARPEN017",
+        title: "Use expression-bodied member for local function",
+        messageFormat: "Use expression-bodied member syntax for this local function",
+        category: "Sharpen.CSharp7",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "Expression-bodied members can improve readability for simple local functions."
+    );
+
+    public static readonly DiagnosticDescriptor UseOutVariablesInMethodInvocationsRule = new DiagnosticDescriptor(
+        id: "SHARPEN018",
+        title: "Use out variables in method invocations",
+        messageFormat: "Use out variables in this method invocation",
+        category: "Sharpen.CSharp7",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "Out variables reduce the need for separate variable declarations when calling methods with out parameters."
+    );
+
+    public static readonly DiagnosticDescriptor UseOutVariablesInObjectCreationsRule = new DiagnosticDescriptor(
+        id: "SHARPEN019",
+        title: "Use out variables in object creations",
+        messageFormat: "Use out variables in this object creation",
+        category: "Sharpen.CSharp7",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "Out variables reduce the need for separate variable declarations when calling constructors with out parameters."
+    );
+
+    public static readonly DiagnosticDescriptor DiscardOutVariablesInMethodInvocationsRule = new DiagnosticDescriptor(
+        id: "SHARPEN020",
+        title: "Discard out variables in method invocations",
+        messageFormat: "Discard unused out variables in this method invocation",
+        category: "Sharpen.CSharp7",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "Discarding unused out variables improves readability by avoiding unused local variables."
+    );
+
+    public static readonly DiagnosticDescriptor DiscardOutVariablesInObjectCreationsRule = new DiagnosticDescriptor(
+        id: "SHARPEN021",
+        title: "Discard out variables in object creations",
+        messageFormat: "Discard unused out variables in this object creation",
+        category: "Sharpen.CSharp7",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "Discarding unused out variables improves readability by avoiding unused local variables."
+    );
 }
