@@ -203,4 +203,37 @@ public static class Rules
         isEnabledByDefault: true,
         description: "Discarding unused out variables improves readability by avoiding unused local variables."
     );
+
+    public static readonly DiagnosticDescriptor UseDefaultExpressionInReturnStatementsRule = new DiagnosticDescriptor(
+        id: "SHARPEN022",
+        title: "Use default expression in return statements",
+        messageFormat: "Use 'default' instead of 'default({0})'",
+        category: "Sharpen.CSharp71",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "C# 7.1 allows using the default literal instead of default(T) when the type can be inferred.",
+        customTags: new[] { WellKnownDiagnosticTags.Unnecessary }
+    );
+
+    public static readonly DiagnosticDescriptor UseDefaultExpressionInOptionalMethodParametersRule = new DiagnosticDescriptor(
+        id: "SHARPEN023",
+        title: "Use default expression in optional method parameters",
+        messageFormat: "Use 'default' instead of 'default({0})'",
+        category: "Sharpen.CSharp71",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "C# 7.1 allows using the default literal instead of default(T) in optional parameters when the type can be inferred.",
+        customTags: new[] { WellKnownDiagnosticTags.Unnecessary }
+    );
+
+    public static readonly DiagnosticDescriptor UseDefaultExpressionInOptionalConstructorParametersRule = new DiagnosticDescriptor(
+        id: "SHARPEN024",
+        title: "Use default expression in optional constructor parameters",
+        messageFormat: "Use 'default' instead of 'default({0})'",
+        category: "Sharpen.CSharp71",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "C# 7.1 allows using the default literal instead of default(T) in optional parameters when the type can be inferred.",
+        customTags: new[] { WellKnownDiagnosticTags.Unnecessary }
+    );
 }
