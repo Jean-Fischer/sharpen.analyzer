@@ -18,6 +18,10 @@ x64/
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 
+# Local test run logs (vstest blame / diagnostics)
+testlog*.txt
+testlog.datacollector.*.txt
+
 *_i.c
 *_p.c
 *_i.h

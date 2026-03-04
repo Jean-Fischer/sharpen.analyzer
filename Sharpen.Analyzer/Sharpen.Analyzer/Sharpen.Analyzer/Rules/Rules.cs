@@ -14,6 +14,56 @@ public static class Rules
         description: "Using 'var' improves readability and reduces redundancy when the type is obvious from the right-hand side."
     );
 
+    public static readonly DiagnosticDescriptor UseInitOnlySetterRule = new DiagnosticDescriptor(
+        id: "SHARPEN035",
+        title: "Use init-only setter",
+        messageFormat: "Use 'init' instead of 'private set' for this auto-property",
+        category: "Sharpen.CSharp9",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "C# 9 introduces init-only setters to express immutability after initialization."
+    );
+
+    public static readonly DiagnosticDescriptor UseRecordTypeRule = new DiagnosticDescriptor(
+        id: "SHARPEN036",
+        title: "Use record type",
+        messageFormat: "Convert this sealed data class to a record",
+        category: "Sharpen.CSharp9",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "C# 9 records provide concise syntax and value-based semantics for data-centric types."
+    );
+
+    public static readonly DiagnosticDescriptor UseTopLevelStatementsRule = new DiagnosticDescriptor(
+        id: "SHARPEN037",
+        title: "Use top-level statements",
+        messageFormat: "Convert this entry point to top-level statements",
+        category: "Sharpen.CSharp9",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "C# 9 top-level statements can reduce boilerplate for simple programs."
+    );
+
+    public static readonly DiagnosticDescriptor UseCSharp9PatternMatchingRule = new DiagnosticDescriptor(
+        id: "SHARPEN038",
+        title: "Use C# 9 pattern matching",
+        messageFormat: "Rewrite this expression using C# 9 pattern matching",
+        category: "Sharpen.CSharp9",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "C# 9 adds relational and logical patterns that can simplify boolean expressions."
+    );
+
+    public static readonly DiagnosticDescriptor UseTargetTypedNewRule = new DiagnosticDescriptor(
+        id: "SHARPEN039",
+        title: "Use target-typed new",
+        messageFormat: "Use target-typed 'new'",
+        category: "Sharpen.CSharp9",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "C# 9 target-typed new expressions can reduce redundancy when the type is obvious from context."
+    );
+
     public static readonly DiagnosticDescriptor ReplaceUsingStatementWithUsingDeclarationRule = new DiagnosticDescriptor(
         id: "SHARPEN025",
         title: "Replace using statement with using declaration",
