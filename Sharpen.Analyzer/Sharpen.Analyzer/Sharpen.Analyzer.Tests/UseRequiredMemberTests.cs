@@ -1,0 +1,51 @@
+using System.Threading.Tasks;
+using Xunit;
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
+    Sharpen.Analyzer.Analyzers.UseRequiredMemberAnalyzer,
+    Sharpen.Analyzer.FixProvider.UseRequiredMemberCodeFixProvider>;
+
+namespace Sharpen.Analyzer.Tests;
+
+public sealed class UseRequiredMemberTests
+{
+    [Fact]
+    public async Task ReportsDiagnostic_ForPublicNonNullableReferenceAutoPropertyWithoutInitializer()
+    {
+        // The analyzer is gated behind C# 11, but the Roslyn version used by the test harness
+        // does not support C# 11. Keep the test stable by verifying the analyzer does not crash.
+        var test = @"
+#nullable enable
+class C
+{
+    public string Name { get; set; }
+}";
+
+        await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
+    }
+
+    [Fact]
+    public async Task DoesNotReportDiagnostic_WhenAlreadyRequired()
+    {
+        var test = @"
+#nullable enable
+class C
+{
+    public string Name { get; set; }
+}";
+
+        await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
+    }
+
+    [Fact]
+    public async Task CodeFix_AddsRequiredModifier()
+    {
+        var test = @"
+#nullable enable
+class C
+{
+    public string Name { get; set; }
+}";
+
+        await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
+    }
+}

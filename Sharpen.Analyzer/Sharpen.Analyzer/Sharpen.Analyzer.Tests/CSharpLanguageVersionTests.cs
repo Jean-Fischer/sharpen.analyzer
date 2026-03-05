@@ -22,6 +22,22 @@ public class CSharpLanguageVersionTests
         Assert.True(CSharpLanguageVersion.IsCSharp9OrAbove(compilation));
     }
 
+    [Fact]
+    public async Task IsCSharp11OrAbove_ReturnsFalse_ForCSharp10()
+    {
+        var compilation = await CreateCompilationAsync(LanguageVersion.CSharp10).ConfigureAwait(false);
+        Assert.False(CSharpLanguageVersion.IsCSharp11OrAbove(compilation));
+    }
+
+    [Fact]
+    public async Task IsCSharp11OrAbove_ReturnsTrue_ForPreview()
+    {
+        // The Microsoft.CodeAnalysis version referenced by this project does not expose LanguageVersion.CSharp11.
+        // Using Preview is the only reliable way to exercise the "11 or above" branch.
+        var compilation = await CreateCompilationAsync(LanguageVersion.Preview).ConfigureAwait(false);
+        Assert.True(CSharpLanguageVersion.IsCSharp11OrAbove(compilation));
+    }
+
     private static async Task<Compilation> CreateCompilationAsync(LanguageVersion languageVersion)
     {
         var parseOptions = new CSharpParseOptions(languageVersion);
