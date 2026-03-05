@@ -23,8 +23,9 @@ class C
     }
 }";
 
+            // Diagnostic is reported on the `default(int)` expression.
             var expected = VerifierReturn.Diagnostic(Rules.Rules.UseDefaultExpressionInReturnStatementsRule)
-                .WithSpan(6, 9, 6, 15)
+                .WithSpan(6, 16, 6, 28)
                 .WithArguments("int");
 
             await VerifierReturn.VerifyAnalyzerAsync(test, expected).ConfigureAwait(false);

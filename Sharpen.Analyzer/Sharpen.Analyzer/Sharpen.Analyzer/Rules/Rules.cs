@@ -4,6 +4,7 @@ namespace Sharpen.Analyzer.Rules;
 
 public static class Rules
 {
+    // C# 3
     public static readonly DiagnosticDescriptor UseVarKeywordRule = new DiagnosticDescriptor(
         id: "SHARPEN002",
         title: "Use var keyword in variable declaration with object creation",

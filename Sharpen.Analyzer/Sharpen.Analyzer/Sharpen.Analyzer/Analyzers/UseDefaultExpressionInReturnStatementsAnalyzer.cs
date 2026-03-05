@@ -36,7 +36,7 @@ public sealed class UseDefaultExpressionInReturnStatementsAnalyzer : DiagnosticA
 
         context.ReportDiagnostic(Diagnostic.Create(
             Rules.Rules.UseDefaultExpressionInReturnStatementsRule,
-            returnStatement.ReturnKeyword.GetLocation(),
+            defaultExpression.GetLocation(),
             defaultExpressionType.ToDisplayString()));
     }
 

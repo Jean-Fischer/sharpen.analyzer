@@ -31,18 +31,23 @@ public sealed class UseDefaultExpressionCodeFixProvider : CodeFixProvider
         var diagnostic = context.Diagnostics.First();
         var diagnosticSpan = diagnostic.Location.SourceSpan;
 
+        // Some analyzers report diagnostics on a token location (e.g. the 'return' keyword), while others
+        // report directly on the DefaultExpressionSyntax. Be defensive and locate the default expression
+        // within the containing statement/parameter.
         var node = root.FindNode(diagnosticSpan, getInnermostNodeForTie: true);
 
         var defaultExpression = node.FirstAncestorOrSelf<DefaultExpressionSyntax>()
-                              ?? node.DescendantNodesAndSelf().OfType<DefaultExpressionSyntax>().FirstOrDefault();
+                              ?? node.FirstAncestorOrSelf<ReturnStatementSyntax>()?.DescendantNodes().OfType<DefaultExpressionSyntax>().FirstOrDefault()
+                              ?? node.FirstAncestorOrSelf<ParameterSyntax>()?.DescendantNodes().OfType<DefaultExpressionSyntax>().FirstOrDefault();
 
-        if (defaultExpression is null) return;
+        if (defaultExpression is null)
+            return;
 
         context.RegisterCodeFix(
             CodeAction.Create(
                 title: "Use default literal",
                 createChangedDocument: ct => UseDefaultLiteralAsync(context.Document, defaultExpression, ct),
-                equivalenceKey: "Use default literal"),
+                equivalenceKey: nameof(UseDefaultLiteralAsync)),
             diagnostic);
     }
 

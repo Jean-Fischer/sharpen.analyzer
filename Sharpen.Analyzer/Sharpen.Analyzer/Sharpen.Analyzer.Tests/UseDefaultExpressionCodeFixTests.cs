@@ -36,7 +36,7 @@ class C
 }";
 
             var expected = VerifierReturn.Diagnostic(Rules.Rules.UseDefaultExpressionInReturnStatementsRule)
-                .WithSpan(6, 9, 6, 15)
+                .WithSpan(6, 16, 6, 28)
                 .WithArguments("int");
 
             await VerifierReturn.VerifyCodeFixAsync(test, expected, fixedCode).ConfigureAwait(false);

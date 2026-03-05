@@ -25,6 +25,17 @@ Implemented in the OpenSpec change at `openspec/changes/csharp-11/`.
 | SHARPEN049 | Use list pattern | Span/array list-pattern matching | Analyzer available; code fix is currently a no-op due to Roslyn version limitations |
 | SHARPEN050 | Use UTF-8 string literal | UTF-8 string literals | Code fix available |
 
+## C# 12 rules
+
+Implemented in the OpenSpec change at `openspec/changes/csharp-12/`.
+
+| Rule ID | Title | Feature | Notes |
+|---|---|---|---|
+| SHARPEN051 | Use primary constructor | Primary constructors | Analyzer available; code fix is experimental |
+| SHARPEN052 | Use collection expression | Collection expressions | Code fix available |
+| SHARPEN053 | Use default lambda parameters | Default lambda parameters | Code fix available |
+| SHARPEN054 | Use InlineArray | Inline arrays | Code fix available |
+
 A change was scaffolded at `openspec/changes/document-current-state/` (schema: spec-driven). No artifacts were written yet.
 
 Key intent captured from this discussion:
