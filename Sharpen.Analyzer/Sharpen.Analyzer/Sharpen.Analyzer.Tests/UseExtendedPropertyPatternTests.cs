@@ -3,8 +3,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
-    Sharpen.Analyzer.Analyzers.UseExtendedPropertyPatternAnalyzer,
-    Sharpen.Analyzer.FixProvider.UseExtendedPropertyPatternCodeFixProvider>;
+    Sharpen.Analyzer.Analyzers.CSharp10.UseExtendedPropertyPatternAnalyzer,
+    Sharpen.Analyzer.FixProvider.CSharp10.UseExtendedPropertyPatternCodeFixProvider>;
 
 namespace Sharpen.Analyzer.Tests;
 

@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.AnalyzerVerifier<
-    Sharpen.Analyzer.Analyzers.UseIndexFromTheEndAnalyzer>;
+    Sharpen.Analyzer.Analyzers.CSharp8.UseIndexFromTheEndAnalyzer>;
 
 public sealed class UseIndexFromTheEndTests
 {

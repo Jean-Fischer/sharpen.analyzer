@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
-    Sharpen.Analyzer.Analyzers.UseNameofExpressionInDependencyPropertyDeclarationsAnalyzer,
-    Sharpen.Analyzer.FixProvider.UseNameofExpressionInDependencyPropertyDeclarationsCodeFixProvider>;
+    Sharpen.Analyzer.Analyzers.CSharp6.UseNameofExpressionInDependencyPropertyDeclarationsAnalyzer,
+    Sharpen.Analyzer.FixProvider.CSharp6.UseNameofExpressionInDependencyPropertyDeclarationsCodeFixProvider>;
 
 namespace Sharpen.Analyzer.Tests;
 

@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.AnalyzerVerifier<
-    Sharpen.Analyzer.Analyzers.UseVarKeywordAnalyzer>;
+    Sharpen.Analyzer.Analyzers.CSharp7.UseVarKeywordAnalyzer>;
 
 namespace Sharpen.Analyzer.Tests
 {

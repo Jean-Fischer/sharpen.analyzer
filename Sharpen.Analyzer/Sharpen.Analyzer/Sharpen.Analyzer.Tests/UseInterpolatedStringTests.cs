@@ -4,8 +4,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
-    Sharpen.Analyzer.Analyzers.UseInterpolatedStringAnalyzer,
-    Sharpen.Analyzer.FixProvider.UseInterpolatedStringCodeFixProvider>;
+    Sharpen.Analyzer.Analyzers.CSharp10.UseInterpolatedStringAnalyzer,
+    Sharpen.Analyzer.FixProvider.CSharp10.UseInterpolatedStringCodeFixProvider>;
 
 namespace Sharpen.Analyzer.Tests;
 

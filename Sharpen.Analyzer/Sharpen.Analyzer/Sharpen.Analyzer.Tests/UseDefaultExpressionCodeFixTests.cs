@@ -1,14 +1,14 @@
 using System.Threading.Tasks;
 using Xunit;
 using VerifierReturn = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
-    Sharpen.Analyzer.Analyzers.UseDefaultExpressionInReturnStatementsAnalyzer,
-    Sharpen.Analyzer.FixProvider.UseDefaultExpressionCodeFixProvider>;
+    Sharpen.Analyzer.Analyzers.CSharp3.UseDefaultExpressionInReturnStatementsAnalyzer,
+    Sharpen.Analyzer.FixProvider.CSharp3.UseDefaultExpressionCodeFixProvider>;
 using VerifierMethod = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
-    Sharpen.Analyzer.Analyzers.UseDefaultExpressionInOptionalMethodParametersAnalyzer,
-    Sharpen.Analyzer.FixProvider.UseDefaultExpressionCodeFixProvider>;
+    Sharpen.Analyzer.Analyzers.CSharp3.UseDefaultExpressionInOptionalMethodParametersAnalyzer,
+    Sharpen.Analyzer.FixProvider.CSharp3.UseDefaultExpressionCodeFixProvider>;
 using VerifierCtor = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
-    Sharpen.Analyzer.Analyzers.UseDefaultExpressionInOptionalConstructorParametersAnalyzer,
-    Sharpen.Analyzer.FixProvider.UseDefaultExpressionCodeFixProvider>;
+    Sharpen.Analyzer.Analyzers.CSharp3.UseDefaultExpressionInOptionalConstructorParametersAnalyzer,
+    Sharpen.Analyzer.FixProvider.CSharp3.UseDefaultExpressionCodeFixProvider>;
 
 namespace Sharpen.Analyzer.Tests
 {

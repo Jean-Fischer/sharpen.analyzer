@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
-    Sharpen.Analyzer.Analyzers.AwaitTaskWhenAnyInsteadOfCallingTaskWaitAnyAnalyzer,
-    Sharpen.Analyzer.FixProvider.AwaitTaskWhenAnyInsteadOfCallingTaskWaitAnyCodeFixProvider>;
+    Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAnyInsteadOfCallingTaskWaitAnyAnalyzer,
+    Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAnyInsteadOfCallingTaskWaitAnyCodeFixProvider>;
 
 namespace Sharpen.Analyzer.Tests;
 

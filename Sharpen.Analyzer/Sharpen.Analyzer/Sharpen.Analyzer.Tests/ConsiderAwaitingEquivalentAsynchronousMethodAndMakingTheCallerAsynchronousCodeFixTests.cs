@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
-    Sharpen.Analyzer.Analyzers.ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousAnalyzer,
+    Sharpen.Analyzer.Analyzers.CSharp5.ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousAnalyzer,
     Sharpen.Analyzer.ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousCodeFixProvider>;
 
 namespace Sharpen.Analyzer.Tests;

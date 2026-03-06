@@ -2,8 +2,8 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
-    Sharpen.Analyzer.Analyzers.UseGlobalUsingDirectiveAnalyzer,
-    Sharpen.Analyzer.FixProvider.UseGlobalUsingDirectiveCodeFixProvider>;
+    Sharpen.Analyzer.Analyzers.CSharp10.UseGlobalUsingDirectiveAnalyzer,
+    Sharpen.Analyzer.FixProvider.CSharp10.UseGlobalUsingDirectiveCodeFixProvider>;
 
 namespace Sharpen.Analyzer.Tests;
 

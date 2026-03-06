@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.AnalyzerVerifier<
-    Sharpen.Analyzer.Analyzers.ReplaceUsingStatementWithUsingDeclarationAnalyzer>;
+    Sharpen.Analyzer.Analyzers.CSharp8.ReplaceUsingStatementWithUsingDeclarationAnalyzer>;
 
 public class ReplaceUsingStatementWithUsingDeclarationTests
 {

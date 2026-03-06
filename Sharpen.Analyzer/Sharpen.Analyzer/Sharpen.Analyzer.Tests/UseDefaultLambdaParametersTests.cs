@@ -3,8 +3,8 @@ using Microsoft.CodeAnalysis.Testing;
 using Sharpen.Analyzer.Rules;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
-    Sharpen.Analyzer.Analyzers.UseDefaultLambdaParametersAnalyzer,
-    Sharpen.Analyzer.FixProvider.UseDefaultLambdaParametersCodeFixProvider>;
+    Sharpen.Analyzer.Analyzers.CSharp12.UseDefaultLambdaParametersAnalyzer,
+    Sharpen.Analyzer.FixProvider.CSharp12.UseDefaultLambdaParametersCodeFixProvider>;
 
 namespace Sharpen.Analyzer.Tests;
 

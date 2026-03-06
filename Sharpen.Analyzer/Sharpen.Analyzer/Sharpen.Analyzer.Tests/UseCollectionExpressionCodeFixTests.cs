@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.Testing;
 using Sharpen.Analyzer.Rules;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
-    Sharpen.Analyzer.Analyzers.UseCollectionExpressionAnalyzer,
+    Sharpen.Analyzer.Analyzers.CSharp12.UseCollectionExpressionAnalyzer,
     Sharpen.Analyzer.UseCollectionExpressionCodeFixProvider>;
 
 namespace Sharpen.Analyzer.Tests;

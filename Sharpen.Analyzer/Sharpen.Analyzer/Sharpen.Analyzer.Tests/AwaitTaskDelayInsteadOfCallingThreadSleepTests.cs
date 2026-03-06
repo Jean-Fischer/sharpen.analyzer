@@ -2,8 +2,8 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
-    Sharpen.Analyzer.Analyzers.AwaitTaskDelayInsteadOfCallingThreadSleepAnalyzer,
-    Sharpen.Analyzer.FixProvider.AwaitTaskDelayInsteadOfCallingThreadSleepCodeFixProvider>;
+    Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskDelayInsteadOfCallingThreadSleepAnalyzer,
+    Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskDelayInsteadOfCallingThreadSleepCodeFixProvider>;
 
 public class AwaitTaskDelayInsteadOfCallingThreadSleepTests
 {

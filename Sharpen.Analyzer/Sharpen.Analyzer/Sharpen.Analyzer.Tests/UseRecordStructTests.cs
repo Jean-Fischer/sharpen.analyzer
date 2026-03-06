@@ -3,8 +3,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
-    Sharpen.Analyzer.Analyzers.UseRecordStructAnalyzer,
-    Sharpen.Analyzer.FixProvider.UseRecordStructCodeFixProvider>;
+    Sharpen.Analyzer.Analyzers.CSharp10.UseRecordStructAnalyzer,
+    Sharpen.Analyzer.FixProvider.CSharp10.UseRecordStructCodeFixProvider>;
 
 namespace Sharpen.Analyzer.Tests;
 

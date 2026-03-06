@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.AnalyzerVerifier<
-    Sharpen.Analyzer.Analyzers.UseListPatternAnalyzer>;
+    Sharpen.Analyzer.Analyzers.CSharp11.UseListPatternAnalyzer>;
 
 namespace Sharpen.Analyzer.Tests;
 

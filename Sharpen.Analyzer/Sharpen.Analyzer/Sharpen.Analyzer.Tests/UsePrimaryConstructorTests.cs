@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis.Testing;
 using Sharpen.Analyzer.Rules;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.AnalyzerVerifier<
-    Sharpen.Analyzer.Analyzers.UsePrimaryConstructorAnalyzer>;
+    Sharpen.Analyzer.Analyzers.CSharp12.UsePrimaryConstructorAnalyzer>;
 
 namespace Sharpen.Analyzer.Tests;
 

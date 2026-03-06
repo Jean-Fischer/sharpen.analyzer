@@ -3,8 +3,8 @@ using Microsoft.CodeAnalysis.Testing;
 using Sharpen.Analyzer.Rules;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
-    Sharpen.Analyzer.Analyzers.UseInlineArrayAnalyzer,
-    Sharpen.Analyzer.FixProvider.UseInlineArrayCodeFixProvider>;
+    Sharpen.Analyzer.Analyzers.CSharp12.UseInlineArrayAnalyzer,
+    Sharpen.Analyzer.FixProvider.CSharp12.UseInlineArrayCodeFixProvider>;
 
 namespace Sharpen.Analyzer.Tests;
 

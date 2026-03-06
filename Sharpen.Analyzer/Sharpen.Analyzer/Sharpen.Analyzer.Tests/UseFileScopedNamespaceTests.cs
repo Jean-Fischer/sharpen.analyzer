@@ -3,8 +3,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
-    Sharpen.Analyzer.Analyzers.UseFileScopedNamespaceAnalyzer,
-    Sharpen.Analyzer.FixProvider.UseFileScopedNamespaceCodeFixProvider>;
+    Sharpen.Analyzer.Analyzers.CSharp10.UseFileScopedNamespaceAnalyzer,
+    Sharpen.Analyzer.FixProvider.CSharp10.UseFileScopedNamespaceCodeFixProvider>;
 
 namespace Sharpen.Analyzer.Tests;
 
