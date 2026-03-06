@@ -169,7 +169,7 @@ public static class Rules
         id: "SHARPEN003",
         title: "Use async equivalent",
         messageFormat: "Use '{0}Async' instead of '{0}' and await it.",
-        category: "Sharpen.AsyncAwait",
+        category: "Sharpen.CSharp5",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: "Using async equivalents improves responsiveness and scalability."
