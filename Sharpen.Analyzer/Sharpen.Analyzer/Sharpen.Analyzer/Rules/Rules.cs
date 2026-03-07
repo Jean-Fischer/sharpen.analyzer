@@ -285,6 +285,16 @@ public static class Rules
         description: "Expression-bodied members can improve readability for simple property accessors."
     );
 
+    public static readonly DiagnosticDescriptor UseExpressionBodyForGetAccessorsInIndexersRule = new DiagnosticDescriptor(
+        id: "SHARPEN040",
+        title: "Use expression-bodied member for get accessor in indexer",
+        messageFormat: "Use expression-bodied member syntax for this get accessor",
+        category: "Sharpen.CSharp7",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "Expression-bodied members can improve readability for simple indexer accessors."
+    );
+
     public static readonly DiagnosticDescriptor UseExpressionBodyForConstructorsRule = new DiagnosticDescriptor(
         id: "SHARPEN015",
         title: "Use expression-bodied member for constructor",
