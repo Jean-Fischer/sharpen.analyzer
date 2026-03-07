@@ -286,9 +286,19 @@ public static class Rules
     );
 
     public static readonly DiagnosticDescriptor UseExpressionBodyForGetAccessorsInIndexersRule = new DiagnosticDescriptor(
-        id: "SHARPEN040",
+        id: "SHARPEN042",
         title: "Use expression-bodied member for get accessor in indexer",
         messageFormat: "Use expression-bodied member syntax for this get accessor",
+        category: "Sharpen.CSharp7",
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "Expression-bodied members can improve readability for simple indexer accessors."
+    );
+
+    public static readonly DiagnosticDescriptor UseExpressionBodyForSetAccessorsInIndexersRule = new DiagnosticDescriptor(
+        id: "SHARPEN055",
+        title: "Use expression-bodied member for set accessor in indexer",
+        messageFormat: "Use expression-bodied member syntax for this set accessor",
         category: "Sharpen.CSharp7",
         defaultSeverity: DiagnosticSeverity.Info,
         isEnabledByDefault: true,

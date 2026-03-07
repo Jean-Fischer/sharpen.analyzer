@@ -25,5 +25,37 @@ Unit tests for the sample analyzers and code fix provider. The easiest way to de
 ### How can I determine which syntax nodes I should expect?
 Consider using the Roslyn Visualizer tool window, which allows you to observe the syntax tree.
 
+## Sample: Use expression-bodied set accessor in indexer (SHARPEN055)
+
+Before:
+
+```csharp
+class C
+{
+    private int[] _a = new int[1];
+
+    public int this[int i]
+    {
+        get => _a[i];
+        set { _a[i] = value; }
+    }
+}
+```
+
+After:
+
+```csharp
+class C
+{
+    private int[] _a = new int[1];
+
+    public int this[int i]
+    {
+        get => _a[i];
+        set => _a[i] = value;
+    }
+}
+```
+
 ### Learn more about wiring analyzers
 The complete set of information is available at [roslyn github repo wiki](https://github.com/dotnet/roslyn/blob/main/docs/wiki/README.md).
