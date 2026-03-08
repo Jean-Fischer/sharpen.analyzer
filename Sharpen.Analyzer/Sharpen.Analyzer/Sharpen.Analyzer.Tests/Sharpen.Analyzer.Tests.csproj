@@ -10,7 +10,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" Version="1.1.2" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.XUnit" Version="1.1.2" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.2" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
         <PackageReference Include="NuGet.Common" Version="6.5.0" />
         <PackageReference Include="NuGet.Packaging" Version="6.5.0" />
         <PackageReference Include="NuGet.Protocol" Version="6.5.0" />
