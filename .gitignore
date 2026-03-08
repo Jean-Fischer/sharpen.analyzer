@@ -120,6 +120,11 @@ App_Data/*.ldf
 # Vendored copy of the original Sharpen repository
 /original-sharpen/
 
+# Kilo Code / Roo Code local folders
+/.kilocode/
+/.kilo-code/
+/.roo/
+
 # =========================
 # Windows detritus
 # =========================
