@@ -38,7 +38,7 @@ jobs:
 
       # Restore dependencies
       - name: Restore dependencies
-        run: dotnet restore "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.sln"
+        run: dotnet restore "Sharpen.Analyzer/Sharpen.Analyzer.sln"
 
       # Begin SonarQube analysis
       - name: Begin SonarQube analysis
