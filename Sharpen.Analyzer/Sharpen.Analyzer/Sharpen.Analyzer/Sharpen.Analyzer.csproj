@@ -47,9 +47,6 @@
               PackagePath="analyzers/dotnet/cs"
               Visible="false" />
 
-        <!-- Do not include markdown files in the NuGet package. -->
-        <None Update="AnalyzerReleases.Shipped.md" Pack="false" />
-        <None Update="AnalyzerReleases.Unshipped.md" Pack="false" />
         <None Update="Readme.md" Pack="true" />
     </ItemGroup>
 
