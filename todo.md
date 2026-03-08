@@ -1,9 +1,16 @@
 # Inventory: original-sharpen vs sharpen.analyzer
 
 ## Scope
-You asked for an inventory of **all analyzers** and **fix providers** in the old project [`./original-sharpen`](original-sharpen:1) and a comparison with what is implemented in the new project [`./sharpen.analyzer`](Sharpen.Analyzer:1), to identify what existed in the original but is missing in the new.
+You asked for an inventory of **all analyzers** and **fix providers** in the old project [`./original-sharpen`](original-sharpen:1) and a comparison with what is implemented in the new project [`./sharpen.analyzer`](Sharpen.Analyzer:1).
 
-Because the old solution is a Visual Studio extension + an internal “engine” (not Roslyn `DiagnosticAnalyzer`/`CodeFixProvider` types), this report treats the old “analyzers” as the Sharpen Engine’s `ISingleSyntaxTreeAnalyzer` implementations and the old “fix providers” as the Sharpen Engine’s suggestion objects (`ISharpenSuggestion`) that describe the recommended change.
+Important terminology mismatch:
+- In [`original-sharpen`](original-sharpen:1), “analyzers” are *engine analyzers* implementing [`ISingleSyntaxTreeAnalyzer`](original-sharpen/src/Sharpen.Engine/Analysis/ISingleSyntaxTreeAnalyzer.cs:6) and returning `AnalysisResult` objects. “Fixes” are *suggestions* (`ISharpenSuggestion`) surfaced by the VS extension UI.
+- In [`sharpen.analyzer`](Sharpen.Analyzer:1), analyzers are Roslyn [`DiagnosticAnalyzer`](Microsoft.CodeAnalysis.Diagnostics.DiagnosticAnalyzer:1) implementations and fixes are Roslyn [`CodeFixProvider`](Microsoft.CodeAnalysis.CodeFixes.CodeFixProvider:1) implementations.
+
+This report compares **capabilities** by:
+1) enumerating the old engine analyzers from [`SharpenAnalyzersHolder.Analyzers`](original-sharpen/src/Sharpen.Engine/Analysis/SharpenAnalyzersHolder.cs:21)
+2) verifying the corresponding new analyzer/fix exists, and
+3) spot-checking **implementation content** (not only file names) for a few representative rules.
 
 ## Findings
 
@@ -11,15 +18,14 @@ Because the old solution is a Visual Studio extension + an internal “engine”
 The old implementation is split into:
 
 - **VS integration layer**: [`original-sharpen/src/Sharpen.VisualStudioExtension`](original-sharpen/src/Sharpen.VisualStudioExtension:1)
-  - Uses Roslyn workspace APIs (e.g. [`VisualStudioWorkspace`](original-sharpen/src/Sharpen.VisualStudioExtension/Commands/ICommandServicesContainer.cs:1), [`Document`](original-sharpen/src/Sharpen.VisualStudioExtension/VisualStudioExtensions.cs:1)) to collect documents/projects/solutions.
-  - Runs analysis via `Sharpen.Engine.Analysis` scope analyzers (e.g. [`SolutionScopeAnalyzer`](original-sharpen/src/Sharpen.Engine/Analysis/SolutionScopeAnalyzer.cs:1), [`MultipleDocumentsScopeAnalyzer`](original-sharpen/src/Sharpen.Engine/Analysis/MultipleDocumentsScopeAnalyzer.cs:1)).
-  - Displays results in a tool window (e.g. [`SharpenResultsToolWindow`](original-sharpen/src/Sharpen.VisualStudioExtension/ToolWindows/SharpenResultsToolWindow.cs:1)).
+  - Collects scope (solution/projects/documents) and runs analysis via scope analyzers like [`SolutionScopeAnalyzer`](original-sharpen/src/Sharpen.Engine/Analysis/SolutionScopeAnalyzer.cs:1) and [`MultipleDocumentsScopeAnalyzer`](original-sharpen/src/Sharpen.Engine/Analysis/MultipleDocumentsScopeAnalyzer.cs:1).
 
-- **Analysis + “fix suggestion” engine**: [`original-sharpen/src/Sharpen.Engine`](original-sharpen/src/Sharpen.Engine:1)
+- **Analysis + suggestion engine**: [`original-sharpen/src/Sharpen.Engine`](original-sharpen/src/Sharpen.Engine:1)
   - Central registry of analyzers: [`SharpenAnalyzersHolder.Analyzers`](original-sharpen/src/Sharpen.Engine/Analysis/SharpenAnalyzersHolder.cs:21)
+  - Execution model: [`BaseScopeAnalyzer`](original-sharpen/src/Sharpen.Engine/Analysis/BaseScopeAnalyzer.cs:12) iterates documents, builds a [`SingleSyntaxTreeAnalysisContext`](original-sharpen/src/Sharpen.Engine/Analysis/BaseScopeAnalyzer.cs:77), and runs all analyzers in parallel (`Parallel.Invoke`) against the same `SyntaxTree` + `SemanticModel`.
 
 ### 2) Old project inventory: Engine analyzers (and their suggestions)
-From [`SharpenAnalyzersHolder.Analyzers`](original-sharpen/src/Sharpen.Engine/Analysis/SharpenAnalyzersHolder.cs:21), the old project contains the following “analyzer/suggestion” capabilities:
+From [`SharpenAnalyzersHolder.Analyzers`](original-sharpen/src/Sharpen.Engine/Analysis/SharpenAnalyzersHolder.cs:21), the old project contains the following capabilities:
 
 #### C# 3.0
 - `UseVarKeywordInVariableDeclarationWithObjectCreation`
@@ -69,18 +75,79 @@ The new project contains Roslyn analyzers and code fix providers under:
 - Analyzers: [`Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Analyzers/`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Analyzers/:1)
 - Fix providers: [`Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/FixProvider/`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/FixProvider/:1)
 
-### 4) Delta: “in original but not in new” (based on name matching)
-The following old-engine capabilities appear to be **missing** in the new Roslyn-based implementation (no matching analyzer/fix-provider class names found in the new project):
+Additionally, the new project includes analyzers beyond the old project (C# 9-12), e.g. [`UseTopLevelStatementsAnalyzer`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Analyzers/CSharp9/UseTopLevelStatementsAnalyzer.cs:11), [`UsePrimaryConstructorAnalyzer`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Analyzers/CSharp12/UsePrimaryConstructorAnalyzer.cs:11).
 
-- `UseExpressionBodyForGetAccessorsInIndexers`
-- `UseExpressionBodyForSetAccessorsInProperties`
-- `UseExpressionBodyForSetAccessorsInIndexers`
-- `UseOutVariablesInObjectCreations`
-- `DiscardOutVariablesInMethodInvocations`
-- `DiscardOutVariablesInObjectCreations`
+### 4) Content-based comparison (spot checks)
 
-Everything else listed in [`SharpenAnalyzersHolder`](original-sharpen/src/Sharpen.Engine/Analysis/SharpenAnalyzersHolder.cs:21) appears to have a corresponding analyzer in the new project (at least by class-name match).
+#### 4.1 Out variables: object creations
+Old engine:
+- [`UseOutVariablesInObjectCreations`](original-sharpen/src/Sharpen.Engine/SharpenSuggestions/CSharp70/OutVariables/UseOutVariablesInObjectCreations.cs:5) is a thin wrapper over [`BaseUseOutVariables<T>`](original-sharpen/src/Sharpen.Engine/SharpenSuggestions/CSharp70/OutVariables/BaseUseOutVariables.cs:21) with `base(false)` meaning “use out var” (not discard).
+
+New Roslyn analyzer:
+- [`UseOutVariablesInObjectCreationsAnalyzer`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Analyzers/CSharp7/UseOutVariablesInObjectCreationsAnalyzer.cs:12) registers on `SyntaxKind.ObjectCreationExpression` and:
+  - iterates arguments
+  - filters `out` keyword + identifier expression
+  - calls [`OutVariableCandidateHelper.IsCandidate(...)`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Analyzers/CSharp7/UseOutVariablesInObjectCreationsAnalyzer.cs:47) with `outArgumentCanBeDiscarded: false`
+  - reports diagnostic on the `out` keyword location
+
+Conclusion: capability exists in new project and the core detection logic is present.
+
+#### 4.2 Out variables: discard in method invocations
+Old engine:
+- [`DiscardOutVariablesInMethodInvocations`](original-sharpen/src/Sharpen.Engine/SharpenSuggestions/CSharp70/OutVariables/DiscardOutVariablesInMethodInvocations.cs:5) is also a thin wrapper over `BaseUseOutVariables<T>` but with `base(true)` meaning “discard allowed/desired”.
+
+New Roslyn analyzer:
+- [`DiscardOutVariablesInMethodInvocationsAnalyzer`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Analyzers/CSharp7/DiscardOutVariablesInMethodInvocationsAnalyzer.cs:12) registers on `SyntaxKind.InvocationExpression` and:
+  - iterates arguments
+  - filters `out` keyword + identifier expression
+  - calls `OutVariableCandidateHelper.IsCandidate(..., outArgumentCanBeDiscarded: true)`
+  - reports diagnostic on the `out` keyword location
+
+Conclusion: capability exists in new project and the “discard vs out var” distinction is preserved.
+
+#### 4.3 Expression-bodied set accessor in indexers
+New Roslyn code fix:
+- [`UseExpressionBodyForSetAccessorsInIndexersCodeFixProvider`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/FixProvider/CSharp7/UseExpressionBodyForSetAccessorsInIndexersCodeFixProvider.cs:16) performs a concrete syntax transformation:
+  - finds the `AccessorDeclarationSyntax` at diagnostic span
+  - validates it is a `set` accessor inside an `IndexerDeclarationSyntax`
+  - requires a block body with exactly one `ExpressionStatementSyntax`
+  - replaces `{ expr; }` with `=> expr;` while attempting to preserve trivia
+
+Conclusion: new project not only detects but also provides an automated fix for this rule.
+
+#### 4.4 Expression-bodied set accessor in properties (deeper check)
+Old engine:
+- The rule is implemented by [`UseExpressionBodyForSetAccessorsInProperties`](original-sharpen/src/Sharpen.Engine/SharpenSuggestions/CSharp70/ExpressionBodiedMembers/UseExpressionBodyForSetAccessorsInProperties.cs:5), which inherits [`BaseUseExpressionBodyForSetAccessors<TBasePropertyDeclarationSyntax>`](original-sharpen/src/Sharpen.Engine/SharpenSuggestions/CSharp70/ExpressionBodiedMembers/BaseUseExpressionBodyForSetAccessors.cs:10).
+- The detection logic in the base class is:
+  - scan all [`AccessorDeclarationSyntax`](Microsoft.CodeAnalysis.CSharp.Syntax.AccessorDeclarationSyntax:1)
+  - keep only `set` accessors (`accessor.Keyword.IsKind(SyntaxKind.SetKeyword)`)
+  - require a block body with exactly one statement
+  - require that statement is an expression statement
+  - require the accessor is inside a `PropertyDeclarationSyntax` (for this specialization)
+
+New project:
+- There is a matching analyzer+rule+codefix for **indexers** only:
+  - analyzer: [`UseExpressionBodyForSetAccessorsInIndexersAnalyzer`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Analyzers/CSharp7/UseExpressionBodyForSetAccessorsInIndexersAnalyzer.cs:11)
+  - rule descriptor: [`UseExpressionBodyForSetAccessorsInIndexersRule`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Rules/Rules.cs:298)
+  - code fix: [`UseExpressionBodyForSetAccessorsInIndexersCodeFixProvider`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/FixProvider/CSharp7/UseExpressionBodyForSetAccessorsInIndexersCodeFixProvider.cs:16)
+- A repository-wide search for `UseExpressionBodyForSetAccessorsInProperties` returns no results, and there is no `DiagnosticDescriptor` for “set accessor in property” in [`Rules.cs`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Rules/Rules.cs:250).
+- A search for analyzers registering on `SyntaxKind.SetAccessorDeclaration` shows only the indexer rule (plus unrelated analyzers like init-only setter) (see [`UseExpressionBodyForSetAccessorsInIndexersAnalyzer`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Analyzers/CSharp7/UseExpressionBodyForSetAccessorsInIndexersAnalyzer.cs:21)).
+
+Conclusion: `UseExpressionBodyForSetAccessorsInProperties` appears to be a **real missing capability** in the new project (not just a naming mismatch).
+
+### 5) Delta: “in original but not in new”
+After re-checking the new project’s analyzer/fix inventory (and not relying only on file names), the earlier “missing” list was incorrect.
+
+The following capabilities from the old engine are present in the new project (examples):
+- `UseExpressionBodyForGetAccessorsInIndexers` exists as [`UseExpressionBodyForGetAccessorsInIndexersAnalyzer`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Analyzers/CSharp6/UseExpressionBodyForGetAccessorsInIndexersAnalyzer.cs:12) + [`UseExpressionBodyForGetAccessorsInIndexersCodeFixProvider`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/FixProvider/CSharp6/UseExpressionBodyForGetAccessorsInIndexersCodeFixProvider.cs:17)
+- `UseExpressionBodyForSetAccessorsInIndexers` exists as [`UseExpressionBodyForSetAccessorsInIndexersAnalyzer`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Analyzers/CSharp7/UseExpressionBodyForSetAccessorsInIndexersAnalyzer.cs:11) + [`UseExpressionBodyForSetAccessorsInIndexersCodeFixProvider`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/FixProvider/CSharp7/UseExpressionBodyForSetAccessorsInIndexersCodeFixProvider.cs:16)
+- `DiscardOutVariablesInMethodInvocations` exists as [`DiscardOutVariablesInMethodInvocationsAnalyzer`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Analyzers/CSharp7/DiscardOutVariablesInMethodInvocationsAnalyzer.cs:12)
+- `DiscardOutVariablesInObjectCreations` exists as [`DiscardOutVariablesInObjectCreationsAnalyzer`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Analyzers/CSharp7/DiscardOutVariablesInObjectCreationsAnalyzer.cs:12)
+- `UseOutVariablesInObjectCreations` exists as [`UseOutVariablesInObjectCreationsAnalyzer`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Analyzers/CSharp7/UseOutVariablesInObjectCreationsAnalyzer.cs:12)
+
+Confirmed missing capability:
+- `UseExpressionBodyForSetAccessorsInProperties` exists in the old engine list (see [`UseExpressionBodyForSetAccessorsInProperties`](original-sharpen/src/Sharpen.Engine/SharpenSuggestions/CSharp70/ExpressionBodiedMembers/UseExpressionBodyForSetAccessorsInProperties.cs:5)) but does not appear to exist in the new project (no analyzer, no rule descriptor, no code fix provider).
 
 ## Notes / limitations
-- The delta above is computed by **class-name matching** between old engine “suggestions/analyzers” and new Roslyn analyzers/code-fix providers. Some features may exist under different names in the new project.
 - The old project’s “fixes” are not Roslyn `CodeFixProvider`s; they are suggestions surfaced by the VS extension UI. So this report compares *capabilities*, not 1:1 type equivalence.
+- I only did **content spot-checks** for a subset of rules (out vars + expression-bodied rule(s)). A full content-level diff for every rule would require reading each old suggestion implementation and its new analyzer + code fix pair.
