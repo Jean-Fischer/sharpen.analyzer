@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <!-- Analyzers should target netstandard2.0 for maximum compatibility with the compiler/IDE hosts. -->
         <TargetFramework>netstandard2.0</TargetFramework>
-        <IsPackable>false</IsPackable>
+
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
 
@@ -11,6 +12,23 @@
 
         <RootNamespace>Sharpen.Analyzer</RootNamespace>
         <AssemblyName>Sharpen.Analyzer</AssemblyName>
+
+        <!-- NuGet packaging (Roslyn analyzer) -->
+        <IsPackable>true</IsPackable>
+        <PackageId>Sharpen.Analyzer</PackageId>
+        <VersionPrefix>0.1.0</VersionPrefix>
+        <Authors>Jean Fischer</Authors>
+        <Description>Roslyn analyzers + code fixes to help modernize C# codebases.</Description>
+        <PackageTags>roslyn;analyzer;codefix;csharp</PackageTags>
+        <PackageProjectUrl>https://github.com/Jean-Fischer/sharpen.analyzer</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/Jean-Fischer/sharpen.analyzer</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageReadmeFile>Readme.md</PackageReadmeFile>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+        <!-- Do not put the analyzer assembly under lib/. We'll pack it under analyzers/dotnet/cs instead. -->
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <NoPackageAnalysis>true</NoPackageAnalysis>
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,8 +36,27 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.12.0"/>
+
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.12.0">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Pack the analyzer assembly in the conventional analyzer location. -->
+        <None Include="$(OutputPath)$(AssemblyName).dll"
+              Pack="true"
+              PackagePath="analyzers/dotnet/cs"
+              Visible="false" />
+
+        <!-- Do not include markdown files in the NuGet package. -->
+        <None Update="AnalyzerReleases.Shipped.md" Pack="false" />
+        <None Update="AnalyzerReleases.Unshipped.md" Pack="false" />
+        <None Update="Readme.md" Pack="false" />
     </ItemGroup>
 
     <ItemGroup>
