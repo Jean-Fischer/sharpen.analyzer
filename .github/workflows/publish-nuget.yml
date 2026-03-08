@@ -1,0 +1,33 @@
+name: Publish NuGet Package
+
+on:
+  push:
+    tags:
+      - 'v*' # Triggers only when a new tag is pushed (e.g., v1.0.0)
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies (target project only)
+        run: dotnet restore "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.csproj"
+
+      - name: Build (target project only)
+        run: dotnet build "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.csproj" --configuration Release --no-restore
+
+      - name: Pack (target project only)
+        run: dotnet pack "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.csproj" --configuration Release --no-build --output nupkgs
+
+      - name: Publish to NuGet
+        run: dotnet nuget push "nupkgs/*.nupkg" --source https://api.nuget.org/v3/index.json --api-key "${{ secrets.NUGET_API_KEY }}" --skip-duplicate

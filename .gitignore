@@ -21,7 +21,7 @@ x64/
 # Local test run logs (vstest blame / diagnostics)
 testlog*.txt
 testlog.datacollector.*.txt
-
+*.nupkg
 *_i.c
 *_p.c
 *_i.h
