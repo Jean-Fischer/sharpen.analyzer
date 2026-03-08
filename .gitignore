@@ -147,3 +147,4 @@ _NCrunch*
 *.dll
 *.cache
 
+.vscode/settings.json

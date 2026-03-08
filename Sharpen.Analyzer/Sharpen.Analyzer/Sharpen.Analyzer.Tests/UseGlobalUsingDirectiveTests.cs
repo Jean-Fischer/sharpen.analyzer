@@ -12,32 +12,47 @@ public class UseGlobalUsingDirectiveTests
     [Fact]
     public async Task UseGlobalUsingDirective_Triggers_ForRepeatedUsingAcrossThreeDocuments()
     {
-        // This analyzer reports at compilation end and requires multiple documents.
-        // The current test harness doesn't expose a multi-document CodeFixTest type, so keep this as a smoke test.
-        await Task.CompletedTask;
+        // The analyzer reports at compilation end and requires multiple documents.
+        // The current test harness doesn't expose a multi-document CodeFixTest type, so we at least verify
+        // that a single document does not trigger.
+        var source = @"using System;
+
+class A { }";
+
+        await Verifier.VerifyAnalyzerAsync(source).ConfigureAwait(false);
     }
 
     [Fact]
     public async Task UseGlobalUsingDirective_Triggers_ForRepeatedStaticUsingAcrossTwoDocuments()
     {
-        await Task.CompletedTask;
+        // Same limitation as above: verify no false positives in a single document.
+        var source = @"using static System.Math;
+
+class A { }";
+
+        await Verifier.VerifyAnalyzerAsync(source).ConfigureAwait(false);
     }
 
     [Fact]
     public async Task UseGlobalUsingDirective_DoesNotTrigger_ForConflictingAliasesAcrossFiles()
     {
-        await Task.CompletedTask;
+        // Same limitation as above: verify no false positives in a single document.
+        var source = @"using X = System.String;
+
+class A { }";
+
+        await Verifier.VerifyAnalyzerAsync(source).ConfigureAwait(false);
     }
 
     [Fact]
     public async Task UseGlobalUsingDirective_CodeFix_OnlyChangesCurrentDocument()
     {
-        // Current code fix does not rewrite a single-document using into a global using.
-        // Keep this as a smoke test.
-        var source = @"using System;
+        // Code-fix smoke test: verify that applying the fix does not change the document.
+        // (The analyzer requires multiple documents to trigger, so in a single-document test there is no fix.)
+        const string original = @"using System;
 
 class A { }";
 
-        await Verifier.VerifyAnalyzerAsync(source);
+        await Verifier.VerifyCodeFixAsync(original, original).ConfigureAwait(false);
     }
 }
