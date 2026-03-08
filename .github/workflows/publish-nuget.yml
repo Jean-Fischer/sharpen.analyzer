@@ -1,6 +1,7 @@
 name: Publish NuGet Package
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - 'v*' # Triggers only when a new tag is pushed (e.g., v1.0.0)
@@ -32,4 +33,4 @@ jobs:
       - name: Publish to NuGet
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: dotnet nuget push "nupkgs/*.nupkg" --source https://api.nuget.org/v3/index.json --api-key "$NUGET_API_KEY" --skip-duplicate
+        run: dotnet nuget push "nupkgs/*.nupkg" --source https://api.nuget.org/v3/index.json --api-key "$env:NUGET_API_KEY" --skip-duplicate

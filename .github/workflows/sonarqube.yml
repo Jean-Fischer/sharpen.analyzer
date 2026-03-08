@@ -57,4 +57,4 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
-        run: dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
+        run: dotnet sonarscanner end /d:sonar.token="$env:SONAR_TOKEN"
