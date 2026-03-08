@@ -46,7 +46,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
-          dotnet sonarscanner begin /k:"Jean-Fischer_sharpen.analyzer" /o:"jean-fischer" /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          dotnet sonarscanner begin /k:"Jean-Fischer_sharpen.analyzer" /o:"jean-fischer" /d:sonar.token="$env:SONAR_TOKEN"
 
       # Build project
       - name: Build
