@@ -23,7 +23,6 @@
         <PackageProjectUrl>https://github.com/Jean-Fischer/sharpen.analyzer</PackageProjectUrl>
         <RepositoryUrl>https://github.com/Jean-Fischer/sharpen.analyzer</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageReadmeFile>Readme.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
         <!-- Do not put the analyzer assembly under lib/. We'll pack it under analyzers/dotnet/cs instead. -->
