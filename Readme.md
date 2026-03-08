@@ -2,14 +2,35 @@
 
 Roslyn analyzers + code fixes to help modernize C# codebases.
 
-## Repository layout
+## Install
 
-- `Sharpen.Analyzer/`: the Roslyn analyzer solution and projects.
-  - `Sharpen.Analyzer/Sharpen.Analyzer.sln`: solution containing:
-    - `Sharpen.Analyzer` (main analyzer project)
-    - `Sharpen.Analyzer.Tests` (unit tests for analyzers/code fixes)
-    - `Sharpen.Analyzer.Sample` (manual reproduction playground)
-- `openspec/`: OpenSpec workflow folder used to manage artifact-driven changes.
+Add the NuGet package to the project(s) you want to analyze:
+
+```bash
+dotnet add package Sharpen.Analyzer
+```
+
+## Use
+
+Once the package is referenced, diagnostics are produced by Roslyn-based IDEs/editors and during `dotnet build` / `dotnet test`.
+
+### Enable / configure rules
+
+Rules can be configured using `.editorconfig` (severity, enable/disable, etc.).
+
+Example:
+
+```ini
+# .editorconfig
+
+# SHARPEN004: Await Task.Delay instead of calling Thread.Sleep
+# (example severity; adjust to your needs)
+dotnet_diagnostic.SHARPEN004.severity = warning
+```
+
+## Rules
+
+See the **Supported rules/features** section below (source of truth).
 
 ## Supported rules/features
 
@@ -120,4 +141,8 @@ Rules are grouped by the C# language version they target (when applicable).
 
 ## Development
 
-Open `Sharpen.Analyzer/Sharpen.Analyzer.sln` and run the test project (`Sharpen.Analyzer.Tests`).
+Open [Sharpen.Analyzer/Sharpen.Analyzer.sln](Sharpen.Analyzer/Sharpen.Analyzer.sln:1) and run the test project (`Sharpen.Analyzer.Tests`).
+
+## Contributing
+
+See [todo.md](todo.md:1) for the current backlog and notes.

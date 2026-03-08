@@ -1,0 +1,12 @@
+version: 2
+updates:
+  - package-ecosystem: "nuget" # For .NET projects
+    directory: "/Sharpen.Analyzer/" # Location of your project file (e.g., .csproj or .sln)
+    schedule:
+      interval: "daily" # Check for updates daily
+    open-pull-requests-limit: 10 # Limit the number of open PRs
+    target-branch: "main" # Branch to target for updates
+    reviewers: # Optional: Assign reviewers
+      - "Jean-Fischer"
+    assignees: # Optional: Assign assignees
+      - "Jean-Fischer"

@@ -36,14 +36,8 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0">
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
-
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.12.0">
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.12.0"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -53,11 +47,9 @@
               PackagePath="analyzers/dotnet/cs"
               Visible="false" />
 
-        <!-- Do not include markdown files in the NuGet package. -->
-        <None Update="AnalyzerReleases.Shipped.md" Pack="false" />
-        <None Update="AnalyzerReleases.Unshipped.md" Pack="false" />
-        <None Update="Readme.md" Pack="false" />
+        <None Update="Readme.md" Pack="true" />
     </ItemGroup>
+
 
     <ItemGroup>
         <EmbeddedResource Update="Resources.resx">
