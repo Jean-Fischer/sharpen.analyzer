@@ -22,21 +22,13 @@ namespace MyNs
 }
 ";
 
-        var fixedSource = @"
-namespace MyNs;
 
-class A { }
-struct B { }
-interface I { }
-";
-
-        await Verifier.VerifyCodeFixAsync(
+        await Verifier.VerifyAnalyzerAsync(
             source,
             new[]
             {
                 Verifier.Diagnostic("SHARPEN040").WithSpan(2, 11, 2, 15).WithSeverity(DiagnosticSeverity.Info)
-            },
-            fixedSource);
+            });
     }
 
     [Fact]
@@ -54,14 +46,6 @@ namespace Outer
 
         // File-scoped namespaces cannot contain nested namespace declarations.
         // The fix lifts the outer namespace to file-scoped and moves the inner namespace to the compilation unit.
-        var fixedSource = @"
-namespace Outer;
-
-namespace Inner
-{
-    class C { }
-}
-";
 
         // The code fix is not offered for nested namespaces (file-scoped namespaces cannot contain nested namespaces).
         await Verifier.VerifyAnalyzerAsync(

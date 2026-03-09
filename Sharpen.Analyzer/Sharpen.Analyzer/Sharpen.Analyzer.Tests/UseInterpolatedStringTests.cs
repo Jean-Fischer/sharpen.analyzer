@@ -24,15 +24,6 @@ class C
 }
 ";
 
-        var fixedSource = @"
-class C
-{
-    string M(string name)
-    {
-        return $""Hello, {name}!"";
-    }
-}
-";
 
         await Verifier.VerifyAnalyzerAsync(
             source,

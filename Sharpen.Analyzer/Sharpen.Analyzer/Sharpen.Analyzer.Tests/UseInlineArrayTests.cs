@@ -25,14 +25,6 @@ public sealed class UseInlineArrayTests
         // The test compilation doesn't reference a BCL that contains InlineArrayAttribute.
         // This test suite doesn't currently support multi-file inputs, so we only verify the analyzer here.
 
-        // Keep the expected output readable; match the formatter's output.
-        const string fixedCode = @"
-[System.Runtime.CompilerServices.InlineArray(3)]
-public struct Buffer
- {
-     private int _element0;
-}
-  ";
 
         var expected = Verifier.Diagnostic(CSharp12Rules.UseInlineArrayRule)
             .WithLocation(2, 16)
