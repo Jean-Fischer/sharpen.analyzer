@@ -18,7 +18,8 @@ public sealed class FirstPassSafetyGate
     /// </summary>
     public FirstPassSafetyGate(IEnumerable<IFirstPassSafetyCheck> checks)
     {
-        ArgumentNullException.ThrowIfNull(checks);
+        if (checks is null)
+            throw new ArgumentNullException(nameof(checks));
 
         // Deterministic order: registration order.
         _checks = checks.ToList();

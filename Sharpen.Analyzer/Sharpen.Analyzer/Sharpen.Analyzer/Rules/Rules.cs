@@ -286,7 +286,7 @@ public static class Rules
     );
 
     public static readonly DiagnosticDescriptor UseExpressionBodyForGetAccessorsInIndexersRule = new DiagnosticDescriptor(
-        id: "SHARPEN042",
+        id: "SHARPEN057",
         title: "Use expression-bodied member for get accessor in indexer",
         messageFormat: "Use expression-bodied member syntax for this get accessor",
         category: "Sharpen.CSharp7",
