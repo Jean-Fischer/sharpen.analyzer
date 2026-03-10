@@ -65,6 +65,8 @@ From [`SharpenAnalyzersHolder.Analyzers`](original-sharpen/src/Sharpen.Engine/An
 
 #### C# 8.0
 - `EnableNullableContextAndDeclareIdentifierAsNullableAnalyzer`
+  - Code fix provider exists: [`EnableNullableContextAndDeclareIdentifierAsNullableCodeFixProvider`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/FixProvider/CSharp8/EnableNullableContextAndDeclareIdentifierAsNullableCodeFixProvider.cs:1)
+  - Code fix test: not implemented (Roslyn test harness rejects it as "non-local analyzer diagnostic" because the analyzer reports the diagnostic on the declaration location while being triggered by a different usage site)
 - `ConsiderAwaitingEquivalentAsynchronousMethodAndYieldingIAsyncEnumerableAnalyzer`
 - `ReplaceUsingStatementWithUsingDeclarationAnalyzer`
 - `ReplaceSwitchStatementWithSwitchExpressionAnalyzer`
