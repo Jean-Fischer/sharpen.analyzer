@@ -24,7 +24,7 @@ class C
     }
 }";
 
-        await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test);
     }
 
     [Fact]
@@ -32,7 +32,7 @@ class C
     {
         var test = "using System;\r\nusing System.Text;\r\n\r\nclass C\r\n{\r\n    void M()\r\n    {\r\n        ReadOnlySpan<byte> bytes = Encoding.UTF8.GetBytes(\"hello\");\r\n    }\r\n}";
 
-        await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test);
     }
 
     [Fact]
@@ -40,6 +40,6 @@ class C
     {
         var test = "using System;\r\n\r\nclass C\r\n{\r\n    void M()\r\n    {\r\n        ReadOnlySpan<byte> bytes = new byte[] { 0x68, 0x65, 0x6C, 0x6C, 0x6F };\r\n    }\r\n}";
 
-        await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test);
     }
 }

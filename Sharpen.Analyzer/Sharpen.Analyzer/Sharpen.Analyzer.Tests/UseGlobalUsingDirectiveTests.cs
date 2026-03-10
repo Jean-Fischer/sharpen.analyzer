@@ -19,7 +19,7 @@ public class UseGlobalUsingDirectiveTests
 
 class A { }";
 
-        await Verifier.VerifyAnalyzerAsync(source).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(source);
     }
 
     [Fact]
@@ -30,7 +30,7 @@ class A { }";
 
 class A { }";
 
-        await Verifier.VerifyAnalyzerAsync(source).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(source);
     }
 
     [Fact]
@@ -41,7 +41,7 @@ class A { }";
 
 class A { }";
 
-        await Verifier.VerifyAnalyzerAsync(source).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(source);
     }
 
     [Fact]
@@ -53,6 +53,6 @@ class A { }";
 
 class A { }";
 
-        await Verifier.VerifyCodeFixAsync(original, original).ConfigureAwait(false);
+        await Verifier.VerifyCodeFixAsync(original, original);
     }
 }

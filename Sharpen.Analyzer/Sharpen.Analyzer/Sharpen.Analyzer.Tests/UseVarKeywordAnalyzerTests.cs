@@ -26,7 +26,7 @@ public class Example
                 .WithLocation(8, 9)
                 .WithArguments("System.Collections.Generic.List<string>");
 
-            await Verifier.VerifyAnalyzerAsync(text, expected).ConfigureAwait(false);
+            await Verifier.VerifyAnalyzerAsync(text, expected);
         }
 
         [Fact]
@@ -44,7 +44,7 @@ public class Example
 }
 ";
 
-            await Verifier.VerifyAnalyzerAsync(text).ConfigureAwait(false);
+            await Verifier.VerifyAnalyzerAsync(text);
         }
 
         [Fact]
@@ -60,7 +60,7 @@ public class Example
 }
 ";
 
-            await Verifier.VerifyAnalyzerAsync(text).ConfigureAwait(false);
+            await Verifier.VerifyAnalyzerAsync(text);
         }
     }
 }

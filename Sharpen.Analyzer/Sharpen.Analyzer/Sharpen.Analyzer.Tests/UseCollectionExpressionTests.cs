@@ -21,7 +21,7 @@ public class C
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(6, 16);
-        await Verifier.VerifyAnalyzerAsync(original, expected).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(original, expected);
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class C
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(6, 16);
-        await Verifier.VerifyAnalyzerAsync(original, expected).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(original, expected);
     }
 
     [Fact]
@@ -54,6 +54,6 @@ public class C
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 }

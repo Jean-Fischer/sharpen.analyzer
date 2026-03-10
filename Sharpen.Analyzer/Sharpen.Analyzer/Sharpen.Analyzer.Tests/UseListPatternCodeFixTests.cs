@@ -25,6 +25,6 @@ class C
     }
 }";
 
-        await Verifier.VerifyAnalyzerAsync(source).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(source);
     }
 }

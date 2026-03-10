@@ -31,7 +31,7 @@ class C
 
         var expected = Verifier.Diagnostic().WithLocation(15, 19);
 
-        await Verifier.VerifyAnalyzerAsync(text, expected).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(text, expected);
     }
 
     [Fact]
@@ -57,7 +57,7 @@ class C
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(text).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(text);
     }
 
     [Fact]
@@ -83,6 +83,6 @@ class C
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(text).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(text);
     }
 }

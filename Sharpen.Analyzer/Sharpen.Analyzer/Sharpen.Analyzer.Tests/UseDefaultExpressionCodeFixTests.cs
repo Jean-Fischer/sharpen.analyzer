@@ -39,7 +39,7 @@ class C
                 .WithSpan(6, 16, 6, 28)
                 .WithArguments("int");
 
-            await VerifierReturn.VerifyCodeFixAsync(test, expected, fixedCode).ConfigureAwait(false);
+            await VerifierReturn.VerifyCodeFixAsync(test, expected, fixedCode);
         }
 
         [Fact]
@@ -61,7 +61,7 @@ class C
                 .WithSpan(4, 20, 4, 27)
                 .WithArguments("int");
 
-            await VerifierMethod.VerifyCodeFixAsync(test, expected, fixedCode).ConfigureAwait(false);
+            await VerifierMethod.VerifyCodeFixAsync(test, expected, fixedCode);
         }
 
         [Fact]
@@ -83,7 +83,7 @@ class C
                 .WithSpan(4, 22, 4, 29)
                 .WithArguments("int");
 
-            await VerifierCtor.VerifyCodeFixAsync(test, expected, fixedCode).ConfigureAwait(false);
+            await VerifierCtor.VerifyCodeFixAsync(test, expected, fixedCode);
         }
     }
 }

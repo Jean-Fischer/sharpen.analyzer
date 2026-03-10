@@ -20,6 +20,6 @@ public class MyCompanyClass
         var expected = Verifier.Diagnostic()
             .WithLocation(2, 14)
             .WithArguments("MyCompanyClass");
-        await Verifier.VerifyAnalyzerAsync(text, expected).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(text, expected);
     }
 }

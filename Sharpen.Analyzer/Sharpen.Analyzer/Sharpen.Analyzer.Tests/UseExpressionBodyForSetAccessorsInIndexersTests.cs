@@ -36,6 +36,6 @@ class C
 }";
 
         var diagnostic = Verifier.Diagnostic().WithSpan(9, 9, 9, 12);
-        await Verifier.VerifyCodeFixAsync(original, diagnostic, expected).ConfigureAwait(false);
+        await Verifier.VerifyCodeFixAsync(original, diagnostic, expected);
     }
 }

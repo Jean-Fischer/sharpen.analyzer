@@ -28,7 +28,7 @@ class C
                 .WithSpan(6, 16, 6, 28)
                 .WithArguments("int");
 
-            await VerifierReturn.VerifyAnalyzerAsync(test, expected).ConfigureAwait(false);
+            await VerifierReturn.VerifyAnalyzerAsync(test, expected);
         }
 
         [Fact]
@@ -44,7 +44,7 @@ class C
                 .WithSpan(4, 20, 4, 27)
                 .WithArguments("int");
 
-            await VerifierMethod.VerifyAnalyzerAsync(test, expected).ConfigureAwait(false);
+            await VerifierMethod.VerifyAnalyzerAsync(test, expected);
         }
 
         [Fact]
@@ -60,7 +60,7 @@ class C
                 .WithSpan(4, 22, 4, 29)
                 .WithArguments("int");
 
-            await VerifierCtor.VerifyAnalyzerAsync(test, expected).ConfigureAwait(false);
+            await VerifierCtor.VerifyAnalyzerAsync(test, expected);
         }
     }
 }

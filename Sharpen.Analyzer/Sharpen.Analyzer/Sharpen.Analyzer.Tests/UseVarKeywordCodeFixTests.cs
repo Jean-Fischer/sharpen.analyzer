@@ -36,7 +36,7 @@ public class Example
 ";
 
             var expected = Verifier.Diagnostic().WithSpan(8, 9, 8, 21).WithArguments("System.Collections.Generic.List<string>");
-            await Verifier.VerifyCodeFixAsync(original, expected, fixedText).ConfigureAwait(false);
+            await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
         }
     }
 }

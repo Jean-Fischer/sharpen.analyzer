@@ -24,7 +24,7 @@ class C
 }";
 
         var expected = Verifier.Diagnostic().WithSpan(8, 9, 8, 12);
-        await Verifier.VerifyAnalyzerAsync(test, expected).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test, expected);
     }
 
     [Fact]
@@ -42,7 +42,7 @@ class C
     }
 }";
 
-        await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test);
     }
 
     [Fact]
@@ -59,7 +59,7 @@ class C
     }
 }";
 
-        await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test);
     }
 
     [Fact]
@@ -90,6 +90,6 @@ class C
 }";
 
         var expected = Verifier.Diagnostic().WithSpan(8, 9, 8, 12);
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedText).ConfigureAwait(false);
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
     }
 }

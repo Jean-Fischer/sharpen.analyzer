@@ -26,6 +26,6 @@ public class CommonClass
         var expected = Verifier.Diagnostic()
             .WithLocation(2, 14)
             .WithArguments("MyCompanyClass");
-        await Verifier.VerifyCodeFixAsync(text, expected, newText).ConfigureAwait(false);
+        await Verifier.VerifyCodeFixAsync(text, expected, newText);
     }
 }

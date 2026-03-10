@@ -38,7 +38,7 @@ public struct Buffer
             .WithLocation(2, 16)
             .WithArguments(3);
 
-        await Verifier.VerifyAnalyzerAsync(original, expected).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(original, expected);
     }
 
 
@@ -55,7 +55,7 @@ public struct Buffer
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 
     [Fact]
@@ -70,6 +70,6 @@ public struct Buffer
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 }

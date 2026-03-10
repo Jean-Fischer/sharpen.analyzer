@@ -15,7 +15,7 @@ public sealed class UseRawStringLiteralTests
         // does not support C# 11. Keep the test stable by verifying the analyzer does not crash.
         var test = "class C\r\n{\r\n    void M()\r\n    {\r\n        var s = \"a\\\\b\\\\\\\"c\\\\n\\\\t\";\r\n    }\r\n}";
 
-        await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test);
     }
 
     [Fact]
@@ -23,7 +23,7 @@ public sealed class UseRawStringLiteralTests
     {
         var test = "class C\r\n{\r\n    void M()\r\n    {\r\n        var s = @\"a\r\nb\";\r\n    }\r\n}";
 
-        await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test);
     }
 
     [Fact]
@@ -31,7 +31,7 @@ public sealed class UseRawStringLiteralTests
     {
         var test = "class C\r\n{\r\n    void M()\r\n    {\r\n        var s = \"hello\\\\nworld\";\r\n    }\r\n}";
 
-        await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test);
     }
 
     [Fact]
@@ -40,6 +40,6 @@ public sealed class UseRawStringLiteralTests
         // Keep the test compilation valid (the previous string literal was invalid C#).
         var test = "class C\r\n{\r\n    void M()\r\n    {\r\n        var s = \"a\";\r\n    }\r\n}";
 
-        await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test);
     }
 }
