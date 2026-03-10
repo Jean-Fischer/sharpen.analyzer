@@ -172,7 +172,8 @@ public static class Rules
         category: "Sharpen.CSharp5",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: "Using async equivalents improves responsiveness and scalability."
+        description: "Using async equivalents improves responsiveness and scalability.",
+        helpLinkUri: "https://github.com/sharpen-analyzer/sharpen.analyzer"
     );
 
     public static readonly DiagnosticDescriptor ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousRule = new DiagnosticDescriptor(
@@ -182,7 +183,8 @@ public static class Rules
         category: "Sharpen.CSharp5",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: "Using async equivalents improves responsiveness and scalability."
+        description: "Using async equivalents improves responsiveness and scalability.",
+        helpLinkUri: "https://github.com/sharpen-analyzer/sharpen.analyzer"
     );
 
     public static readonly DiagnosticDescriptor AwaitTaskDelayInsteadOfCallingThreadSleepRule = new DiagnosticDescriptor(
@@ -192,7 +194,8 @@ public static class Rules
         category: "Sharpen.CSharp5",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: "Using Task.Delay avoids blocking threads and enables async execution."
+        description: "Using Task.Delay avoids blocking threads and enables async execution.",
+        helpLinkUri: "https://github.com/sharpen-analyzer/sharpen.analyzer"
     );
 
     public static readonly DiagnosticDescriptor AwaitTaskInsteadOfCallingTaskResultRule = new DiagnosticDescriptor(
@@ -202,7 +205,8 @@ public static class Rules
         category: "Sharpen.CSharp5",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: "Using await avoids blocking threads and enables async execution."
+        description: "Using await avoids blocking threads and enables async execution.",
+        helpLinkUri: "https://github.com/sharpen-analyzer/sharpen.analyzer"
     );
 
     public static readonly DiagnosticDescriptor AwaitTaskInsteadOfCallingTaskWaitRule = new DiagnosticDescriptor(
@@ -212,7 +216,8 @@ public static class Rules
         category: "Sharpen.CSharp5",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: "Using await avoids blocking threads and enables async execution."
+        description: "Using await avoids blocking threads and enables async execution.",
+        helpLinkUri: "https://github.com/sharpen-analyzer/sharpen.analyzer"
     );
 
     public static readonly DiagnosticDescriptor AwaitTaskWhenAnyInsteadOfCallingTaskWaitAnyRule = new DiagnosticDescriptor(
@@ -222,7 +227,8 @@ public static class Rules
         category: "Sharpen.CSharp5",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: "Using Task.WhenAny avoids blocking threads and enables async execution."
+        description: "Using Task.WhenAny avoids blocking threads and enables async execution.",
+        helpLinkUri: "https://github.com/sharpen-analyzer/sharpen.analyzer"
     );
 
     public static readonly DiagnosticDescriptor AwaitTaskWhenAllInsteadOfCallingTaskWaitAllRule = new DiagnosticDescriptor(
@@ -232,7 +238,8 @@ public static class Rules
         category: "Sharpen.CSharp5",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
-        description: "Using Task.WhenAll avoids blocking threads and enables async execution."
+        description: "Using Task.WhenAll avoids blocking threads and enables async execution.",
+        helpLinkUri: "https://github.com/sharpen-analyzer/sharpen.analyzer"
     );
 
     public static readonly DiagnosticDescriptor UseExpressionBodyForGetOnlyPropertiesRule = new DiagnosticDescriptor(

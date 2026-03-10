@@ -11,7 +11,8 @@ public static class CSharp10Rules
         category: "Sharpen.CSharp10",
         defaultSeverity: DiagnosticSeverity.Info,
         isEnabledByDefault: true,
-        description: "C# 10 file-scoped namespaces reduce indentation and boilerplate."
+        description: "C# 10 file-scoped namespaces reduce indentation and boilerplate.",
+        helpLinkUri: "https://github.com/sharpen-analyzer/sharpen.analyzer"
     );
 
     public static readonly DiagnosticDescriptor UseGlobalUsingDirectiveRule = new DiagnosticDescriptor(
@@ -21,7 +22,8 @@ public static class CSharp10Rules
         category: "Sharpen.CSharp10",
         defaultSeverity: DiagnosticSeverity.Info,
         isEnabledByDefault: true,
-        description: "C# 10 global using directives reduce repetition across files."
+        description: "C# 10 global using directives reduce repetition across files.",
+        helpLinkUri: "https://github.com/sharpen-analyzer/sharpen.analyzer"
     );
 
     public static readonly DiagnosticDescriptor UseRecordStructRule = new DiagnosticDescriptor(
@@ -31,7 +33,8 @@ public static class CSharp10Rules
         category: "Sharpen.CSharp10",
         defaultSeverity: DiagnosticSeverity.Info,
         isEnabledByDefault: true,
-        description: "C# 10 record structs provide value-based semantics with concise syntax for value objects."
+        description: "C# 10 record structs provide value-based semantics with concise syntax for value objects.",
+        helpLinkUri: "https://github.com/sharpen-analyzer/sharpen.analyzer"
     );
 
     public static readonly DiagnosticDescriptor UseExtendedPropertyPatternRule = new DiagnosticDescriptor(
@@ -41,7 +44,8 @@ public static class CSharp10Rules
         category: "Sharpen.CSharp10",
         defaultSeverity: DiagnosticSeverity.Info,
         isEnabledByDefault: true,
-        description: "C# 10 extended property patterns can simplify nested member access checks."
+        description: "C# 10 extended property patterns can simplify nested member access checks.",
+        helpLinkUri: "https://github.com/sharpen-analyzer/sharpen.analyzer"
     );
 
     public static readonly DiagnosticDescriptor UseInterpolatedStringRule = new DiagnosticDescriptor(
@@ -51,7 +55,8 @@ public static class CSharp10Rules
         category: "Sharpen.CSharp10",
         defaultSeverity: DiagnosticSeverity.Info,
         isEnabledByDefault: true,
-        description: "Interpolated strings can improve readability compared to string.Format or concatenation."
+        description: "Interpolated strings can improve readability compared to string.Format or concatenation.",
+        helpLinkUri: "https://github.com/sharpen-analyzer/sharpen.analyzer"
     );
 
     public static readonly DiagnosticDescriptor UseConstInterpolatedStringRule = new DiagnosticDescriptor(
@@ -61,6 +66,7 @@ public static class CSharp10Rules
         category: "Sharpen.CSharp10",
         defaultSeverity: DiagnosticSeverity.Info,
         isEnabledByDefault: true,
-        description: "C# 10 allows const interpolated strings when all holes are compile-time constants."
+        description: "C# 10 allows const interpolated strings when all holes are compile-time constants.",
+        helpLinkUri: "https://github.com/sharpen-analyzer/sharpen.analyzer"
     );
 }

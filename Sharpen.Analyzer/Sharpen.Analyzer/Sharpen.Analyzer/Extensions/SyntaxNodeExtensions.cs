@@ -103,18 +103,19 @@ namespace Sharpen.Engine.Extensions
             }
         }
 
-        public static bool IsAnyAncestorOfOrSelf<T>(this IEnumerable<T> syntaxNodes, SyntaxNode potentialDescendantNodeOrSelf, SyntaxNode searchUpToNode = null) where T : SyntaxNode
+        public static bool IsAnyAncestorOfOrSelf<T>(this IEnumerable<T> syntaxNodes, SyntaxNode potentialDescendantNodeOrSelf, SyntaxNode? searchUpToNode = null) where T : SyntaxNode
         {
             return syntaxNodes.Any(node => node.IsAncestorOfOrSelf(potentialDescendantNodeOrSelf, searchUpToNode));
         }
 
-        public static bool IsAncestorOfOrSelf(this SyntaxNode syntaxNode, SyntaxNode potentialDescendantNodeOrSelf, SyntaxNode searchUpToNode = null)
+        public static bool IsAncestorOfOrSelf(this SyntaxNode syntaxNode, SyntaxNode potentialDescendantNodeOrSelf, SyntaxNode? searchUpToNode = null)
         {
             if (syntaxNode == potentialDescendantNodeOrSelf) return true;
 
-            SyntaxNode currentNode = potentialDescendantNodeOrSelf.Parent;
+            SyntaxNode? currentNode = potentialDescendantNodeOrSelf.Parent;
             while (currentNode != searchUpToNode)
             {
+                if (currentNode == null) return false;
                 if (currentNode == syntaxNode) return true;
                 currentNode = currentNode.Parent;
             }
@@ -122,10 +123,10 @@ namespace Sharpen.Engine.Extensions
             return false;
         }
 
-        public static TNode LastAncestorOrSelf<TNode>(this SyntaxNode syntaxNode) where TNode : SyntaxNode
+        public static TNode? LastAncestorOrSelf<TNode>(this SyntaxNode syntaxNode) where TNode : SyntaxNode
         {
-            TNode result = null;
-            SyntaxNode currentNode = syntaxNode;
+            TNode? result = null;
+            SyntaxNode? currentNode = syntaxNode;
             while(currentNode != null)
             {
                 if (currentNode is TNode node) result = node;
@@ -135,19 +136,20 @@ namespace Sharpen.Engine.Extensions
             return result;
         }
 
-        public static TNode FirstAncestorOrSelfWithinEnclosingNode<TNode>(this SyntaxNode syntaxNode, SyntaxNode enclosingNode, bool includeEnclosingNode = true) where TNode: SyntaxNode
+        public static TNode? FirstAncestorOrSelfWithinEnclosingNode<TNode>(this SyntaxNode syntaxNode, SyntaxNode enclosingNode, bool includeEnclosingNode = true) where TNode: SyntaxNode
         {
             // TODO-IG: We should assert here that the syntaxNode is really within the enclosingNode.
             //          Define in general how to do asserting.
 
-            SyntaxNode currentNode = syntaxNode;
+            SyntaxNode? currentNode = syntaxNode;
             while (currentNode != enclosingNode)
             {
-                if (currentNode is TNode) return (TNode) currentNode;
+                if (currentNode == null) return null;
+                if (currentNode is TNode node) return node;
                 currentNode = currentNode.Parent;
             }
 
-            if (includeEnclosingNode && enclosingNode is TNode) return (TNode)enclosingNode;
+            if (includeEnclosingNode && enclosingNode is TNode enclosingAsTNode) return enclosingAsTNode;
 
             return null;
         }

@@ -31,7 +31,7 @@ namespace Sharpen.Engine.SharpenSuggestions.Common.AsyncAwaitAndAsyncStreams
             if (asyncEquivalent != null) return asyncEquivalent;
 
             var calledOnType = GetCalledOnType(invocation, semanticModel);
-            if (calledOnType == null || Equals(calledOnType, method.ContainingType)) return null;
+            if (calledOnType == null || SymbolEqualityComparer.Default.Equals(calledOnType, method.ContainingType)) return null;
 
             return FindAsyncEquivalentOnType(semanticModel, calledOnType, method, invocation);
         }
@@ -101,7 +101,7 @@ namespace Sharpen.Engine.SharpenSuggestions.Common.AsyncAwaitAndAsyncStreams
 
                 if (returnedKnownAwaitableType.WrapsReturnType())
                 {
-                    if (!method.ReturnType.Equals(potentialEquivalentReturnType.TypeArguments[0]))
+                    if (!SymbolEqualityComparer.Default.Equals(method.ReturnType, potentialEquivalentReturnType.TypeArguments[0]))
                         return false;
                 }
                 else
@@ -109,7 +109,7 @@ namespace Sharpen.Engine.SharpenSuggestions.Common.AsyncAwaitAndAsyncStreams
                     if (!(method.ReturnType is INamedTypeSymbol methodReturnType && methodReturnType.Arity == 1))
                         return false;
 
-                    if (!methodReturnType.TypeArguments[0].Equals(potentialEquivalentReturnType.TypeArguments[0]))
+                    if (!SymbolEqualityComparer.Default.Equals(methodReturnType.TypeArguments[0], potentialEquivalentReturnType.TypeArguments[0]))
                         return false;
                 }
             }
@@ -124,7 +124,7 @@ namespace Sharpen.Engine.SharpenSuggestions.Common.AsyncAwaitAndAsyncStreams
             {
                 if (method.Parameters[i].Type == null)
                     return false;
-                if (!method.Parameters[i].Type.Equals(potentialEquivalent.Parameters[i].Type))
+                if (!SymbolEqualityComparer.Default.Equals(method.Parameters[i].Type, potentialEquivalent.Parameters[i].Type))
                     return false;
                 if (method.Parameters[i].Name != potentialEquivalent.Parameters[i].Name)
                     return false;
@@ -150,7 +150,7 @@ namespace Sharpen.Engine.SharpenSuggestions.Common.AsyncAwaitAndAsyncStreams
             // If syntax tree is unexpected, be conservative and treat as within containing type.
             if (invokedInType == null) return true;
 
-            return method.ContainingType?.Equals(semanticModel.GetDeclaredSymbol(invokedInType)) == true;
+            return SymbolEqualityComparer.Default.Equals(method.ContainingType, semanticModel.GetDeclaredSymbol(invokedInType));
         }
 
         private static INamedTypeSymbol GetCalledOnType(InvocationExpressionSyntax invocation, SemanticModel semanticModel)

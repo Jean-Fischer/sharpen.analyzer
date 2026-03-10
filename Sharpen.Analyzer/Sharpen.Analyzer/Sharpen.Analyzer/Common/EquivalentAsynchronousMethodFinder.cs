@@ -95,9 +95,9 @@ namespace Sharpen.Engine.SharpenSuggestions.Common.AsyncAwaitAndAsyncStreams
             /// but should be ignored. If null, all the methods on the type
             /// should be ignored.
             /// </summary>
-            private string MethodName { get; }
+            private string? MethodName { get; }
 
-            public MethodToIgnore(string typeName, string typeNamespace, string methodName = null)
+            public MethodToIgnore(string typeName, string typeNamespace, string? methodName = null)
                 : base(typeName, typeNamespace)
             {
                 MethodName = methodName;
@@ -345,7 +345,7 @@ namespace Sharpen.Engine.SharpenSuggestions.Common.AsyncAwaitAndAsyncStreams
        
         protected abstract bool InvokedMethodPotentiallyHasAsynchronousEquivalent(InvocationExpressionSyntax invocation);
 
-        private static bool TypeContainsAsynchronousEquivalentOf(SemanticModel semanticModel, INamedTypeSymbol type, IMethodSymbol method, InvocationExpressionSyntax invocation = null)
+        private static bool TypeContainsAsynchronousEquivalentOf(SemanticModel semanticModel, INamedTypeSymbol type, IMethodSymbol method, InvocationExpressionSyntax? invocation = null)
         {
             if (type == null) return false;
             if (method == null) return false;
