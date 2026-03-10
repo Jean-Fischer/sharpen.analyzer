@@ -146,4 +146,22 @@ public class C
 
         await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
     }
+
+    [Fact]
+    public async Task UseTargetTypedNew_DoesNotTrigger_WhenDeclaredTypeIsInterface()
+    {
+        const string code = @"
+using System.Collections.Generic;
+
+public class C
+{
+    public void M()
+    {
+        ICollection<object> test = new List<object>();
+    }
+}
+";
+
+        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+    }
 }
