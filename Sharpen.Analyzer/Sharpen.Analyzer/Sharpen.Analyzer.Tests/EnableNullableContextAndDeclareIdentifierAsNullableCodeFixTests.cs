@@ -111,6 +111,38 @@ class C
         }
 
         [Fact]
+        public async Task Fixes_reference_type_field_when_diagnostic_is_on_assignment_expression()
+        {
+            const string test = @"
+class C
+{
+    private string _s;
+
+    void M()
+    {
+        _s = null;
+    }
+}";
+
+            const string fixedCode = @"
+class C
+{
+    private string? _s;
+
+    void M()
+    {
+        _s = null;
+    }
+}";
+
+            var expected = Verifier.Diagnostic(Sharpen.Analyzer.Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
+                .WithSpan(8, 9, 8, 18);
+
+            await Verifier.VerifyCodeFixAsync(test, expected, fixedCode);
+        }
+
+
+        [Fact]
         public async Task Preserves_trivia_around_type()
         {
             const string test = @"
