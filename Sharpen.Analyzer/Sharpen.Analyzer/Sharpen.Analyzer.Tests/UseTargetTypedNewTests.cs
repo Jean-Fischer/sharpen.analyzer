@@ -164,4 +164,34 @@ public class C
 
         await Verifier.VerifyAnalyzerAsync(code);
     }
+
+    [Fact]
+    public async Task UseTargetTypedNew_DoesNotTrigger_ForPropertyInitializer_WhenTypesDoNotMatch()
+    {
+        const string code = @"
+using System.Collections.Generic;
+
+public class C
+{
+    public ICollection<object> Xs { get; } = new List<object>();
+}
+";
+
+        await Verifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task UseTargetTypedNew_DoesNotTrigger_ForFieldInitializer_WhenTypesDoNotMatch()
+    {
+        const string code = @"
+using System.Collections.Generic;
+
+public class C
+{
+    private ICollection<object> _xs = new List<object>();
+}
+";
+
+        await Verifier.VerifyAnalyzerAsync(code);
+    }
 }
