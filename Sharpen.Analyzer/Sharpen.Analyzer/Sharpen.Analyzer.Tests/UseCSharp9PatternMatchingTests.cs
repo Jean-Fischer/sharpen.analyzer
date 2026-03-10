@@ -135,7 +135,7 @@ public class C
     }
 
     [Fact]
-    public async Task UseCSharp9PatternMatching_DoesNotTrigger_InsideExpressionTreeLambda()
+    public async Task UseCSharp9PatternMatching_DoesNotTrigger_InsideExpressionTreeLambda_ForNotNullCheck()
     {
         const string code = @"
 using System;
@@ -154,6 +154,87 @@ public class C
         // This lambda is converted to Expression<Func<...>>.
         // Rewriting `!= null` to `is not null` would fail at runtime/compile-time for expression trees.
         var q = source.Where(s => s.MarketType != null);
+    }
+}
+";
+
+        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+    }
+
+    [Fact]
+    public async Task UseCSharp9PatternMatching_DoesNotTrigger_InsideExpressionTreeLambda_ForNegatedIsPattern()
+    {
+        const string code = @"
+using System;
+using System.Linq;
+using System.Linq.Expressions;
+
+public class SurveyHistory
+{
+    public object Value { get; set; }
+}
+
+public class C
+{
+    public void M(IQueryable<SurveyHistory> source)
+    {
+        // This lambda is converted to Expression<Func<...>>.
+        // Rewriting `!(x is T)` to `x is not T` would fail for expression trees.
+        var q = source.Where(s => !(s.Value is string));
+    }
+}
+";
+
+        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+    }
+
+    [Fact]
+    public async Task UseCSharp9PatternMatching_DoesNotTrigger_InsideExpressionTreeLambda_ForRangeAnd()
+    {
+        const string code = @"
+using System;
+using System.Linq;
+using System.Linq.Expressions;
+
+public class SurveyHistory
+{
+    public int Value { get; set; }
+}
+
+public class C
+{
+    public void M(IQueryable<SurveyHistory> source)
+    {
+        // This lambda is converted to Expression<Func<...>>.
+        // Rewriting range checks to relational patterns would fail for expression trees.
+        var q = source.Where(s => s.Value >= 0 && s.Value <= 10);
+    }
+}
+";
+
+        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+    }
+
+    [Fact]
+    public async Task UseCSharp9PatternMatching_DoesNotTrigger_InsideExpressionTreeLambda_ForRangeOr()
+    {
+        const string code = @"
+using System;
+using System.Linq;
+using System.Linq.Expressions;
+
+public class SurveyHistory
+{
+    public int Value { get; set; }
+}
+
+public class C
+{
+    public void M(IQueryable<SurveyHistory> source)
+    {
+        // This lambda is converted to Expression<Func<...>>.
+        // Rewriting range checks to relational patterns would fail for expression trees.
+        var q = source.Where(s => s.Value < 0 || s.Value > 10);
     }
 }
 ";
