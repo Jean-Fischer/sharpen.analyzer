@@ -21,7 +21,7 @@ class C
 }";
 
         var expected = Verifier.Diagnostic(Sharpen.Analyzer.Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
-            .WithSpan(4, 20, 4, 22);
+            .WithSpan(8, 9, 8, 18);
 
         await Verifier.VerifyAnalyzerAsync(code, expected);
     }

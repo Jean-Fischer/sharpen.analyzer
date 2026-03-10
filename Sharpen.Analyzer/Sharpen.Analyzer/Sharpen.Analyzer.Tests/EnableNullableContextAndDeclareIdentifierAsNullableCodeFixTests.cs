@@ -36,7 +36,7 @@ class C
 }";
 
             var expected = Verifier.Diagnostic(Sharpen.Analyzer.Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
-                .WithSpan(4, 20, 4, 22);
+                .WithSpan(8, 9, 8, 18);
 
             await Verifier.VerifyCodeFixAsync(test, expected, fixedCode).ConfigureAwait(false);
         }
@@ -63,7 +63,7 @@ class C
 }";
 
             var expected = Verifier.Diagnostic(Sharpen.Analyzer.Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
-                .WithSpan(6, 16, 6, 17);
+                .WithSpan(6, 16, 6, 24);
 
             await Verifier.VerifyCodeFixAsync(test, expected, fixedCode).ConfigureAwait(false);
         }
@@ -84,7 +84,7 @@ class C
 }";
 
             var expected = Verifier.Diagnostic(Sharpen.Analyzer.Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
-                .WithSpan(4, 19, 4, 20);
+                .WithSpan(4, 5, 4, 42);
 
             await Verifier.VerifyCodeFixAsync(test, expected, fixedCode).ConfigureAwait(false);
         }
@@ -105,7 +105,7 @@ class C
 }";
 
             var expected = Verifier.Diagnostic(Sharpen.Analyzer.Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
-                .WithSpan(4, 19, 4, 20);
+                .WithSpan(4, 12, 4, 27);
 
             await Verifier.VerifyCodeFixAsync(test, expected, fixedCode).ConfigureAwait(false);
         }
@@ -136,7 +136,7 @@ class C
 }";
 
             var expected = Verifier.Diagnostic(Sharpen.Analyzer.Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
-                .WithSpan(4, 32, 4, 34);
+                .WithSpan(8, 9, 8, 18);
 
             await Verifier.VerifyCodeFixAsync(test, expected, fixedCode).ConfigureAwait(false);
         }
@@ -155,18 +155,7 @@ class C
     }
 }";
 
-            var expected = Verifier.Diagnostic(Sharpen.Analyzer.Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
-                .WithSpan(4, 21, 4, 23);
-
-            var t = new Verifier.Test
-            {
-                TestCode = test,
-            };
-
-            t.ExpectedDiagnostics.Add(expected);
-            t.NumberOfFixes = 0;
-
-            await t.RunAsync().ConfigureAwait(false);
+            await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
         }
     }
 }

@@ -32,14 +32,10 @@ public sealed class EnableNullableContextAndDeclareIdentifierAsNullableCodeFixPr
 
         var node = root.FindNode(diagnosticSpan, getInnermostNodeForTie: true);
 
-        // The analyzer reports on the declaring syntax location.
-        // We support a conservative subset of declarations:
-        // - local variables
-        // - fields
-        // - properties
-        // - parameters
-        // If we cannot confidently update the declaration, we do not offer a fix.
-        if (!TryGetTypeSyntaxToMakeNullable(node, out var typeSyntax))
+        // The analyzer reports on the triggering node location (assignment/initializer/etc.).
+        // We resolve the symbol from that node, then update the symbol's declaration type.
+        var typeSyntax = await TryGetTypeSyntaxToMakeNullableAsync(context.Document, node, context.CancellationToken).ConfigureAwait(false);
+        if (typeSyntax is null)
             return;
 
         // If already nullable, no fix.
@@ -63,7 +59,48 @@ public sealed class EnableNullableContextAndDeclareIdentifierAsNullableCodeFixPr
             diagnostic);
     }
 
-    private static bool TryGetTypeSyntaxToMakeNullable(SyntaxNode node, out TypeSyntax typeSyntax)
+    private static async Task<TypeSyntax?> TryGetTypeSyntaxToMakeNullableAsync(
+        Document document,
+        SyntaxNode diagnosticNode,
+        CancellationToken cancellationToken)
+    {
+        // 1) Fast path: if the diagnostic node is already a declaration (e.g. variable declarator / parameter / property)
+        //    keep the old behavior.
+        if (TryGetTypeSyntaxFromDeclarationNode(diagnosticNode, out var typeSyntax))
+            return typeSyntax;
+
+        // 2) Otherwise, resolve the symbol from the diagnostic node (assignment, equals, coalesce, etc.)
+        //    and jump to its declaring syntax.
+        var semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+        if (semanticModel is null)
+            return null;
+
+        var symbol = semanticModel.GetSymbolInfo(diagnosticNode, cancellationToken).Symbol;
+
+        // If the diagnostic node is not directly bindable (common), try to bind common sub-nodes.
+        symbol ??= diagnosticNode switch
+        {
+            AssignmentExpressionSyntax a => semanticModel.GetSymbolInfo(a.Left, cancellationToken).Symbol,
+            BinaryExpressionSyntax b when b.IsKind(SyntaxKind.EqualsExpression) || b.IsKind(SyntaxKind.NotEqualsExpression) =>
+                semanticModel.GetSymbolInfo(b.Left, cancellationToken).Symbol ?? semanticModel.GetSymbolInfo(b.Right, cancellationToken).Symbol,
+            BinaryExpressionSyntax b when b.IsKind(SyntaxKind.CoalesceExpression) => semanticModel.GetSymbolInfo(b.Left, cancellationToken).Symbol,
+            ConditionalAccessExpressionSyntax c => semanticModel.GetSymbolInfo(c.Expression, cancellationToken).Symbol,
+            _ => null
+        };
+
+        if (symbol is null)
+            return null;
+
+        var declaringSyntax = symbol.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax(cancellationToken);
+        if (declaringSyntax is null)
+            return null;
+
+        return TryGetTypeSyntaxFromDeclarationNode(declaringSyntax, out var declaredTypeSyntax)
+            ? declaredTypeSyntax
+            : null;
+    }
+
+    private static bool TryGetTypeSyntaxFromDeclarationNode(SyntaxNode node, out TypeSyntax typeSyntax)
     {
         typeSyntax = null!;
 
@@ -114,7 +151,7 @@ public sealed class EnableNullableContextAndDeclareIdentifierAsNullableCodeFixPr
         if (ancestor is null || ReferenceEquals(ancestor, node))
             return false;
 
-        return TryGetTypeSyntaxToMakeNullable(ancestor, out typeSyntax);
+        return TryGetTypeSyntaxFromDeclarationNode(ancestor, out typeSyntax);
     }
 
     private static async Task<Document> MakeNullableAsync(Document document, TypeSyntax typeSyntax, CancellationToken cancellationToken)

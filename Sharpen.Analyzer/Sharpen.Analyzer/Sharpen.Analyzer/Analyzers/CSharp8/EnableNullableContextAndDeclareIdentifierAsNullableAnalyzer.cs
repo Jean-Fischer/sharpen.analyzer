@@ -58,22 +58,25 @@ public sealed class EnableNullableContextAndDeclareIdentifierAsNullableAnalyzer 
 
         if (!IdentifierIsAlreadyNullable(symbol))
         {
+            // Report on the triggering node location (assignment/initializer/etc.) to keep the diagnostic "local"
+            // for the code-fix test harness. The code fix provider will resolve the symbol and update the
+            // declaration type.
             context.ReportDiagnostic(Diagnostic.Create(
                 Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule,
-                declaringSyntax.GetLocation()));
+                context.Node.GetLocation()));
         }
     }
 
     private static bool IdentifierIsAlreadyNullable(ISymbol symbol)
     {
-        // Legacy implementation (VS2017) treated value types as already nullable (Nullable<T>).
-        // We keep the same conservative behavior.
+        // If the type is already annotated (string?), do not report.
+        // If it's a value type, we also do not report (legacy behavior treated value types as already nullable).
         return symbol switch
         {
-            IFieldSymbol field => field.Type.IsValueType,
-            IPropertySymbol property => property.Type.IsValueType,
-            IParameterSymbol parameter => parameter.Type.IsValueType,
-            ILocalSymbol local => local.Type.IsValueType,
+            IFieldSymbol field => field.Type.IsValueType || field.NullableAnnotation == NullableAnnotation.Annotated,
+            IPropertySymbol property => property.Type.IsValueType || property.NullableAnnotation == NullableAnnotation.Annotated,
+            IParameterSymbol parameter => parameter.Type.IsValueType || parameter.NullableAnnotation == NullableAnnotation.Annotated,
+            ILocalSymbol local => local.Type.IsValueType || local.NullableAnnotation == NullableAnnotation.Annotated,
             _ => true
         };
     }
