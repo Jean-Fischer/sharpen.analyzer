@@ -1,0 +1,97 @@
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Testing;
+using Sharpen.Analyzer.Rules;
+using Sharpen.Analyzer.Safety;
+using Xunit;
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
+    Sharpen.Analyzer.Analyzers.CSharp12.UseCollectionExpressionAnalyzer,
+    Sharpen.Analyzer.UseCollectionExpressionCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+
+namespace Sharpen.Analyzer.Tests;
+
+public sealed class FirstPassSafetyIntegrationTests
+{
+    [Fact]
+    public async Task UseCollectionExpression_NoFix_WhenFirstPassSafetyBlocks()
+    {
+        FirstPassSafety.Gate = new FirstPassSafetyGate(new IFirstPassSafetyCheck[]
+        {
+            new AlwaysUnsafeCheck(),
+        });
+
+        try
+        {
+            const string original = @"
+public class C
+{
+    public int[] M()
+    {
+        return new[] { 1, 2, 3 };
+    }
+}
+";
+
+            var expected = Verifier.Diagnostic(CSharp12Rules.UseCollectionExpressionRule)
+                .WithLocation(6, 16);
+
+            // If the safety gate blocks, the code fix should not be applied.
+            await Verifier.VerifyAnalyzerAsync(original, expected);
+        }
+        finally
+        {
+            FirstPassSafety.Gate = FirstPassSafetyGate.Empty;
+            FirstPassSafety.UnsafeLogger = null;
+        }
+    }
+
+    [Fact]
+    public async Task UnsafeOutcome_IsObservable_ViaLogger()
+    {
+        SafetyResult? observed = null;
+
+        FirstPassSafety.Gate = new FirstPassSafetyGate(new IFirstPassSafetyCheck[]
+        {
+            new AlwaysUnsafeCheck(),
+        });
+        FirstPassSafety.UnsafeLogger = r => observed = r;
+
+        try
+        {
+            const string original = @"
+public class C
+{
+    public int[] M()
+    {
+        return new[] { 1, 2, 3 };
+    }
+}
+";
+
+            var expected = Verifier.Diagnostic(CSharp12Rules.UseCollectionExpressionRule)
+                .WithLocation(6, 16);
+
+            // Trigger code fix discovery (this is where the safety gate runs).
+            await Verifier.VerifyCodeFixAsync(original, expected, original);
+
+            Assert.NotNull(observed);
+            Assert.False(observed!.Value.IsSafe);
+            Assert.Equal("test.always-unsafe", observed.Value.ReasonId);
+        }
+        finally
+        {
+            FirstPassSafety.Gate = FirstPassSafetyGate.Empty;
+            FirstPassSafety.UnsafeLogger = null;
+        }
+    }
+
+    private sealed class AlwaysUnsafeCheck : IFirstPassSafetyCheck
+    {
+        public SafetyResult IsSafe(
+            Document document,
+            SemanticModel semanticModel,
+            Diagnostic diagnostic,
+            System.Threading.CancellationToken cancellationToken = default)
+            => SafetyResult.Unsafe("test.always-unsafe");
+    }
+}
