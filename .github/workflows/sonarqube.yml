@@ -46,11 +46,15 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
-          dotnet sonarscanner begin /k:"Jean-Fischer_sharpen.analyzer" /o:"jean-fischer" /d:sonar.token="$env:SONAR_TOKEN"
+          dotnet sonarscanner begin /k:"Jean-Fischer_sharpen.analyzer" /o:"jean-fischer" /d:sonar.token="$env:SONAR_TOKEN" /d:sonar.cs.opencover.reportsPaths="coverage.xml"
 
       # Build project
       - name: Build
         run: dotnet build "Sharpen.Analyzer/Sharpen.Analyzer.sln" --configuration Release --no-restore
+
+      # Run tests with coverage
+      - name: Run tests with coverage
+        run: dotnet test "Sharpen.Analyzer/Sharpen.Analyzer.sln" --configuration Release --no-restore /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage.xml
 
       # End SonarQube analysis
       - name: End SonarQube analysis
