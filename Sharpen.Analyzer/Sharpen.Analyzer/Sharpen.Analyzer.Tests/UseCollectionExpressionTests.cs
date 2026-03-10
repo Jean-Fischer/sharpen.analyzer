@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Xunit;
-using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.AnalyzerVerifier<
-    Sharpen.Analyzer.Analyzers.CSharp12.UseCollectionExpressionAnalyzer>;
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
+    Sharpen.Analyzer.Analyzers.CSharp12.UseCollectionExpressionAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 
@@ -21,7 +21,7 @@ public class C
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(6, 16);
-        await Verifier.VerifyAnalyzerAsync(original, expected).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(original, expected);
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class C
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(6, 16);
-        await Verifier.VerifyAnalyzerAsync(original, expected).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(original, expected);
     }
 
     [Fact]
@@ -54,6 +54,6 @@ public class C
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 }

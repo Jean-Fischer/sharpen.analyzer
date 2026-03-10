@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using Xunit;
-using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp7.UseExpressionBodyForSetAccessorsInPropertiesAnalyzer,
-    Sharpen.Analyzer.FixProvider.CSharp7.UseExpressionBodyForSetAccessorsInPropertiesCodeFixProvider>;
+    Sharpen.Analyzer.FixProvider.CSharp7.UseExpressionBodyForSetAccessorsInPropertiesCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 
@@ -36,7 +36,7 @@ class C
 }";
 
         var diagnostic = Verifier.Diagnostic().WithSpan(9, 9, 9, 12);
-        await Verifier.VerifyCodeFixAsync(original, diagnostic, expected).ConfigureAwait(false);
+        await Verifier.VerifyCodeFixAsync(original, diagnostic, expected);
     }
 
     [Fact]
@@ -54,7 +54,7 @@ class C
     }
 }";
 
-        await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test);
     }
 
     [Fact]
@@ -76,7 +76,7 @@ class C
     }
 }";
 
-        await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test);
     }
 
     [Fact]
@@ -94,6 +94,6 @@ class C
     }
 }";
 
-        await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test);
     }
 }

@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using Xunit;
-using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp9.UseTopLevelStatementsAnalyzer,
-    Sharpen.Analyzer.FixProvider.CSharp9.UseTopLevelStatementsCodeFixProvider>;
+    Sharpen.Analyzer.FixProvider.CSharp9.UseTopLevelStatementsCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 
@@ -26,7 +26,7 @@ class Program
         // Note: the Roslyn test harness compiles snippets as a library by default.
         // Top-level statements require an executable output kind, so we only verify the analyzer here.
         var expected = Verifier.Diagnostic().WithLocation(4, 7);
-        await Verifier.VerifyAnalyzerAsync(code, expected).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code, expected);
     }
 
     [Fact]
@@ -44,7 +44,7 @@ namespace N
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ class Program
 class Other { }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 
     [Fact]
@@ -79,7 +79,7 @@ class Program
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 
     [Fact]
@@ -96,6 +96,6 @@ class Program
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 }

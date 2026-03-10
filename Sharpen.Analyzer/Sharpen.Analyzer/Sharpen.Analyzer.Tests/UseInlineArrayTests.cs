@@ -2,9 +2,9 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Sharpen.Analyzer.Rules;
 using Xunit;
-using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp12.UseInlineArrayAnalyzer,
-    Sharpen.Analyzer.FixProvider.CSharp12.UseInlineArrayCodeFixProvider>;
+    Sharpen.Analyzer.FixProvider.CSharp12.UseInlineArrayCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 
@@ -38,7 +38,7 @@ public struct Buffer
             .WithLocation(2, 16)
             .WithArguments(3);
 
-        await Verifier.VerifyAnalyzerAsync(original, expected).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(original, expected);
     }
 
 
@@ -55,7 +55,7 @@ public struct Buffer
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 
     [Fact]
@@ -70,6 +70,6 @@ public struct Buffer
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 }

@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using Xunit;
 using Verifier =
-    Microsoft.CodeAnalysis.CSharp.Testing.XUnit.AnalyzerVerifier<
-        Sharpen.Analyzer.SampleSyntaxAnalyzer>;
+    Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
+        Sharpen.Analyzer.SampleSyntaxAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 
@@ -20,6 +20,6 @@ public class MyCompanyClass
         var expected = Verifier.Diagnostic()
             .WithLocation(2, 14)
             .WithArguments("MyCompanyClass");
-        await Verifier.VerifyAnalyzerAsync(text, expected).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(text, expected);
     }
 }

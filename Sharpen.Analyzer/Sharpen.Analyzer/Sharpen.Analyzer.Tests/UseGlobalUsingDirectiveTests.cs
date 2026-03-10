@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
-using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp10.UseGlobalUsingDirectiveAnalyzer,
-    Sharpen.Analyzer.FixProvider.CSharp10.UseGlobalUsingDirectiveCodeFixProvider>;
+    Sharpen.Analyzer.FixProvider.CSharp10.UseGlobalUsingDirectiveCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 
@@ -19,7 +19,7 @@ public class UseGlobalUsingDirectiveTests
 
 class A { }";
 
-        await Verifier.VerifyAnalyzerAsync(source).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(source);
     }
 
     [Fact]
@@ -30,7 +30,7 @@ class A { }";
 
 class A { }";
 
-        await Verifier.VerifyAnalyzerAsync(source).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(source);
     }
 
     [Fact]
@@ -41,7 +41,7 @@ class A { }";
 
 class A { }";
 
-        await Verifier.VerifyAnalyzerAsync(source).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(source);
     }
 
     [Fact]
@@ -53,6 +53,6 @@ class A { }";
 
 class A { }";
 
-        await Verifier.VerifyCodeFixAsync(original, original).ConfigureAwait(false);
+        await Verifier.VerifyCodeFixAsync(original, original);
     }
 }

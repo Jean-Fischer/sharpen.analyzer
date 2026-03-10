@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using Xunit;
-using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp6.UseNameofExpressionForThrowingArgumentExceptionsAnalyzer,
-    Sharpen.Analyzer.FixProvider.CSharp6.UseNameofExpressionForThrowingArgumentExceptionsCodeFixProvider>;
+    Sharpen.Analyzer.FixProvider.CSharp6.UseNameofExpressionForThrowingArgumentExceptionsCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 
@@ -23,7 +23,7 @@ class C
 }";
 
         var expected = Verifier.Diagnostic().WithSpan(8, 41, 8, 44);
-        await Verifier.VerifyAnalyzerAsync(test, expected).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test, expected);
     }
 
     [Fact]
@@ -41,7 +41,7 @@ class C
 }";
 
         var expected = Verifier.Diagnostic().WithSpan(8, 44, 8, 47);
-        await Verifier.VerifyAnalyzerAsync(test, expected).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test, expected);
     }
 
     [Fact]
@@ -58,7 +58,7 @@ class C
     }
 }";
 
-        await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test);
     }
 
     [Fact]
@@ -75,7 +75,7 @@ class C
     }
 }";
 
-        await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test);
     }
 
     [Fact]
@@ -105,6 +105,6 @@ class C
 
         var expected = Verifier.Diagnostic().WithSpan(8, 41, 8, 44);
 
-        await Verifier.VerifyCodeFixAsync(test, expected, fixedCode).ConfigureAwait(false);
+        await Verifier.VerifyCodeFixAsync(test, expected, fixedCode);
     }
 }

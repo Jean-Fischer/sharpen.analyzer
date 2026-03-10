@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
-using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp9.UseTargetTypedNewAnalyzer,
-    Sharpen.Analyzer.FixProvider.CSharp9.UseTargetTypedNewCodeFixProvider>;
+    Sharpen.Analyzer.FixProvider.CSharp9.UseTargetTypedNewCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 
@@ -37,7 +37,7 @@ public class C
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(8, 24);
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode).ConfigureAwait(false);
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode);
     }
 
     [Fact]
@@ -62,7 +62,7 @@ public class C
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(6, 36);
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode).ConfigureAwait(false);
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode);
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public class C
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(9, 14);
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode).ConfigureAwait(false);
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode);
     }
 
     [Fact]
@@ -126,7 +126,7 @@ public class C
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(8, 16);
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode).ConfigureAwait(false);
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode);
     }
 
     [Fact]
@@ -144,6 +144,54 @@ public class C
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task UseTargetTypedNew_DoesNotTrigger_WhenDeclaredTypeIsInterface()
+    {
+        const string code = @"
+using System.Collections.Generic;
+
+public class C
+{
+    public void M()
+    {
+        ICollection<object> test = new List<object>();
+    }
+}
+";
+
+        await Verifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task UseTargetTypedNew_DoesNotTrigger_ForPropertyInitializer_WhenTypesDoNotMatch()
+    {
+        const string code = @"
+using System.Collections.Generic;
+
+public class C
+{
+    public ICollection<object> Xs { get; } = new List<object>();
+}
+";
+
+        await Verifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task UseTargetTypedNew_DoesNotTrigger_ForFieldInitializer_WhenTypesDoNotMatch()
+    {
+        const string code = @"
+using System.Collections.Generic;
+
+public class C
+{
+    private ICollection<object> _xs = new List<object>();
+}
+";
+
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 }

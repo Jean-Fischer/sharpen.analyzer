@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using Xunit;
-using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp9.UseRecordTypeAnalyzer,
-    Sharpen.Analyzer.FixProvider.CSharp9.UseRecordTypeCodeFixProvider>;
+    Sharpen.Analyzer.FixProvider.CSharp9.UseRecordTypeCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 
@@ -40,7 +40,7 @@ public record Point
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(2, 21);
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode).ConfigureAwait(false);
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode);
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public sealed class Point
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public sealed class Point
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 
     [Fact]
@@ -101,6 +101,6 @@ public sealed class Point : Base
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 }

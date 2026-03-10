@@ -1,13 +1,13 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
-using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.AnalyzerVerifier<
-    Sharpen.Analyzer.Analyzers.CSharp8.EnableNullableContextAndDeclareIdentifierAsNullableAnalyzer>;
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
+    Sharpen.Analyzer.Analyzers.CSharp8.EnableNullableContextAndDeclareIdentifierAsNullableAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 public sealed class EnableNullableContextAndDeclareIdentifierAsNullableTests
 {
     [Fact]
-    public async Task Reports_on_reference_type_field_assigned_null()
+    public async Task Reports_on_reference_type_field_assigned_null_and_reports_on_assignment_location()
     {
         const string code = @"
 class C
@@ -20,10 +20,28 @@ class C
     }
 }";
 
+        // New behavior: diagnostic is reported on the triggering node (assignment), not on the declaration.
         var expected = Verifier.Diagnostic(Sharpen.Analyzer.Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
-            .WithSpan(4, 20, 4, 22);
+            .WithSpan(8, 9, 8, 18);
 
         await Verifier.VerifyAnalyzerAsync(code, expected);
+    }
+
+    [Fact]
+    public async Task Does_not_report_when_identifier_is_already_nullable()
+    {
+        const string code = @"
+class C
+{
+    private string? _s;
+
+    void M()
+    {
+        _s = null;
+    }
+}";
+
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 
     [Fact]

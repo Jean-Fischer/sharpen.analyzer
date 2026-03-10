@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using Xunit;
 using Verifier =
-    Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<Sharpen.Analyzer.SampleSyntaxAnalyzer,
-        Sharpen.Analyzer.SampleCodeFixProvider>;
+    Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<Sharpen.Analyzer.SampleSyntaxAnalyzer,
+        Sharpen.Analyzer.SampleCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 
@@ -26,6 +26,6 @@ public class CommonClass
         var expected = Verifier.Diagnostic()
             .WithLocation(2, 14)
             .WithArguments("MyCompanyClass");
-        await Verifier.VerifyCodeFixAsync(text, expected, newText).ConfigureAwait(false);
+        await Verifier.VerifyCodeFixAsync(text, expected, newText);
     }
 }

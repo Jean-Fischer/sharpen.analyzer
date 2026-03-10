@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
-using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp9.UseCSharp9PatternMatchingAnalyzer,
-    Sharpen.Analyzer.FixProvider.CSharp9.UseCSharp9PatternMatchingCodeFixProvider>;
+    Sharpen.Analyzer.FixProvider.CSharp9.UseCSharp9PatternMatchingCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 
@@ -37,7 +37,7 @@ public class C
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(6, 13);
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode).ConfigureAwait(false);
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode);
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public class C
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(6, 13);
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode).ConfigureAwait(false);
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode);
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public class C
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(6, 16);
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode).ConfigureAwait(false);
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode);
     }
 
     [Fact]
@@ -111,7 +111,7 @@ public class C
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 
     [Fact]
@@ -131,7 +131,115 @@ public class C
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task UseCSharp9PatternMatching_DoesNotTrigger_InsideExpressionTreeLambda_ForNotNullCheck()
+    {
+        const string code = @"
+using System;
+using System.Linq;
+using System.Linq.Expressions;
+
+public class SurveyHistory
+{
+    public string MarketType { get; set; }
+}
+
+public class C
+{
+    public void M(IQueryable<SurveyHistory> source)
+    {
+        // This lambda is converted to Expression<Func<...>>.
+        // Rewriting `!= null` to `is not null` would fail at runtime/compile-time for expression trees.
+        var q = source.Where(s => s.MarketType != null);
+    }
+}
+";
+
+        await Verifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task UseCSharp9PatternMatching_DoesNotTrigger_InsideExpressionTreeLambda_ForNegatedIsPattern()
+    {
+        const string code = @"
+using System;
+using System.Linq;
+using System.Linq.Expressions;
+
+public class SurveyHistory
+{
+    public object Value { get; set; }
+}
+
+public class C
+{
+    public void M(IQueryable<SurveyHistory> source)
+    {
+        // This lambda is converted to Expression<Func<...>>.
+        // Rewriting `!(x is T)` to `x is not T` would fail for expression trees.
+        var q = source.Where(s => !(s.Value is string));
+    }
+}
+";
+
+        await Verifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task UseCSharp9PatternMatching_DoesNotTrigger_InsideExpressionTreeLambda_ForRangeAnd()
+    {
+        const string code = @"
+using System;
+using System.Linq;
+using System.Linq.Expressions;
+
+public class SurveyHistory
+{
+    public int Value { get; set; }
+}
+
+public class C
+{
+    public void M(IQueryable<SurveyHistory> source)
+    {
+        // This lambda is converted to Expression<Func<...>>.
+        // Rewriting range checks to relational patterns would fail for expression trees.
+        var q = source.Where(s => s.Value >= 0 && s.Value <= 10);
+    }
+}
+";
+
+        await Verifier.VerifyAnalyzerAsync(code);
+    }
+
+    [Fact]
+    public async Task UseCSharp9PatternMatching_DoesNotTrigger_InsideExpressionTreeLambda_ForRangeOr()
+    {
+        const string code = @"
+using System;
+using System.Linq;
+using System.Linq.Expressions;
+
+public class SurveyHistory
+{
+    public int Value { get; set; }
+}
+
+public class C
+{
+    public void M(IQueryable<SurveyHistory> source)
+    {
+        // This lambda is converted to Expression<Func<...>>.
+        // Rewriting range checks to relational patterns would fail for expression trees.
+        var q = source.Where(s => s.Value < 0 || s.Value > 10);
+    }
+}
+";
+
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 
     [Fact]
@@ -147,7 +255,7 @@ public class C
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 
     // Note: the test harness compiles with a modern language version, so we can't reliably assert

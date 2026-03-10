@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Xunit;
-using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.AnalyzerVerifier<
-    Sharpen.Analyzer.Analyzers.CSharp8.ReplaceUsingStatementWithUsingDeclarationAnalyzer>;
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
+    Sharpen.Analyzer.Analyzers.CSharp8.ReplaceUsingStatementWithUsingDeclarationAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 public class ReplaceUsingStatementWithUsingDeclarationTests
 {
@@ -31,7 +31,7 @@ public class Example
         var expected = Verifier.Diagnostic()
             .WithSpan(8, 9, 8, 14);
 
-        await Verifier.VerifyAnalyzerAsync(test, expected).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test, expected);
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public class Example
     }
 }";
 
-        await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test);
     }
 
     [Fact]
@@ -77,7 +77,7 @@ public class Example
     }
 }";
 
-        await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test);
     }
 
     [Fact]
@@ -104,7 +104,7 @@ public class Example
     }
 }";
 
-        await Verifier.VerifyAnalyzerAsync(test).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test);
     }
 
     [Fact]
@@ -136,6 +136,6 @@ public class Example
             Verifier.Diagnostic().WithSpan(8, 9, 8, 14),
         };
 
-        await Verifier.VerifyAnalyzerAsync(test, expected).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(test, expected);
     }
 }

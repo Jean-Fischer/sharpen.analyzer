@@ -2,8 +2,8 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Sharpen.Analyzer.Rules;
 using Xunit;
-using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.AnalyzerVerifier<
-    Sharpen.Analyzer.Analyzers.CSharp12.UsePrimaryConstructorAnalyzer>;
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
+    Sharpen.Analyzer.Analyzers.CSharp12.UsePrimaryConstructorAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 
@@ -29,7 +29,7 @@ public class C
         var expected = Verifier.Diagnostic(CSharp12Rules.UsePrimaryConstructorRule)
             .WithLocation(7, 12);
 
-        await Verifier.VerifyAnalyzerAsync(original, expected).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(original, expected);
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class C
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public class C
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 
     [Fact]
@@ -94,6 +94,6 @@ public class C : B
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 }

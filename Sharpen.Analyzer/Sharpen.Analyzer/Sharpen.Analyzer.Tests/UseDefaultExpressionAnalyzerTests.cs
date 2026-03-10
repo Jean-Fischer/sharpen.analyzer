@@ -1,11 +1,11 @@
 using System.Threading.Tasks;
 using Xunit;
-using VerifierReturn = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.AnalyzerVerifier<
-    Sharpen.Analyzer.Analyzers.CSharp3.UseDefaultExpressionInReturnStatementsAnalyzer>;
-using VerifierMethod = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.AnalyzerVerifier<
-    Sharpen.Analyzer.Analyzers.CSharp3.UseDefaultExpressionInOptionalMethodParametersAnalyzer>;
-using VerifierCtor = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.AnalyzerVerifier<
-    Sharpen.Analyzer.Analyzers.CSharp3.UseDefaultExpressionInOptionalConstructorParametersAnalyzer>;
+using VerifierReturn = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
+    Sharpen.Analyzer.Analyzers.CSharp3.UseDefaultExpressionInReturnStatementsAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+using VerifierMethod = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
+    Sharpen.Analyzer.Analyzers.CSharp3.UseDefaultExpressionInOptionalMethodParametersAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+using VerifierCtor = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
+    Sharpen.Analyzer.Analyzers.CSharp3.UseDefaultExpressionInOptionalConstructorParametersAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests
 {
@@ -28,7 +28,7 @@ class C
                 .WithSpan(6, 16, 6, 28)
                 .WithArguments("int");
 
-            await VerifierReturn.VerifyAnalyzerAsync(test, expected).ConfigureAwait(false);
+            await VerifierReturn.VerifyAnalyzerAsync(test, expected);
         }
 
         [Fact]
@@ -44,7 +44,7 @@ class C
                 .WithSpan(4, 20, 4, 27)
                 .WithArguments("int");
 
-            await VerifierMethod.VerifyAnalyzerAsync(test, expected).ConfigureAwait(false);
+            await VerifierMethod.VerifyAnalyzerAsync(test, expected);
         }
 
         [Fact]
@@ -60,7 +60,7 @@ class C
                 .WithSpan(4, 22, 4, 29)
                 .WithArguments("int");
 
-            await VerifierCtor.VerifyAnalyzerAsync(test, expected).ConfigureAwait(false);
+            await VerifierCtor.VerifyAnalyzerAsync(test, expected);
         }
     }
 }

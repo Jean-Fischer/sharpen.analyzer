@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using Xunit;
-using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp7.UseVarKeywordAnalyzer,
-    Sharpen.Analyzer.FixProvider.CSharp7.UseVarKeywordCodeFixProvider>;
+    Sharpen.Analyzer.FixProvider.CSharp7.UseVarKeywordCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests
 {
@@ -36,7 +36,7 @@ public class Example
 ";
 
             var expected = Verifier.Diagnostic().WithSpan(8, 9, 8, 21).WithArguments("System.Collections.Generic.List<string>");
-            await Verifier.VerifyCodeFixAsync(original, expected, fixedText).ConfigureAwait(false);
+            await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
         }
     }
 }

@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using Xunit;
-using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp9.UseInitOnlySetterAnalyzer,
-    Sharpen.Analyzer.FixProvider.CSharp9.UseInitOnlySetterCodeFixProvider>;
+    Sharpen.Analyzer.FixProvider.CSharp9.UseInitOnlySetterCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 
@@ -45,7 +45,7 @@ public class Person
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(9, 19);
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode).ConfigureAwait(false);
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode);
     }
 
     [Fact]
@@ -68,7 +68,7 @@ public class Person
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 
     [Fact]
@@ -87,7 +87,7 @@ public class Person
 }
 ";
 
-        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+        await Verifier.VerifyAnalyzerAsync(code);
     }
 
     [Fact]
@@ -116,6 +116,6 @@ public class Person
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(13, 19);
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode).ConfigureAwait(false);
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode);
     }
 }
