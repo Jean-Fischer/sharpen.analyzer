@@ -42,9 +42,30 @@ public sealed class UseCSharp9PatternMatchingAnalyzer : DiagnosticAnalyzer
             or MemberAccessExpressionSyntax;
     }
 
+    private static bool IsInExpressionTree(SyntaxNodeAnalysisContext context)
+    {
+        // Pattern matching ("is not null", relational patterns, etc.) is not supported in expression trees
+        // (e.g. LINQ providers like EF Core), and will fail with:
+        // "An expression tree may not contain an 'is' pattern-matching operator".
+        //
+        // So: if the current node is inside a lambda that is converted to Expression<...>, don't offer the diagnostic.
+        var lambda = context.Node.FirstAncestorOrSelf<LambdaExpressionSyntax>();
+        if (lambda == null)
+            return false;
+
+        var convertedType = context.SemanticModel.GetTypeInfo(lambda, context.CancellationToken).ConvertedType as INamedTypeSymbol;
+        if (convertedType == null)
+            return false;
+
+        return convertedType.Name == "Expression" && convertedType.ContainingNamespace?.ToDisplayString() == "System.Linq.Expressions";
+    }
+
     private static void AnalyzeBinaryExpression(SyntaxNodeAnalysisContext context)
     {
         if (!IsCSharp9OrAbove(context))
+            return;
+
+        if (IsInExpressionTree(context))
             return;
 
         if (context.Node is not BinaryExpressionSyntax binary)
@@ -62,6 +83,9 @@ public sealed class UseCSharp9PatternMatchingAnalyzer : DiagnosticAnalyzer
     private static void AnalyzePrefixUnaryExpression(SyntaxNodeAnalysisContext context)
     {
         if (!IsCSharp9OrAbove(context))
+            return;
+
+        if (IsInExpressionTree(context))
             return;
 
         if (context.Node is not PrefixUnaryExpressionSyntax prefix || !prefix.IsKind(SyntaxKind.LogicalNotExpression))
@@ -83,6 +107,9 @@ public sealed class UseCSharp9PatternMatchingAnalyzer : DiagnosticAnalyzer
     private static void AnalyzeLogicalBinaryExpression(SyntaxNodeAnalysisContext context)
     {
         if (!IsCSharp9OrAbove(context))
+            return;
+
+        if (IsInExpressionTree(context))
             return;
 
         if (context.Node is not BinaryExpressionSyntax binary)

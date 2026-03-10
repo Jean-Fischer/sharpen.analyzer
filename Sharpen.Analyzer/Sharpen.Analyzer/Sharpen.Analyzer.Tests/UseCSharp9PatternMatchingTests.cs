@@ -135,6 +135,33 @@ public class C
     }
 
     [Fact]
+    public async Task UseCSharp9PatternMatching_DoesNotTrigger_InsideExpressionTreeLambda()
+    {
+        const string code = @"
+using System;
+using System.Linq;
+using System.Linq.Expressions;
+
+public class SurveyHistory
+{
+    public string MarketType { get; set; }
+}
+
+public class C
+{
+    public void M(IQueryable<SurveyHistory> source)
+    {
+        // This lambda is converted to Expression<Func<...>>.
+        // Rewriting `!= null` to `is not null` would fail at runtime/compile-time for expression trees.
+        var q = source.Where(s => s.MarketType != null);
+    }
+}
+";
+
+        await Verifier.VerifyAnalyzerAsync(code).ConfigureAwait(false);
+    }
+
+    [Fact]
     public async Task UseCSharp9PatternMatching_DoesNotTrigger_ForNonIdenticalRepeatedExpression()
     {
         const string code = @"
