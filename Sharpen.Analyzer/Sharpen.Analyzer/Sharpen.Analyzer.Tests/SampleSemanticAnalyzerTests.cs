@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using Xunit;
 using Verifier =
-    Microsoft.CodeAnalysis.CSharp.Testing.XUnit.AnalyzerVerifier<
-        Sharpen.Analyzer.SampleSemanticAnalyzer>;
+    Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
+        Sharpen.Analyzer.SampleSemanticAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 

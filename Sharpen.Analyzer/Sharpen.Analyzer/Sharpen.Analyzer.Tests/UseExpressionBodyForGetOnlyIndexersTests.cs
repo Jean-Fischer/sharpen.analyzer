@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 using Xunit;
-using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.CodeFixVerifier<
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp6.UseExpressionBodyForGetOnlyIndexersAnalyzer,
-    Sharpen.Analyzer.FixProvider.CSharp6.UseExpressionBodyForGetOnlyIndexersCodeFixProvider>;
+    Sharpen.Analyzer.FixProvider.CSharp6.UseExpressionBodyForGetOnlyIndexersCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 

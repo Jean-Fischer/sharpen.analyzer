@@ -1,11 +1,11 @@
 using System.Threading.Tasks;
 using Xunit;
-using VerifierReturn = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.AnalyzerVerifier<
-    Sharpen.Analyzer.Analyzers.CSharp3.UseDefaultExpressionInReturnStatementsAnalyzer>;
-using VerifierMethod = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.AnalyzerVerifier<
-    Sharpen.Analyzer.Analyzers.CSharp3.UseDefaultExpressionInOptionalMethodParametersAnalyzer>;
-using VerifierCtor = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.AnalyzerVerifier<
-    Sharpen.Analyzer.Analyzers.CSharp3.UseDefaultExpressionInOptionalConstructorParametersAnalyzer>;
+using VerifierReturn = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
+    Sharpen.Analyzer.Analyzers.CSharp3.UseDefaultExpressionInReturnStatementsAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+using VerifierMethod = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
+    Sharpen.Analyzer.Analyzers.CSharp3.UseDefaultExpressionInOptionalMethodParametersAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+using VerifierCtor = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
+    Sharpen.Analyzer.Analyzers.CSharp3.UseDefaultExpressionInOptionalConstructorParametersAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests
 {
