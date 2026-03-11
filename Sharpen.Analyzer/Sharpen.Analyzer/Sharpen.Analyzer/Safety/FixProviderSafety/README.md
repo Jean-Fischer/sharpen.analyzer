@@ -17,6 +17,6 @@ Safety checks are used to gate:
 - Keep checkers small and conservative.
 - Prefer syntax-only checks first; use semantic model only when needed.
 
-## Next
+## Registry
 
-See the mapping registry (to be added) for the canonical list of fix provider ↔ safety checker pairs.
+The canonical fix provider ↔ safety checker mapping lives in [`FixProviderSafetyMapping`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/FixProviderSafetyMapping.cs:1).

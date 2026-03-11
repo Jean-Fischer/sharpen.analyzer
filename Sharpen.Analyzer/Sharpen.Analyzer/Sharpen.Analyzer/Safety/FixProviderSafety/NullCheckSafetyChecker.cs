@@ -14,6 +14,7 @@ public sealed class NullCheckSafetyChecker : IFixProviderSafetyChecker
         Diagnostic diagnostic,
         CancellationToken cancellationToken = default)
         => FixProviderSafetyResult.Unsafe(
+            FixProviderSafetyStage.Local,
             reasonId: "null-check-not-implemented",
             message: "Null-check safety checker placeholder: corresponding fix provider not implemented yet.");
 }

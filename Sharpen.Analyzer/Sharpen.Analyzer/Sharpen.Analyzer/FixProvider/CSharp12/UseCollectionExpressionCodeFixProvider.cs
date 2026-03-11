@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Sharpen.Analyzer.Extensions;
 using Sharpen.Analyzer.Rules;
-using Sharpen.Analyzer.Safety;
+using Sharpen.Analyzer.Safety.FixProviderSafety;
 
 namespace Sharpen.Analyzer;
 
@@ -44,14 +44,15 @@ public sealed class UseCollectionExpressionCodeFixProvider : CodeFixProvider
         if (semanticModel is null)
             return;
 
-        var safetyEvaluation = FirstPassSafetyRunner.EvaluateOrMatchFailed(
+        var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
+            checker: new CollectionExpressionSafetyChecker(),
             document: context.Document,
             semanticModel: semanticModel,
             diagnostic: diagnostic,
             matchSucceeded: true,
             cancellationToken: context.CancellationToken);
 
-        if (safetyEvaluation.Outcome != FirstPassSafetyOutcome.Safe)
+        if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
             return;
 
         context.RegisterCodeFix(

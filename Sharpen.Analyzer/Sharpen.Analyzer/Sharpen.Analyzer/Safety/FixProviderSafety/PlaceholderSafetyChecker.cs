@@ -19,6 +19,7 @@ public sealed class PlaceholderSafetyChecker : IFixProviderSafetyChecker
         Diagnostic diagnostic,
         CancellationToken cancellationToken = default)
         => FixProviderSafetyResult.Unsafe(
+            FixProviderSafetyStage.Local,
             reasonId: "placeholder-checker",
             message: "Placeholder safety checker: real fix provider/checker not implemented yet.");
 }

@@ -14,6 +14,7 @@ public sealed class LinqSafetyChecker : IFixProviderSafetyChecker
         Diagnostic diagnostic,
         CancellationToken cancellationToken = default)
         => FixProviderSafetyResult.Unsafe(
+            FixProviderSafetyStage.Local,
             reasonId: "linq-not-implemented",
             message: "LINQ safety checker placeholder: corresponding fix provider not implemented yet.");
 }

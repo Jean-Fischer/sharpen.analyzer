@@ -9,6 +9,7 @@ namespace Sharpen.Analyzer.Safety;
 /// - match succeeded but unsafe (candidate blocked)
 /// - match succeeded and safe
 /// </summary>
+[System.Obsolete("Use FixProviderSafetyRunner (global + local pipeline). This runner will be removed once all call sites are migrated.")]
 public static class FirstPassSafetyRunner
 {
     public static FirstPassSafetyEvaluation EvaluateOrMatchFailed(

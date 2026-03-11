@@ -1,0 +1,58 @@
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Testing;
+using Sharpen.Analyzer.Rules;
+using Sharpen.Analyzer.Safety;
+using Xunit;
+using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
+    Sharpen.Analyzer.Analyzers.CSharp10.UseInterpolatedStringAnalyzer,
+    Sharpen.Analyzer.FixProvider.CSharp10.UseInterpolatedStringCodeFixProvider,
+    Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+
+namespace Sharpen.Analyzer.Tests;
+
+public sealed class FixProviderSafetyIntegrationTests
+{
+    [Fact]
+    public async Task UseInterpolatedString_DiagnosticAndFix_AreSuppressed_WhenFirstPassSafetyBlocks()
+    {
+        FirstPassSafety.Gate = new FirstPassSafetyGate(new IFirstPassSafetyCheck[]
+        {
+            new AlwaysUnsafeCheck(),
+        });
+
+        try
+        {
+            const string original = @"
+public class C
+{
+    public string M(string name)
+    {
+        return string.Format(""Hello, {0}!"", name);
+    }
+}
+";
+
+            // Analyzer diagnostic should be suppressed.
+            await Verifier.VerifyAnalyzerAsync(original);
+
+            // Code fix should also be suppressed (no code actions), so the code remains unchanged.
+            await Verifier.VerifyCodeFixAsync(original, original);
+        }
+        finally
+        {
+            FirstPassSafety.Gate = FirstPassSafetyGate.Empty;
+            FirstPassSafety.UnsafeLogger = null;
+        }
+    }
+
+    private sealed class AlwaysUnsafeCheck : IFirstPassSafetyCheck
+    {
+        public SafetyResult IsSafe(
+            Document? document,
+            SemanticModel semanticModel,
+            Diagnostic? diagnostic,
+            System.Threading.CancellationToken cancellationToken = default)
+            => SafetyResult.Unsafe("test.always-unsafe");
+    }
+}

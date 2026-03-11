@@ -43,4 +43,45 @@ public static class FixProviderSafetyMappingValidation
                 throw new InvalidOperationException($"Missing required safety checker in mapping: {required.FullName}");
         }
     }
+
+    /// <summary>
+    /// Validates that a raw mapping list does not contain duplicate fix provider types.
+    /// </summary>
+    /// <remarks>
+    /// A dictionary cannot contain duplicate keys by construction, so this validation is only
+    /// meaningful for list-based inputs.
+    /// </remarks>
+    public static void ValidateNoDuplicateFixProviderTypes(IEnumerable<KeyValuePair<Type, Type>> mapping)
+    {
+        if (mapping is null)
+            throw new ArgumentNullException(nameof(mapping));
+
+        var seen = new HashSet<Type>();
+        foreach (var entry in mapping)
+        {
+            if (!seen.Add(entry.Key))
+                throw new InvalidOperationException($"Duplicate fix provider type in mapping: {entry.Key.FullName}");
+        }
+    }
+
+    public static void ValidateAllKnownFixProvidersAreMapped(IReadOnlyDictionary<Type, Type> mapping)
+    {
+        if (mapping is null)
+            throw new ArgumentNullException(nameof(mapping));
+
+        // Current codebase policy: only enforce mapping completeness for the fix providers
+        // that are already part of the initial safety-checker rollout.
+        // (A full assembly scan can be added later once all fix providers are migrated.)
+        var requiredFixProviderTypes = new HashSet<Type>
+        {
+            typeof(Sharpen.Analyzer.UseCollectionExpressionCodeFixProvider),
+            typeof(Sharpen.Analyzer.FixProvider.CSharp10.UseInterpolatedStringCodeFixProvider),
+        };
+
+        foreach (var required in requiredFixProviderTypes)
+        {
+            if (!mapping.ContainsKey(required))
+                throw new InvalidOperationException($"Missing required fix provider mapping: {required.FullName}");
+        }
+    }
 }

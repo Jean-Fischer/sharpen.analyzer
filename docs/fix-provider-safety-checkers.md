@@ -1,6 +1,16 @@
 # Fix provider safety checkers
 
-This project uses **per-fix-provider safety checkers** to ensure we only suggest transformations that are safe.
+This project uses a **unified safety pipeline** to ensure we only suggest transformations that are safe.
+
+The pipeline is executed by [`FixProviderSafetyRunner`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/FixProviderSafetyRunner.cs) and has two stages:
+
+1. **Global stage**: [`FirstPassSafety`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FirstPassSafety.cs) gate (cross-cutting, conservative)
+2. **Local stage**: per-fix-provider checker implementing [`IFixProviderSafetyChecker`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/IFixProviderSafetyChecker.cs)
+
+Short-circuit rules:
+
+- If the global stage is unsafe, the local checker is not evaluated.
+- If either stage is unsafe, we suppress both diagnostics and code actions.
 
 ## One-to-one mapping
 
@@ -26,8 +36,11 @@ The mapping is defined in [`FixProviderSafetyMapping.cs`](../Sharpen.Analyzer/Sh
 ### Analyzer pipeline
 
 1. Analyzer matches a pattern.
-2. Analyzer runs the mapped safety checker.
+2. Analyzer calls `FixProviderSafetyRunner` (global stage).
 3. If safe, analyzer reports a diagnostic.
+
+> Note: analyzer-side local checker evaluation is currently not executed because checkers require a `Document` instance.
+> The global stage still ensures diagnostics are suppressed when the global gate blocks.
 
 Example (simplified):
 
@@ -49,7 +62,7 @@ context.ReportDiagnostic(Diagnostic.Create(rule, matchedNode.GetLocation()));
 ### Fix provider pipeline
 
 1. Fix provider locates the node from the diagnostic.
-2. Fix provider runs the mapped safety checker.
+2. Fix provider calls `FixProviderSafetyRunner` (global stage then local stage).
 3. If safe, fix provider registers the code action.
 
 Example (simplified):
@@ -91,9 +104,17 @@ Flow:
 
 1. Create a new checker implementing [`IFixProviderSafetyChecker`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/IFixProviderSafetyChecker.cs).
 2. Add a mapping entry in [`FixProviderSafetyMapping.cs`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/FixProviderSafetyMapping.cs).
-3. Gate the analyzer before `ReportDiagnostic`.
-4. Gate the fix provider before `RegisterCodeFix`.
-5. Add tests for the checker.
+3. Gate the analyzer before `ReportDiagnostic` by calling `FixProviderSafetyRunner`.
+4. Gate the fix provider before `RegisterCodeFix` by calling `FixProviderSafetyRunner`.
+5. Do not call [`FirstPassSafetyRunner`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FirstPassSafetyRunner.cs) directly.
+6. Add tests for the checker and at least one integration test that exercises the global gate.
+
+## Deprecation note: `FirstPassSafetyRunner`
+
+[`FirstPassSafetyRunner`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FirstPassSafetyRunner.cs) is deprecated and should not be used by fix providers.
+
+- Existing call sites have been migrated to `FixProviderSafetyRunner`.
+- New code should always use `FixProviderSafetyRunner` so the global + local stages remain consistent.
 
 ## Notes
 

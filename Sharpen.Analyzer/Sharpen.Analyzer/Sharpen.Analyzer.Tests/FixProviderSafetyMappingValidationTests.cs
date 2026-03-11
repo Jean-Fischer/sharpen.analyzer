@@ -37,6 +37,33 @@ public sealed class FixProviderSafetyMappingValidationTests
     }
 
     [Fact]
+    public void ValidateAllKnownFixProvidersAreMapped_Throws_WhenRequiredFixProviderMissing()
+    {
+        var mapping = new Dictionary<Type, Type>
+        {
+            // Intentionally omit UseInterpolatedStringCodeFixProvider
+            { typeof(Sharpen.Analyzer.UseCollectionExpressionCodeFixProvider), typeof(CollectionExpressionSafetyChecker) },
+        };
+
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            FixProviderSafetyMappingValidation.ValidateAllKnownFixProvidersAreMapped(mapping));
+
+        Assert.Contains(nameof(Sharpen.Analyzer.FixProvider.CSharp10.UseInterpolatedStringCodeFixProvider), ex.Message);
+    }
+
+    [Fact]
+    public void ValidateAllKnownFixProvidersAreMapped_DoesNotThrow_WhenAllRequiredFixProvidersPresent()
+    {
+        var mapping = new Dictionary<Type, Type>
+        {
+            { typeof(Sharpen.Analyzer.UseCollectionExpressionCodeFixProvider), typeof(CollectionExpressionSafetyChecker) },
+            { typeof(Sharpen.Analyzer.FixProvider.CSharp10.UseInterpolatedStringCodeFixProvider), typeof(StringInterpolationSafetyChecker) },
+        };
+
+        FixProviderSafetyMappingValidation.ValidateAllKnownFixProvidersAreMapped(mapping);
+    }
+
+    [Fact]
     public void ToDictionary_Throws_WhenDuplicateFixProviderType()
     {
         // This test validates the duplicate detection behavior in FixProviderSafetyMapping.ToDictionary().

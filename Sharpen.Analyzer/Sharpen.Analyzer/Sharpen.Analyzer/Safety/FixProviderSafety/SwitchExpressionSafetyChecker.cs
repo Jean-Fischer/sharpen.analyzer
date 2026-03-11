@@ -14,6 +14,7 @@ public sealed class SwitchExpressionSafetyChecker : IFixProviderSafetyChecker
         Diagnostic diagnostic,
         CancellationToken cancellationToken = default)
         => FixProviderSafetyResult.Unsafe(
+            FixProviderSafetyStage.Local,
             reasonId: "switch-expression-not-implemented",
             message: "Switch-expression safety checker placeholder: corresponding fix provider not implemented yet.");
 }

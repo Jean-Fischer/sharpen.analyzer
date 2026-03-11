@@ -34,15 +34,17 @@ public sealed class FirstPassSafetyGate
     /// - <paramref name="cancellationToken"/> is checked before each check.
     /// </remarks>
     public SafetyResult Evaluate(
-        Document document,
+        Document? document,
         SemanticModel semanticModel,
-        Diagnostic diagnostic,
+        Diagnostic? diagnostic,
         CancellationToken cancellationToken = default)
     {
         foreach (var check in _checks)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
+            // Some call sites (e.g. analyzer path) do not have a Document/Diagnostic instance.
+            // Checks must tolerate nulls and treat them as "insufficient context".
             var result = check.IsSafe(document, semanticModel, diagnostic, cancellationToken);
             if (!result.IsSafe)
                 return result;

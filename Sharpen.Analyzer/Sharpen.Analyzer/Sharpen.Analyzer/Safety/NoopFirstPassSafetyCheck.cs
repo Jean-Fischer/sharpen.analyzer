@@ -6,9 +6,9 @@ namespace Sharpen.Analyzer.Safety;
 public sealed class NoopFirstPassSafetyCheck : IFirstPassSafetyCheck
 {
     public SafetyResult IsSafe(
-        Document document,
+        Document? document,
         SemanticModel semanticModel,
-        Diagnostic diagnostic,
+        Diagnostic? diagnostic,
         CancellationToken cancellationToken = default)
         => SafetyResult.Safe();
 }

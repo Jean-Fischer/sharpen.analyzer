@@ -32,11 +32,8 @@ public class C
 }
 ";
 
-            var expected = Verifier.Diagnostic(CSharp12Rules.UseCollectionExpressionRule)
-                .WithLocation(6, 16);
-
-            // If the safety gate blocks, the code fix should not be applied.
-            await Verifier.VerifyAnalyzerAsync(original, expected);
+            // If the safety gate blocks, the analyzer should not report the diagnostic.
+            await Verifier.VerifyAnalyzerAsync(original);
         }
         finally
         {
@@ -68,11 +65,9 @@ public class C
 }
 ";
 
-            var expected = Verifier.Diagnostic(CSharp12Rules.UseCollectionExpressionRule)
-                .WithLocation(6, 16);
-
             // Trigger code fix discovery (this is where the safety gate runs).
-            await Verifier.VerifyCodeFixAsync(original, expected, original);
+            // The analyzer diagnostic is suppressed, so we don't expect any diagnostics.
+            await Verifier.VerifyCodeFixAsync(original, original);
 
             Assert.NotNull(observed);
             Assert.False(observed!.Value.IsSafe);
@@ -88,9 +83,9 @@ public class C
     private sealed class AlwaysUnsafeCheck : IFirstPassSafetyCheck
     {
         public SafetyResult IsSafe(
-            Document document,
+            Document? document,
             SemanticModel semanticModel,
-            Diagnostic diagnostic,
+            Diagnostic? diagnostic,
             System.Threading.CancellationToken cancellationToken = default)
             => SafetyResult.Unsafe("test.always-unsafe");
     }
