@@ -52,20 +52,26 @@ jobs:
       - name: Build
         run: dotnet build "Sharpen.Analyzer/Sharpen.Analyzer.sln" --configuration Release --no-restore
 
-      # Run tests with coverage (Coverlet collector -> OpenCover)
-      - name: Run tests with coverage
-        shell: cmd
+      # Install Coverlet (required for coverage report generation)
+      - name: Install Coverlet
+        shell: powershell
+        run: dotnet tool install --global coverlet.console
+
+      # Run tests with coverage (Coverlet console -> OpenCover)
+      - name: Run tests for coverage
+        shell: powershell
         run: |
-          if not exist "Sharpen.Analyzer\TestResults\Coverage" mkdir "Sharpen.Analyzer\TestResults\Coverage"
-          dotnet test "Sharpen.Analyzer\Sharpen.Analyzer.sln" --configuration Release --no-restore --collect:"XPlat Code Coverage" --settings "Sharpen.Analyzer\coverlet.runsettings"
-          for /r "Sharpen.Analyzer" %%F in (coverage.opencover.xml) do (
-            copy /y "%%F" "Sharpen.Analyzer\TestResults\Coverage\coverage.opencover.xml" >nul
-            goto :copied
-          )
-          echo ERROR: coverage.opencover.xml not found
-          exit /b 1
-          :copied
-          echo Coverage report: Sharpen.Analyzer\TestResults\Coverage\coverage.opencover.xml
+          New-Item -ItemType Directory -Force -Path "Sharpen.Analyzer/TestResults/Coverage" | Out-Null
+
+          # Build the test project so the test assembly exists for coverlet
+          dotnet build "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.Tests/Sharpen.Analyzer.Tests.csproj" --configuration Release --no-restore
+
+          # Generate OpenCover report for SonarQube
+          coverlet "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.Tests/bin/Release/net10.0/Sharpen.Analyzer.Tests.dll" `
+            --target "dotnet" `
+            --targetargs "test \"Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.Tests/Sharpen.Analyzer.Tests.csproj\" --configuration Release --no-build" `
+            --format opencover `
+            --output "Sharpen.Analyzer/TestResults/Coverage/coverage.opencover.xml"
 
       # End SonarQube analysis
       - name: End SonarQube analysis
