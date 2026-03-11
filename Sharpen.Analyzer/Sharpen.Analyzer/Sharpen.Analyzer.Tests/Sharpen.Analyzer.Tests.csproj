@@ -22,7 +22,7 @@
         </PackageReference>
 
         <!-- Enables `dotnet test` code coverage collection (Coverlet) -->
-        <PackageReference Include="coverlet.collector" Version="8.0.1">
+        <PackageReference Include="coverlet.collector" Version="8.0.0">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
     </ItemGroup>
