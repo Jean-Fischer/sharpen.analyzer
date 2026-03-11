@@ -14,6 +14,28 @@ dotnet add package Sharpen.Analyzer
 
 Once the package is referenced, diagnostics are produced by Roslyn-based IDEs/editors and during `dotnet build` / `dotnet test`.
 
+## Test coverage (Coverlet + SonarQube)
+
+This repo is configured to generate **OpenCover** coverage reports (for SonarQube) via Coverlet's test collector.
+
+### Generate coverage locally
+
+From the repo root:
+
+```bat
+dotnet test -c Release Sharpen.Analyzer\Sharpen.Analyzer.sln --collect:"XPlat Code Coverage" --settings Sharpen.Analyzer\coverlet.runsettings
+```
+
+Coverage output is written to a deterministic location (OpenCover format):
+
+- `Sharpen.Analyzer\TestResults\Coverage\coverage.opencover.xml`
+
+### SonarScanner configuration
+
+Point SonarScanner to the OpenCover report:
+
+- `sonar.cs.opencover.reportsPaths=Sharpen.Analyzer/TestResults/Coverage/coverage.opencover.xml`
+
 ### Enable / configure rules
 
 Rules can be configured using `.editorconfig` (severity, enable/disable, etc.).

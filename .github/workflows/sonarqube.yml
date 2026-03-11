@@ -46,15 +46,26 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
-          dotnet sonarscanner begin /k:"Jean-Fischer_sharpen.analyzer" /o:"jean-fischer" /d:sonar.token="$env:SONAR_TOKEN" /d:sonar.cs.opencover.reportsPaths="coverage.xml"
+          dotnet sonarscanner begin /k:"Jean-Fischer_sharpen.analyzer" /o:"jean-fischer" /d:sonar.token="$env:SONAR_TOKEN" /d:sonar.cs.opencover.reportsPaths="Sharpen.Analyzer/TestResults/Coverage/coverage.opencover.xml"
 
       # Build project
       - name: Build
         run: dotnet build "Sharpen.Analyzer/Sharpen.Analyzer.sln" --configuration Release --no-restore
 
-      # Run tests with coverage
+      # Run tests with coverage (Coverlet collector -> OpenCover)
       - name: Run tests with coverage
-        run: dotnet test "Sharpen.Analyzer/Sharpen.Analyzer.sln" --configuration Release --no-restore /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage.xml
+        shell: cmd
+        run: |
+          if not exist "Sharpen.Analyzer\TestResults\Coverage" mkdir "Sharpen.Analyzer\TestResults\Coverage"
+          dotnet test "Sharpen.Analyzer\Sharpen.Analyzer.sln" --configuration Release --no-restore --collect:"XPlat Code Coverage" --settings "Sharpen.Analyzer\coverlet.runsettings"
+          for /r "Sharpen.Analyzer" %%F in (coverage.opencover.xml) do (
+            copy /y "%%F" "Sharpen.Analyzer\TestResults\Coverage\coverage.opencover.xml" >nul
+            goto :copied
+          )
+          echo ERROR: coverage.opencover.xml not found
+          exit /b 1
+          :copied
+          echo Coverage report: Sharpen.Analyzer\TestResults\Coverage\coverage.opencover.xml
 
       # End SonarQube analysis
       - name: End SonarQube analysis

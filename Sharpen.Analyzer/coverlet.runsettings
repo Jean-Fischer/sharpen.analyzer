@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <!-- SonarQube expects OpenCover for `sonar.cs.opencover.reportsPaths` -->
+          <Format>opencover</Format>
+
+          <!-- Deterministic output location (relative to repo root) -->
+          <Output>./TestResults/Coverage/</Output>
+          <OutputName>coverage</OutputName>
+
+          <!-- Optional: avoid noise from generated files -->
+          <ExcludeByFile>**/obj/**,**/*.g.cs,**/*.Designer.cs</ExcludeByFile>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
