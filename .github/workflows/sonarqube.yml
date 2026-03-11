@@ -68,8 +68,14 @@ jobs:
 
           # Generate OpenCover report for SonarQube
           $testDll = "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.Tests/bin/Release/net10.0/Sharpen.Analyzer.Tests.dll"
-          $testArgs = "test \"Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.Tests/Sharpen.Analyzer.Tests.csproj\" --configuration Release --no-build"
-          coverlet $testDll --target "dotnet" --targetargs $testArgs --working-directory "Sharpen.Analyzer" -f opencover -o "Sharpen.Analyzer/TestResults/Coverage/coverage.opencover.xml"
+          $testArgs = @(
+            'test'
+            'Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.Tests/Sharpen.Analyzer.Tests.csproj'
+            '--configuration'
+            'Release'
+            '--no-build'
+          )
+          coverlet $testDll --target "dotnet" --targetargs ($testArgs -join ' ') --working-directory "Sharpen.Analyzer" -f opencover -o "Sharpen.Analyzer/TestResults/Coverage/coverage.opencover.xml"
 
       # End SonarQube analysis
       - name: End SonarQube analysis
