@@ -2,47 +2,62 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|--------------------
-SHARPEN002 |  |  |
-SHARPEN003 |  |  |
-SHARPEN004 |  |  |
-SHARPEN005 |  |  |
-SHARPEN006 |  |  |
-SHARPEN007 |  |  |
-SHARPEN008 |  |  |
-SHARPEN009 |  |  |
-SHARPEN010 |  |  |
-SHARPEN011 |  |  |
-SHARPEN012 |  |  |
-SHARPEN013 |  |  |
-SHARPEN014 |  |  |
-SHARPEN015 |  |  |
-SHARPEN016 |  |  |
-SHARPEN017 |  |  |
-SHARPEN018 |  |  |
-SHARPEN019 |  |  |
-SHARPEN020 |  |  |
-SHARPEN021 |  |  |
-SHARPEN022 |  |  |
-SHARPEN023 |  |  |
-SHARPEN024 |  |  |
-SHARPEN025 |  |  |
-SHARPEN026 |  |  |
-SHARPEN027 |  |  |
-SHARPEN028 |  |  |
-SHARPEN029 |  |  |
-SHARPEN030 |  |  |
-SHARPEN031 |  |  |
-SHARPEN032 |  |  |
-SHARPEN033 |  |  |
-SHARPEN034 |  |  |
-SHARPEN035 |  |  |
-SHARPEN036 |  |  |
-SHARPEN037 |  |  |
-SHARPEN038 |  |  |
-SHARPEN039 |  |  |
-SHARPEN055 |  |  |
-SHARPEN056 |  |  |
-SHARPEN057 |  |  |
-AB0001 |  |  |
-AB0002 |  |  |
+SHARPEN002 | Sharpen.CSharp3 | Info | Use var keyword in variable declaration with object creation
+SHARPEN003 | Sharpen.CSharp5 | Warning | Use async equivalent
+SHARPEN004 | Sharpen.CSharp5 | Warning | Await Task.Delay instead of calling Thread.Sleep
+SHARPEN005 | Sharpen.CSharp5 | Warning | Await Task instead of calling Task.Result
+SHARPEN006 | Sharpen.CSharp5 | Warning | Await Task instead of calling Task.Wait
+SHARPEN007 | Sharpen.CSharp5 | Warning | Await Task.WhenAny instead of calling Task.WaitAny
+SHARPEN008 | Sharpen.CSharp5 | Warning | Await Task.WhenAll instead of calling Task.WaitAll
+SHARPEN009 | Sharpen.CSharp5 | Warning | Consider awaiting equivalent asynchronous method and making the caller asynchronous
+SHARPEN010 | Sharpen.CSharp6 | Info | Use expression-bodied member for get-only property
+SHARPEN011 | Sharpen.CSharp6 | Info | Use expression-bodied member for get-only indexer
+SHARPEN012 | Sharpen.CSharp6 | Info | Use nameof expression for parameter name
+SHARPEN013 | Sharpen.CSharp6 | Info | Use nameof expression for dependency property name
+SHARPEN014 | Sharpen.CSharp7 | Info | Use expression-bodied member for get accessor in property
+SHARPEN015 | Sharpen.CSharp7 | Info | Use expression-bodied member for constructor
+SHARPEN016 | Sharpen.CSharp7 | Info | Use expression-bodied member for destructor
+SHARPEN017 | Sharpen.CSharp7 | Info | Use expression-bodied member for local function
+SHARPEN018 | Sharpen.CSharp7 | Info | Use out variables in method invocations
+SHARPEN019 | Sharpen.CSharp7 | Info | Use out variables in object creations
+SHARPEN020 | Sharpen.CSharp7 | Info | Discard out variables in method invocations
+SHARPEN021 | Sharpen.CSharp7 | Info | Discard out variables in object creations
+SHARPEN022 | Sharpen.CSharp71 | Info | Use default expression in return statements
+SHARPEN023 | Sharpen.CSharp71 | Info | Use default expression in optional method parameters
+SHARPEN024 | Sharpen.CSharp71 | Info | Use default expression in optional constructor parameters
+SHARPEN025 | Sharpen.CSharp8 | Info | Replace using statement with using declaration
+SHARPEN026 | Sharpen.CSharp8 | Info | Replace switch statement with switch expression
+SHARPEN027 | Sharpen.CSharp8 | Info | Consider replacing switch statement with switch expression
+SHARPEN028 | Sharpen.CSharp8 | Info | Replace switch statement with switch expression
+SHARPEN029 | Sharpen.CSharp8 | Info | Consider replacing switch statement with switch expression
+SHARPEN030 | Sharpen.CSharp8 | Info | Replace switch statement with switch expression
+SHARPEN031 | Sharpen.CSharp8 | Info | Use ??= operator instead of assigning result of the ?? operator
+SHARPEN032 | Sharpen.CSharp8 | Info | Consider using ??= operator instead of assigning result of the ?? operator
+SHARPEN033 | Sharpen.CSharp8 | Info | Enable nullable context and declare identifier as nullable
+SHARPEN034 | Sharpen.CSharp8 | Info | Use index from the end
+SHARPEN035 | Sharpen.CSharp9 | Info | Use init-only setter
+SHARPEN036 | Sharpen.CSharp9 | Info | Use record type
+SHARPEN037 | Sharpen.CSharp9 | Info | Use top-level statements
+SHARPEN038 | Sharpen.CSharp9 | Info | Use C# 9 pattern matching
+SHARPEN039 | Sharpen.CSharp9 | Info | Use target-typed new
+SHARPEN040 | Sharpen.CSharp10 | Info | Use file-scoped namespace
+SHARPEN041 | Sharpen.CSharp10 | Info | Use global using directive
+SHARPEN042 | Sharpen.CSharp10 | Info | Use record struct
+SHARPEN043 | Sharpen.CSharp10 | Info | Use extended property pattern
+SHARPEN044 | Sharpen.CSharp10 | Info | Use interpolated string
+SHARPEN045 | Sharpen.CSharp10 | Info | Use const interpolated string
+SHARPEN046 | Sharpen.CSharp11 | Info | Use raw string literal
+SHARPEN047 | Sharpen.CSharp11 | Info | Use required member
+SHARPEN048 | Sharpen.CSharp11 | Info | Use generic math constraints
+SHARPEN049 | Sharpen.CSharp11 | Info | Use list pattern
+SHARPEN050 | Sharpen.CSharp11 | Info | Use UTF-8 string literal
+SHARPEN051 | Sharpen.CSharp12 | Info | Use primary constructor
+SHARPEN052 | Sharpen.CSharp12 | Info | Use collection expression
+SHARPEN053 | Sharpen.CSharp12 | Info | Use default lambda parameters
+SHARPEN054 | Sharpen.CSharp12 | Info | Use InlineArray
+SHARPEN055 | Sharpen.CSharp7 | Info | Use expression-bodied member for set accessor in indexer
+SHARPEN056 | Sharpen.CSharp7 | Info | Use expression-bodied member for set accessor in property
+SHARPEN057 | Sharpen.CSharp7 | Info | Use expression-bodied member for get accessor in indexer
+AB0001 | Naming | Warning | SampleSyntaxAnalyzer
+AB0002 | Naming | Warning | SampleSemanticAnalyzer
 
