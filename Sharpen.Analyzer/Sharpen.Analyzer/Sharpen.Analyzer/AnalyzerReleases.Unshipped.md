@@ -58,6 +58,4 @@ SHARPEN054 | Sharpen.CSharp12 | Info | Use InlineArray
 SHARPEN055 | Sharpen.CSharp7 | Info | Use expression-bodied member for set accessor in indexer
 SHARPEN056 | Sharpen.CSharp7 | Info | Use expression-bodied member for set accessor in property
 SHARPEN057 | Sharpen.CSharp7 | Info | Use expression-bodied member for get accessor in indexer
-AB0001 | Naming | Warning | SampleSyntaxAnalyzer
-AB0002 | Naming | Warning | SampleSemanticAnalyzer
 
