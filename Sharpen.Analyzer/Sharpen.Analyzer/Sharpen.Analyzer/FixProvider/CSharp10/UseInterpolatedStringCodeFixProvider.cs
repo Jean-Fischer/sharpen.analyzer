@@ -14,6 +14,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
+using Sharpen.Analyzer.Safety.FixProviderSafety;
 
 namespace Sharpen.Analyzer.FixProvider.CSharp10;
 
@@ -39,6 +40,23 @@ public sealed class UseInterpolatedStringCodeFixProvider : CodeFixProvider
 
         var diagnostic = context.Diagnostics.First();
         var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
+
+        var semanticModel = await context.Document
+            .GetSemanticModelAsync(context.CancellationToken)
+            .ConfigureAwait(false);
+        if (semanticModel is null)
+            return;
+
+        // Fix-provider-side safety gate: only offer code actions when the mapped safety checker says it's safe.
+        var safetyEvaluation = FixProviderSafetyRunner.Evaluate(
+            semanticModel: semanticModel,
+            fixProviderType: typeof(UseInterpolatedStringCodeFixProvider),
+            node: node,
+            diagnostic: diagnostic,
+            cancellationToken: context.CancellationToken);
+
+        if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
+            return;
 
         if (node is InvocationExpressionSyntax invocation)
         {

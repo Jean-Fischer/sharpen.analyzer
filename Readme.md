@@ -14,6 +14,10 @@ dotnet add package Sharpen.Analyzer
 
 Once the package is referenced, diagnostics are produced by Roslyn-based IDEs/editors and during `dotnet build` / `dotnet test`.
 
+### Safety gate (code fix suppression)
+
+Some code fixes are protected by a conservative “first-pass safety gate”. When a match is found but the transformation is deemed unsafe, the analyzer may still report the diagnostic, but the code fix will not be offered.
+
 ### Enable / configure rules
 
 Rules can be configured using `.editorconfig` (severity, enable/disable, etc.).

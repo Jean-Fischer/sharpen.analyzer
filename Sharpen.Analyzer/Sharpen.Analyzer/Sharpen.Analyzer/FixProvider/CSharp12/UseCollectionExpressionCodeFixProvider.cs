@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Sharpen.Analyzer.Extensions;
 using Sharpen.Analyzer.Rules;
+using Sharpen.Analyzer.Safety.FixProviderSafety;
 
 namespace Sharpen.Analyzer;
 
@@ -35,6 +36,23 @@ public sealed class UseCollectionExpressionCodeFixProvider : CodeFixProvider
 
         // We report on the array creation expression itself.
         if (node is not ExpressionSyntax expression)
+            return;
+
+        var semanticModel = await context.Document
+            .GetSemanticModelAsync(context.CancellationToken)
+            .ConfigureAwait(false);
+        if (semanticModel is null)
+            return;
+
+        var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
+            checker: new CollectionExpressionSafetyChecker(),
+            document: context.Document,
+            semanticModel: semanticModel,
+            diagnostic: diagnostic,
+            matchSucceeded: true,
+            cancellationToken: context.CancellationToken);
+
+        if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
             return;
 
         context.RegisterCodeFix(

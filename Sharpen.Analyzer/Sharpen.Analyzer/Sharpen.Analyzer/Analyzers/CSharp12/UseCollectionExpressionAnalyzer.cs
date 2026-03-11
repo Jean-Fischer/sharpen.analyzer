@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Sharpen.Analyzer.Safety.FixProviderSafety;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp12;
 
@@ -46,6 +48,9 @@ public sealed class UseCollectionExpressionAnalyzer : DiagnosticAnalyzer
         if (rank.Sizes[0] is not OmittedArraySizeExpressionSyntax)
             return;
 
+        if (!IsSafeToReport(context, arrayCreation))
+            return;
+
         context.ReportDiagnostic(Diagnostic.Create(Rules.CSharp12Rules.UseCollectionExpressionRule, arrayCreation.GetLocation()));
     }
 
@@ -58,6 +63,23 @@ public sealed class UseCollectionExpressionAnalyzer : DiagnosticAnalyzer
         if (implicitArrayCreation.Initializer == null)
             return;
 
+        if (!IsSafeToReport(context, implicitArrayCreation))
+            return;
+
         context.ReportDiagnostic(Diagnostic.Create(Rules.CSharp12Rules.UseCollectionExpressionRule, implicitArrayCreation.GetLocation()));
+    }
+
+    private static bool IsSafeToReport(SyntaxNodeAnalysisContext context, ExpressionSyntax expression)
+    {
+        // Analyzer-side safety gate: only report diagnostics when the global safety gate allows it.
+        // This keeps analyzer diagnostics aligned with fix-provider behavior.
+        var evaluation = FixProviderSafetyRunner.Evaluate(
+            semanticModel: context.SemanticModel,
+            fixProviderType: typeof(UseCollectionExpressionCodeFixProvider),
+            node: expression,
+            diagnostic: null,
+            cancellationToken: context.CancellationToken);
+
+        return evaluation.Outcome == FixProviderSafetyOutcome.Safe;
     }
 }
