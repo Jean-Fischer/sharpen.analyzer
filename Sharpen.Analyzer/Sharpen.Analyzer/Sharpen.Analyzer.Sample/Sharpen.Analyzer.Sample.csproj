@@ -4,6 +4,10 @@
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
+
+        <!-- This project intentionally contains code that triggers Sharpen analyzers.
+             Keep CI/build output clean, but still allow IDE live analysis. -->
+        <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
     </PropertyGroup>
 
     <ItemGroup>
