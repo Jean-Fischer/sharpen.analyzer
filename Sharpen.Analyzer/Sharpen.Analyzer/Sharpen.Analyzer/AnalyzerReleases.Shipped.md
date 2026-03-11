@@ -1,9 +1,7 @@
-# AnalyzerReleases.Shipped
+## Release 0.1.0
 
-<!--
-This file tracks analyzer releases for Roslyn analyzer release tracking.
+### New Rules
 
-Add entries here when diagnostics are shipped in a released package.
-See: https://github.com/dotnet/roslyn-analyzers/blob/main/src/Microsoft.CodeAnalysis.Analyzers/ReleaseTrackingAnalyzers.Help.md
--->
+Rule ID | Category | Severity | Notes
+--------|----------|----------|--------------------
 
