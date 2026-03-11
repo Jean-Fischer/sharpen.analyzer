@@ -6,6 +6,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Sharpen.Analyzer.FixProvider.CSharp10;
+using Sharpen.Analyzer.Safety.FixProviderSafety;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp10;
 
@@ -81,6 +83,9 @@ public sealed class UseInterpolatedStringAnalyzer : DiagnosticAnalyzer
 
     private static void Report(SyntaxNodeAnalysisContext context, ExpressionSyntax expr)
     {
+        if (!IsSafeToReport(context, expr))
+            return;
+
         // If this expression is assigned to a const string, also report the const-specific diagnostic.
         if (IsConstStringAssignment(expr, context.SemanticModel, context.CancellationToken))
         {
@@ -89,6 +94,18 @@ public sealed class UseInterpolatedStringAnalyzer : DiagnosticAnalyzer
         }
 
         context.ReportDiagnostic(Diagnostic.Create(Rules.CSharp10Rules.UseInterpolatedStringRule, expr.GetLocation()));
+    }
+
+    private static bool IsSafeToReport(SyntaxNodeAnalysisContext context, ExpressionSyntax expression)
+    {
+        var evaluation = FixProviderSafetyRunner.Evaluate(
+            semanticModel: context.SemanticModel,
+            fixProviderType: typeof(UseInterpolatedStringCodeFixProvider),
+            node: expression,
+            diagnostic: null,
+            cancellationToken: context.CancellationToken);
+
+        return evaluation.Outcome == FixProviderSafetyOutcome.Safe;
     }
 
     private static bool IsConstStringAssignment(ExpressionSyntax expr, SemanticModel model, System.Threading.CancellationToken ct)
