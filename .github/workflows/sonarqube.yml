@@ -75,7 +75,14 @@ jobs:
             'Release'
             '--no-build'
           )
-          coverlet $testDll --target "dotnet" --targetargs ($testArgs -join ' ') --working-directory "Sharpen.Analyzer" -f opencover -o "Sharpen.Analyzer/TestResults/Coverage/coverage.opencover.xml"
+
+          Push-Location "Sharpen.Analyzer"
+          try {
+            coverlet "../$testDll" --target "dotnet" --targetargs ($testArgs -join ' ') -f opencover -o "TestResults/Coverage/coverage.opencover.xml"
+          }
+          finally {
+            Pop-Location
+          }
 
       # End SonarQube analysis
       - name: End SonarQube analysis
