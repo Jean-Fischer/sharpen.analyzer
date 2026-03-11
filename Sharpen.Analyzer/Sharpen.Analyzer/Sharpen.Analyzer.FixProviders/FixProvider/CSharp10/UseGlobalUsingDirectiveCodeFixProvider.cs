@@ -1,54 +1,45 @@
 using System.Collections.Immutable;
 using System.Composition;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
+using Sharpen.Analyzer.FixProvider.Common;
 
 namespace Sharpen.Analyzer.FixProvider.CSharp10;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseGlobalUsingDirectiveCodeFixProvider))]
 [Shared]
-public sealed class UseGlobalUsingDirectiveCodeFixProvider : CodeFixProvider
+public sealed class UseGlobalUsingDirectiveCodeFixProvider : SharpenCodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(Rules.CSharp10Rules.UseGlobalUsingDirectiveRule.Id);
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
-
-    public override async Task RegisterCodeFixesAsync(CodeFixContext context)
-    {
-        if (!await IsCSharp10OrAboveAsync(context.Document, context.CancellationToken).ConfigureAwait(false))
-            return;
-
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-        if (root == null)
-            return;
-
-        var diagnostic = context.Diagnostics.First();
-        var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-        var usingDirective = node.FirstAncestorOrSelf<UsingDirectiveSyntax>();
-        if (usingDirective == null)
-            return;
-
-        context.RegisterCodeFix(
-            CodeAction.Create(
-                title: "Use global using",
-                createChangedDocument: c => ApplyFixAsync(context.Document, usingDirective, c),
-                equivalenceKey: "UseGlobalUsing"),
-            diagnostic);
-    }
-
-    private static async Task<bool> IsCSharp10OrAboveAsync(Document document, CancellationToken ct)
+    protected override async Task<bool> ShouldRegisterFixesAsync(Document document, CancellationToken ct)
     {
         var compilation = await document.Project.GetCompilationAsync(ct).ConfigureAwait(false);
         return compilation != null && Common.CSharpLanguageVersion.IsCSharp10OrAbove(compilation);
+    }
+
+    protected override Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
+    {
+        var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
+        var usingDirective = node.FirstAncestorOrSelf<UsingDirectiveSyntax>();
+        if (usingDirective is null)
+            return Task.CompletedTask;
+
+        RegisterCodeFix(
+            context,
+            diagnostic,
+            title: "Use global using",
+            equivalenceKey: "UseGlobalUsing",
+            createChangedDocument: c => ApplyFixAsync(context.Document, usingDirective, c));
+
+        return Task.CompletedTask;
     }
 
     private static async Task<Document> ApplyFixAsync(Document document, UsingDirectiveSyntax usingDirective, CancellationToken ct)
