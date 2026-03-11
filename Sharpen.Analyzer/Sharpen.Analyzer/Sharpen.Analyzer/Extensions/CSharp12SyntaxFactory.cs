@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Sharpen.Analyzer.Extensions;
 
-internal static class CSharp12SyntaxFactory
+public static class CSharp12SyntaxFactory
 {
     public static CollectionExpressionSyntax CollectionExpression(SeparatedSyntaxList<CollectionElementSyntax> elements)
         => SyntaxFactory.CollectionExpression(SyntaxFactory.Token(SyntaxKind.OpenBracketToken), elements, SyntaxFactory.Token(SyntaxKind.CloseBracketToken));

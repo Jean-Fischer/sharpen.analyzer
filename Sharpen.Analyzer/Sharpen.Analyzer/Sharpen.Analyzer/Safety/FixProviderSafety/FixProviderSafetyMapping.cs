@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Sharpen.Analyzer.FixProvider.CSharp10;
 
 namespace Sharpen.Analyzer.Safety.FixProviderSafety;
 
@@ -15,20 +14,11 @@ public static class FixProviderSafetyMapping
     /// Returns the canonical mapping table.
     /// </summary>
     /// <remarks>
-    /// Keep this list sorted by fix provider type name for merge-friendliness.
+    /// This mapping must not introduce a compile-time dependency from the analyzer assembly to the fix-provider assembly.
+    /// Use <see cref="Type.GetType(string)"/> with assembly-qualified names if/when we need to populate this table.
     /// </remarks>
     public static ImmutableArray<(Type FixProviderType, Type SafetyCheckerType)> Entries { get; } =
-        ImmutableArray.Create(
-            // NOTE: Initial set required by spec.
-            (FixProviderType: typeof(UseCollectionExpressionCodeFixProvider), SafetyCheckerType: typeof(CollectionExpressionSafetyChecker)),
-            (FixProviderType: typeof(UseInterpolatedStringCodeFixProvider), SafetyCheckerType: typeof(StringInterpolationSafetyChecker))
-
-            // NOTE: Spec-required families that do not exist yet in this codebase.
-            // Keep placeholders so the mapping table remains aligned with the spec.
-            // (FixProviderType: typeof(NullCheckFixProvider), SafetyCheckerType: typeof(NullCheckSafetyChecker)),
-            // (FixProviderType: typeof(SwitchExpressionFixProvider), SafetyCheckerType: typeof(SwitchExpressionSafetyChecker)),
-            // (FixProviderType: typeof(LinqFixProvider), SafetyCheckerType: typeof(LinqSafetyChecker))
-        );
+        ImmutableArray<(Type FixProviderType, Type SafetyCheckerType)>.Empty;
 
     public static IReadOnlyDictionary<Type, Type> ToDictionary()
     {

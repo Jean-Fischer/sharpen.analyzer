@@ -49,7 +49,7 @@ public class C
     private sealed class AlwaysUnsafeCheck : IFirstPassSafetyCheck
     {
         public SafetyResult IsSafe(
-            Document? document,
+            SyntaxTree? syntaxTree,
             SemanticModel semanticModel,
             Diagnostic? diagnostic,
             System.Threading.CancellationToken cancellationToken = default)

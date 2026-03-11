@@ -71,11 +71,12 @@ public sealed class UseCollectionExpressionAnalyzer : DiagnosticAnalyzer
 
     private static bool IsSafeToReport(SyntaxNodeAnalysisContext context, ExpressionSyntax expression)
     {
-        // Analyzer-side safety gate: only report diagnostics when the global safety gate allows it.
-        // This keeps analyzer diagnostics aligned with fix-provider behavior.
+        // NOTE: This analyzer must not reference concrete fix provider types.
+        // The global safety gate is still applied, but local per-fix-provider checks are evaluated
+        // in the code-fix path.
         var evaluation = FixProviderSafetyRunner.Evaluate(
             semanticModel: context.SemanticModel,
-            fixProviderType: typeof(UseCollectionExpressionCodeFixProvider),
+            fixProviderType: typeof(object),
             node: expression,
             diagnostic: null,
             cancellationToken: context.CancellationToken);

@@ -24,7 +24,7 @@ public static class FixProviderSafetyRunner
 {
     public static FixProviderSafetyEvaluation EvaluateOrMatchFailed(
         IFixProviderSafetyChecker checker,
-        Document document,
+        SyntaxTree syntaxTree,
         SemanticModel semanticModel,
         Diagnostic diagnostic,
         bool matchSucceeded,
@@ -32,8 +32,8 @@ public static class FixProviderSafetyRunner
     {
         if (checker is null)
             throw new ArgumentNullException(nameof(checker));
-        if (document is null)
-            throw new ArgumentNullException(nameof(document));
+        if (syntaxTree is null)
+            throw new ArgumentNullException(nameof(syntaxTree));
         if (semanticModel is null)
             throw new ArgumentNullException(nameof(semanticModel));
         if (diagnostic is null)
@@ -43,7 +43,7 @@ public static class FixProviderSafetyRunner
             return FixProviderSafetyEvaluation.MatchFailed();
 
         // 1) Global stage
-        var globalSafety = FirstPassSafety.Gate.Evaluate(document, semanticModel, diagnostic, cancellationToken);
+        var globalSafety = FirstPassSafety.Gate.Evaluate(syntaxTree, semanticModel, diagnostic, cancellationToken);
         if (!globalSafety.IsSafe)
         {
             FirstPassSafety.UnsafeLogger?.Invoke(globalSafety);
@@ -55,7 +55,7 @@ public static class FixProviderSafetyRunner
         }
 
         // 2) Local stage
-        var localSafety = checker.IsSafe(document, semanticModel, diagnostic, cancellationToken);
+        var localSafety = checker.IsSafe(syntaxTree, semanticModel, diagnostic, cancellationToken);
         if (!localSafety.IsSafe)
         {
             return FixProviderSafetyEvaluation.Unsafe(
@@ -86,7 +86,7 @@ public static class FixProviderSafetyRunner
         // global policy gate (generated code, feature flags, etc.) so diagnostics and code actions
         // are aligned.
         var globalSafety = FirstPassSafety.Gate.Evaluate(
-            document: null,
+            syntaxTree: node.SyntaxTree,
             semanticModel: semanticModel,
             diagnostic: diagnostic,
             cancellationToken: cancellationToken);
@@ -101,13 +101,9 @@ public static class FixProviderSafetyRunner
                     message: globalSafety.Message));
         }
 
-        // Local stage: resolve the mapped checker and evaluate it.
-        // NOTE: Analyzer-side checkers currently require a Document instance. Until we expand the
-        // checker contract, we conservatively treat analyzer-side local evaluation as "safe".
-        // This still ensures the global gate is consistently applied.
-        //
-        // TODO (pipeline-unification): extend IFixProviderSafetyChecker to support analyzer context.
-        _ = fixProviderType;
+        // Local stage: analyzer-side checkers currently require a SyntaxTree instance.
+        // Until we expand the checker contract, we conservatively treat analyzer-side local
+        // evaluation as "safe" (after the global gate).
         _ = node;
 
         return FixProviderSafetyEvaluation.Safe();

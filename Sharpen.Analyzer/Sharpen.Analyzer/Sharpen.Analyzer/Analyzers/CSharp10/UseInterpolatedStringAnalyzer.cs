@@ -6,7 +6,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Sharpen.Analyzer.FixProvider.CSharp10;
 using Sharpen.Analyzer.Safety.FixProviderSafety;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp10;
@@ -98,9 +97,12 @@ public sealed class UseInterpolatedStringAnalyzer : DiagnosticAnalyzer
 
     private static bool IsSafeToReport(SyntaxNodeAnalysisContext context, ExpressionSyntax expression)
     {
+        // NOTE: This analyzer must not reference concrete fix provider types.
+        // The global safety gate is still applied, but local per-fix-provider checks are evaluated
+        // in the code-fix path.
         var evaluation = FixProviderSafetyRunner.Evaluate(
             semanticModel: context.SemanticModel,
-            fixProviderType: typeof(UseInterpolatedStringCodeFixProvider),
+            fixProviderType: typeof(object),
             node: expression,
             diagnostic: null,
             cancellationToken: context.CancellationToken);

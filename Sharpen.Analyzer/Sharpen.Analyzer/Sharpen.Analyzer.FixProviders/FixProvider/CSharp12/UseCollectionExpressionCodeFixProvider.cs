@@ -46,7 +46,7 @@ public sealed class UseCollectionExpressionCodeFixProvider : CodeFixProvider
 
         var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
             checker: new CollectionExpressionSafetyChecker(),
-            document: context.Document,
+            syntaxTree: root.SyntaxTree,
             semanticModel: semanticModel,
             diagnostic: diagnostic,
             matchSucceeded: true,

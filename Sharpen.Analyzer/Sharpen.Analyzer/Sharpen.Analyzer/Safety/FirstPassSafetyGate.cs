@@ -34,7 +34,7 @@ public sealed class FirstPassSafetyGate
     /// - <paramref name="cancellationToken"/> is checked before each check.
     /// </remarks>
     public SafetyResult Evaluate(
-        Document? document,
+        SyntaxTree? syntaxTree,
         SemanticModel semanticModel,
         Diagnostic? diagnostic,
         CancellationToken cancellationToken = default)
@@ -43,9 +43,9 @@ public sealed class FirstPassSafetyGate
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Some call sites (e.g. analyzer path) do not have a Document/Diagnostic instance.
+            // Some call sites (e.g. analyzer path) do not have a SyntaxTree/Diagnostic instance.
             // Checks must tolerate nulls and treat them as "insufficient context".
-            var result = check.IsSafe(document, semanticModel, diagnostic, cancellationToken);
+            var result = check.IsSafe(syntaxTree, semanticModel, diagnostic, cancellationToken);
             if (!result.IsSafe)
                 return result;
         }

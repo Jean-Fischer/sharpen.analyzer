@@ -22,7 +22,7 @@ public sealed class FirstPassSafetyGateTests
         });
 
         var result = gate.Evaluate(
-            document: null!,
+            syntaxTree: null!,
             semanticModel: null!,
             diagnostic: Diagnostic.Create("X", "X", "X", DiagnosticSeverity.Warning, DiagnosticSeverity.Warning, true, 1),
             cancellationToken: CancellationToken.None);
@@ -45,7 +45,7 @@ public sealed class FirstPassSafetyGateTests
 
         Assert.Throws<OperationCanceledException>(() =>
             gate.Evaluate(
-                document: null!,
+                syntaxTree: null!,
                 semanticModel: null!,
                 diagnostic: Diagnostic.Create("X", "X", "X", DiagnosticSeverity.Warning, DiagnosticSeverity.Warning, true, 1),
                 cancellationToken: cts.Token));
@@ -65,9 +65,9 @@ public sealed class FirstPassSafetyGateTests
         }
 
         public SafetyResult IsSafe(
-            Document document,
+            SyntaxTree? syntaxTree,
             SemanticModel semanticModel,
-            Diagnostic diagnostic,
+            Diagnostic? diagnostic,
             CancellationToken cancellationToken = default)
         {
             _calls.Add(_id);

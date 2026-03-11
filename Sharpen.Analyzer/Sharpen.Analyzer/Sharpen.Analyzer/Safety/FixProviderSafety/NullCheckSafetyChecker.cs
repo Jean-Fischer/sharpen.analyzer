@@ -9,7 +9,7 @@ namespace Sharpen.Analyzer.Safety.FixProviderSafety;
 public sealed class NullCheckSafetyChecker : IFixProviderSafetyChecker
 {
     public FixProviderSafetyResult IsSafe(
-        Document document,
+        SyntaxTree syntaxTree,
         SemanticModel semanticModel,
         Diagnostic diagnostic,
         CancellationToken cancellationToken = default)
