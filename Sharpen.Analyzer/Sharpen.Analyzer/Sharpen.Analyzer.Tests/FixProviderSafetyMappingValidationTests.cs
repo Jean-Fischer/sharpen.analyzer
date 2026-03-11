@@ -8,10 +8,12 @@ namespace Sharpen.Analyzer.Tests;
 public sealed class FixProviderSafetyMappingValidationTests
 {
     [Fact]
-    public void ValidateInitialSetCompleteness_Throws_WhenRequiredCheckerMissing()
+    public void ValidateInitialSetCompleteness_Throws_WhenRequiredFixProviderMappingMissing()
     {
-        // Validation is currently disabled (mapping is empty to avoid cross-assembly references).
-        FixProviderSafetyMappingValidation.ValidateInitialSetCompleteness(new Dictionary<Type, Type>());
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            FixProviderSafetyMappingValidation.ValidateInitialSetCompleteness(new Dictionary<Type, Type>()));
+
+        Assert.Contains("Missing safety checker mapping", ex.Message);
     }
 
     [Fact]
@@ -23,10 +25,12 @@ public sealed class FixProviderSafetyMappingValidationTests
     }
 
     [Fact]
-    public void ValidateAllKnownFixProvidersAreMapped_Throws_WhenRequiredFixProviderMissing()
+    public void ValidateAllKnownFixProvidersAreMapped_Throws_WhenRequiredFixProviderMappingMissing()
     {
-        // Validation is currently disabled (mapping is empty to avoid cross-assembly references).
-        FixProviderSafetyMappingValidation.ValidateAllKnownFixProvidersAreMapped(new Dictionary<Type, Type>());
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            FixProviderSafetyMappingValidation.ValidateAllKnownFixProvidersAreMapped(new Dictionary<Type, Type>()));
+
+        Assert.Contains("Missing safety checker mapping", ex.Message);
     }
 
     [Fact]

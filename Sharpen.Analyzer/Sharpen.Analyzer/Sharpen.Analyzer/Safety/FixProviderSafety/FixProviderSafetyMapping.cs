@@ -15,10 +15,12 @@ public static class FixProviderSafetyMapping
     /// </summary>
     /// <remarks>
     /// This mapping must not introduce a compile-time dependency from the analyzer assembly to the fix-provider assembly.
-    /// Use <see cref="Type.GetType(string)"/> with assembly-qualified names if/when we need to populate this table.
+    ///
+    /// We therefore resolve fix provider types by name at runtime, scanning already-loaded assemblies only.
+    /// (No <c>Assembly.Load</c> calls; analyzer assemblies are subject to RS1035.)
     /// </remarks>
     public static ImmutableArray<(Type FixProviderType, Type SafetyCheckerType)> Entries { get; } =
-        ImmutableArray<(Type FixProviderType, Type SafetyCheckerType)>.Empty;
+        CreateEntries();
 
     public static IReadOnlyDictionary<Type, Type> ToDictionary()
     {
@@ -45,6 +47,62 @@ public static class FixProviderSafetyMapping
             throw new InvalidOperationException($"No safety checker mapping found for fix provider: {fixProviderType.FullName}");
 
         return checkerType;
+    }
+
+    private static ImmutableArray<(Type FixProviderType, Type SafetyCheckerType)> CreateEntries()
+    {
+        var builder = ImmutableArray.CreateBuilder<(Type FixProviderType, Type SafetyCheckerType)>();
+
+        // CSharp12: UseCollectionExpression
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.UseCollectionExpressionCodeFixProvider",
+            safetyCheckerType: typeof(CollectionExpressionSafetyChecker));
+
+
+        return builder.ToImmutable();
+    }
+
+    private static void AddIfResolved(
+        ImmutableArray<(Type FixProviderType, Type SafetyCheckerType)>.Builder builder,
+        string fixProviderFullName,
+        Type safetyCheckerType,
+        string? preferredAssemblyName = null)
+    {
+        var fixProviderType = ResolveType(fixProviderFullName, preferredAssemblyName);
+        if (fixProviderType is null)
+            return;
+
+        builder.Add((fixProviderType, safetyCheckerType));
+    }
+
+    private static Type? ResolveType(string fullName, string? preferredAssemblyName = null)
+    {
+        foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            if (preferredAssemblyName is not null)
+            {
+                var asmName = asm.GetName().Name;
+                if (!string.Equals(asmName, preferredAssemblyName, StringComparison.Ordinal))
+                    continue;
+            }
+
+            var t = asm.GetType(fullName, throwOnError: false, ignoreCase: false);
+            if (t is not null)
+                return t;
+        }
+
+        if (preferredAssemblyName is not null)
+        {
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                var t = asm.GetType(fullName, throwOnError: false, ignoreCase: false);
+                if (t is not null)
+                    return t;
+            }
+        }
+
+        return null;
     }
 
     public static void ValidateUniqueness()
