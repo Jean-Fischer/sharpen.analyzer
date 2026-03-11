@@ -70,7 +70,7 @@ jobs:
           $testDll = "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.Tests/bin/Release/net10.0/Sharpen.Analyzer.Tests.dll"
           $testArgs = @(
             'test'
-            'Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.Tests/Sharpen.Analyzer.Tests.csproj'
+            'Sharpen.Analyzer/Sharpen.Analyzer.Tests/Sharpen.Analyzer.Tests.csproj'
             '--configuration'
             'Release'
             '--no-build'
