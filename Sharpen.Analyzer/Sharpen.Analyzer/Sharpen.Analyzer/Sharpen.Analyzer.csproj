@@ -26,6 +26,13 @@
     <!-- Do not put the analyzer assembly under lib/. We'll pack it under analyzers/dotnet/cs instead. -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <NoPackageAnalysis>true</NoPackageAnalysis>
+
+    <!--
+      RS1038: "This compiler extension should not be implemented in an assembly containing a reference to Microsoft.CodeAnalysis.Workspaces".
+      Proper fix is to split analyzers and code fixes into separate assemblies.
+      For now we suppress it to keep the current single-assembly structure.
+    -->
+    <NoWarn>$(NoWarn);RS1038</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,12 +41,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
-
-    <!--
-      Fixes RS1038: analyzers should not reference Workspaces.
-      Code fixes can live in a separate assembly/package if needed.
-    -->
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="all" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
   </ItemGroup>
 
   <ItemGroup>
