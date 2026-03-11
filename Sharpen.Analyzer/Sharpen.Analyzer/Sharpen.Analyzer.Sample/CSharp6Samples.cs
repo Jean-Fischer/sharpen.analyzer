@@ -37,13 +37,13 @@ public static class CSharp6Samples
         // Minimal stubs so the sample compiles without referencing WPF.
         public sealed class DependencyProperty
         {
-            public static DependencyProperty Register(string name, System.Type propertyType, System.Type ownerType) => null;
+            public static DependencyProperty? Register(string name, System.Type propertyType, System.Type ownerType) => null;
 
-            public static DependencyProperty RegisterAttached(string name, System.Type propertyType, System.Type ownerType) => null;
+            public static DependencyProperty? RegisterAttached(string name, System.Type propertyType, System.Type ownerType) => null;
         }
 
         // SHARPEN013
-        public static readonly DependencyProperty FooProperty =
+        public static readonly DependencyProperty? FooProperty =
             DependencyProperty.Register("Foo", typeof(int), typeof(DependencyPropertySample));
 
         public int Foo { get; }
