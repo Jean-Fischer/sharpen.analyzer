@@ -20,11 +20,11 @@
 
 ## 3. C# 14: Null-conditional assignment
 
-- [ ] 3.1 Add analyzer rule (new `SHARPENxxx`) to detect `if (x != null) x.Member = rhs;` single-statement patterns
-- [ ] 3.2 Implement safety checker: ensure condition receiver matches assignment receiver and body contains exactly one assignment
-- [ ] 3.3 Implement code fix: rewrite to `x?.Member = rhs;` (preserve trivia)
-- [ ] 3.4 Add tests: diagnostic triggers for single-statement if (with and without braces)
-- [ ] 3.5 Add tests: no diagnostic for multi-statement if bodies or mismatched receivers
+- [x] 3.1 Add analyzer rule (new `SHARPENxxx`) to detect `if (x != null) x.Member = rhs;` single-statement patterns
+- [x] 3.2 Implement safety checker: ensure condition receiver matches assignment receiver and body contains exactly one assignment
+- [x] 3.3 Implement code fix: rewrite to `x?.Member = rhs;` (preserve trivia)
+- [x] 3.4 Add tests: diagnostic triggers for single-statement if (with and without braces)
+- [x] 3.5 Add tests: no diagnostic for multi-statement if bodies or mismatched receivers
 - [ ] 3.6 Add tests: code fix output and formatting
 - [ ] 3.7 Update docs: rule description and safety constraints
 

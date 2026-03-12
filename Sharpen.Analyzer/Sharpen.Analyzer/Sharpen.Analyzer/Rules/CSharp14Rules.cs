@@ -15,4 +15,14 @@ public static class CSharp14Rules
         isEnabledByDefault: true,
         description: "C# 14 introduces field-backed properties via the 'field' keyword. This rule suggests converting eligible manual backing-field properties."
     );
+
+    public static readonly DiagnosticDescriptor UseNullConditionalAssignmentRule = new DiagnosticDescriptor(
+        id: "SHARPEN066",
+        title: "Use null-conditional assignment",
+        messageFormat: "Use null-conditional assignment",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "C# 14 supports null-conditional assignment. This rule suggests rewriting simple guarded assignments to use ?.="
+    );
 }

@@ -94,6 +94,12 @@ public static class FixProviderSafetyMapping
             fixProviderFullName: "Sharpen.Analyzer.UseFieldKeywordInPropertiesCodeFixProvider",
             safetyCheckerType: typeof(FieldBackedPropertySafetyChecker));
 
+        // CSharp14: Null-conditional assignment
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.UseNullConditionalAssignmentCodeFixProvider",
+            safetyCheckerType: typeof(NullConditionalAssignmentSafetyChecker));
+
         return builder.ToImmutable();
     }
 
