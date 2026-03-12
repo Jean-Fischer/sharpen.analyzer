@@ -88,6 +88,12 @@ public static class FixProviderSafetyMapping
             fixProviderFullName: "Sharpen.Analyzer.PartialPropertiesIndexersRefactoringCodeFixProvider",
             safetyCheckerType: typeof(PartialPropertiesIndexersRefactoringSafetyChecker));
 
+        // CSharp14: Field-backed properties
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.UseFieldKeywordInPropertiesCodeFixProvider",
+            safetyCheckerType: typeof(FieldBackedPropertySafetyChecker));
+
         return builder.ToImmutable();
     }
 

@@ -10,13 +10,13 @@
 
 ## 2. C# 14: Field-backed properties (`field` keyword)
 
-- [ ] 2.1 Add analyzer rule (new `SHARPENxxx`) to detect eligible backing-field + property patterns
-- [ ] 2.2 Implement safety checker: verify backing field is private and referenced only within the property accessors (including partial type parts)
-- [ ] 2.3 Implement code fix: remove backing field and rewrite property accessors to use `field`
-- [ ] 2.4 Add tests: diagnostic triggers on simple patterns
-- [ ] 2.5 Add tests: no diagnostic when backing field is referenced elsewhere / in `nameof` / in attributes
-- [ ] 2.6 Add tests: code fix output preserves modifiers/attributes/trivia
-- [ ] 2.7 Update docs: rule description, safe-to-fix vs do-not-fix examples
+- [x] 2.1 Add analyzer rule (new `SHARPENxxx`) to detect eligible backing-field + property patterns
+- [x] 2.2 Implement safety checker: verify backing field is private and referenced only within the property accessors (including partial type parts)
+- [x] 2.3 Implement code fix: remove backing field and rewrite property accessors to use `field`
+- [x] 2.4 Add tests: diagnostic triggers on simple patterns
+- [x] 2.5 Add tests: no diagnostic when backing field is referenced elsewhere / in `nameof` / in attributes
+- [x] 2.6 Add tests: code fix output preserves modifiers/attributes/trivia
+- [x] 2.7 Update docs: rule description, safe-to-fix vs do-not-fix examples
 
 ## 3. C# 14: Null-conditional assignment
 
