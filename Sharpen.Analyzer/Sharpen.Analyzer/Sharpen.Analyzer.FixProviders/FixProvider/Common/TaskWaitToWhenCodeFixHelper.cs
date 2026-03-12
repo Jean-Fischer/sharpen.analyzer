@@ -18,7 +18,7 @@ internal static class TaskWaitToWhenCodeFixHelper
         CodeFixContext context,
         string title,
         string equivalenceKey,
-        string whenMethodName,
+        string? whenMethodName,
         Func<ImmutableArray<string>> fixableDiagnosticIds)
     {
         // NOTE: fixableDiagnosticIds is passed only to keep call sites minimal and consistent.
@@ -35,6 +35,9 @@ internal static class TaskWaitToWhenCodeFixHelper
 
         // Only offer fix when the invocation is used as a statement (return value not used).
         if (invocation.Parent is not ExpressionStatementSyntax) return;
+
+        // For Task.WaitAll/WaitAny we support any args; for instance Wait() we only support parameterless.
+        if (whenMethodName is null && invocation.ArgumentList.Arguments.Count != 0) return;
 
         var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
         if (semanticModel is null) return;
@@ -53,20 +56,30 @@ internal static class TaskWaitToWhenCodeFixHelper
         Document document,
         InvocationExpressionSyntax invocation,
         SemanticModel semanticModel,
-        string whenMethodName,
+        string? whenMethodName,
         CancellationToken ct)
     {
         var root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
         if (root is null) return document;
 
-        // Task.WaitAll(args) -> await Task.WhenAll(args)
-        // Task.WaitAny(args) -> await Task.WhenAny(args)
         if (invocation.Expression is not MemberAccessExpressionSyntax memberAccess) return document;
 
-        var whenMemberAccess = memberAccess.WithName(SyntaxFactory.IdentifierName(whenMethodName));
-        var whenInvocation = invocation.WithExpression(whenMemberAccess);
+        ExpressionSyntax awaitedExpression;
 
-        var awaited = SyntaxFactory.AwaitExpression(whenInvocation.WithoutTrivia())
+        if (whenMethodName is null)
+        {
+            // task.Wait() -> await task
+            awaitedExpression = memberAccess.Expression.WithoutTrivia();
+        }
+        else
+        {
+            // Task.WaitAll(args) -> await Task.WhenAll(args)
+            // Task.WaitAny(args) -> await Task.WhenAny(args)
+            var whenMemberAccess = memberAccess.WithName(SyntaxFactory.IdentifierName(whenMethodName));
+            awaitedExpression = invocation.WithExpression(whenMemberAccess).WithoutTrivia();
+        }
+
+        var awaited = SyntaxFactory.AwaitExpression(awaitedExpression)
             .WithLeadingTrivia(invocation.GetLeadingTrivia())
             .WithTrailingTrivia(invocation.GetTrailingTrivia());
 

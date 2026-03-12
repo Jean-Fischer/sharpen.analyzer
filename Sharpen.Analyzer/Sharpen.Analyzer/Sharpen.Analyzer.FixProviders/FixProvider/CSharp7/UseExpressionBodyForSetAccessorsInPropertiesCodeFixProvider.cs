@@ -39,7 +39,7 @@ public sealed class UseExpressionBodyForSetAccessorsInPropertiesCodeFixProvider 
         context.RegisterCodeFix(
             CodeAction.Create(
                 title: "Use expression-bodied set accessor",
-                createChangedDocument: ct => ExpressionBodiedSetAccessorCodeFixHelper.UseExpressionBodyAsync<PropertyDeclarationSyntax>(context.Document, accessor, ct),
+                createChangedDocument: ct => ExpressionBodiedAccessorCodeFixHelper.UseExpressionBodyForSetAccessorAsync<PropertyDeclarationSyntax>(context.Document, accessor, ct),
                 equivalenceKey: "UseExpressionBodyForSetAccessorsInProperties"),
             diagnostic);
     }
