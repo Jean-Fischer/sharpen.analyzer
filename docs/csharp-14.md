@@ -161,3 +161,28 @@ The analyzer reports when a `static` class contains **at least two** extension m
 ### Do not fix automatically
 
 A code fix may be offered only in very conservative cases (same file, non-`partial`, no preprocessor directives). The current implementation is intentionally limited.
+
+## SHARPEN071: Consider partial constructors
+
+C# 14 introduces **partial constructors**. This rule is informational and targets codebases that use source generation patterns.
+
+### When it triggers
+
+- A constructor body contains a call to a **partial method** with a common initialization name (e.g. `InitializeGenerated`, `OnConstructed`, `InitializeComponent`).
+
+### Caveats
+
+- No automatic fix is offered: adopting partial constructors typically requires generator support and project-wide conventions.
+
+## SHARPEN072: Consider partial events
+
+C# 14 introduces **partial events**. This rule is informational and targets codebases that use source generation patterns.
+
+### When it triggers
+
+- An event declaration has explicit `add`/`remove` accessors.
+- Both accessors delegate to **partial methods**.
+
+### Caveats
+
+- No automatic fix is offered: adopting partial events typically requires generator support and project-wide conventions.

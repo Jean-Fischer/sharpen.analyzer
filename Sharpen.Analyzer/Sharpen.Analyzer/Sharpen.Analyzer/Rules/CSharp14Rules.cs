@@ -16,6 +16,26 @@ public static class CSharp14Rules
         description: "C# 14 introduces field-backed properties via the 'field' keyword. This rule suggests converting eligible manual backing-field properties."
     );
 
+    public static readonly DiagnosticDescriptor UsePartialConstructorsRule = new DiagnosticDescriptor(
+        id: "SHARPEN071",
+        title: "Consider partial constructors",
+        messageFormat: "Consider using a partial constructor (C# 14) for generated initialization",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "C# 14 introduces partial constructors. This rule provides informational guidance when a constructor delegates initialization to a partial method (common in source generation patterns)."
+    );
+
+    public static readonly DiagnosticDescriptor UsePartialEventsRule = new DiagnosticDescriptor(
+        id: "SHARPEN072",
+        title: "Consider partial events",
+        messageFormat: "Consider using a partial event (C# 14) for generated event accessors",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "C# 14 introduces partial events. This rule provides informational guidance when event add/remove accessors delegate to partial methods (common in source generation patterns)."
+    );
+
     public static readonly DiagnosticDescriptor UseNullConditionalAssignmentRule = new DiagnosticDescriptor(
         id: "SHARPEN066",
         title: "Use null-conditional assignment",

@@ -66,10 +66,10 @@
 
 ## 8. C# 14: Partial constructors and partial events (informational)
 
-- [ ] 8.1 Add informational analyzer rule (new `SHARPENxxx`) for partial constructor patterns
-- [ ] 8.2 Add informational analyzer rule (new `SHARPENxxx`) for partial event patterns
-- [ ] 8.3 Add tests: diagnostics trigger on representative patterns
-- [ ] 8.4 Update docs: guidance and caveats (no automatic fix)
+- [x] 8.1 Add informational analyzer rule (new `SHARPENxxx`) for partial constructor patterns
+- [x] 8.2 Add informational analyzer rule (new `SHARPENxxx`) for partial event patterns
+- [x] 8.3 Add tests: diagnostics trigger on representative patterns
+- [x] 8.4 Update docs: guidance and caveats (no automatic fix)
 
 ## 9. C# 14: User-defined compound assignment operators (informational)
 
