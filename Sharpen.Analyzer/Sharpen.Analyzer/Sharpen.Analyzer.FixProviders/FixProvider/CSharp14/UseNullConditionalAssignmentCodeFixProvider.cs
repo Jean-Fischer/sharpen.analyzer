@@ -77,6 +77,9 @@ public sealed class UseNullConditionalAssignmentCodeFixProvider : SharpenCodeFix
             return document;
 
         // Build: x?.Member = rhs;
+        //
+        // Roslyn represents this as a SimpleAssignmentExpression whose LHS is a ConditionalAccessExpression.
+        // (Not as a ConditionalAccessExpression whose WhenNotNull is an assignment.)
         var conditionalAccess = SyntaxFactory.ConditionalAccessExpression(
             expression: StripParentheses(checkedExpression).WithTriviaFrom(memberAccess.Expression),
             whenNotNull: SyntaxFactory.MemberBindingExpression(memberAccess.Name));

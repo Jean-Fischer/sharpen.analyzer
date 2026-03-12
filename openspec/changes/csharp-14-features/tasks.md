@@ -73,13 +73,13 @@
 
 ## 9. C# 14: User-defined compound assignment operators (informational)
 
-- [ ] 9.1 Add informational analyzer rule (new `SHARPENxxx`) suggesting compound assignment operators when `+=` is used and only binary operator exists
-- [ ] 9.2 Add tests: diagnostics trigger on representative patterns
-- [ ] 9.3 Update docs: guidance and caveats (no automatic fix)
+- [x] 9.1 Add informational analyzer rule (new `SHARPENxxx`) suggesting compound assignment operators when `+=` is used and only binary operator exists
+- [x] 9.2 Add tests: diagnostics trigger on representative patterns
+- [x] 9.3 Update docs: guidance and caveats (no automatic fix)
 
 ## 10. Integration and quality gates
 
-- [ ] 10.1 Ensure all new rules are registered in the rule catalog and exposed consistently
-- [ ] 10.2 Ensure safety checker mapping is updated for all fixable rules
-- [ ] 10.3 Run full test suite and fix failures
-- [ ] 10.4 Add/refresh documentation index pages for C# 14 rules (and update any versioned docs like [`docs/csharp-13.md`](docs/csharp-13.md:1) if applicable)
+- [x] 10.1 Ensure all new rules are registered in the rule catalog and exposed consistently
+- [x] 10.2 Ensure safety checker mapping is updated for all fixable rules
+- [x] 10.3 Run full test suite and fix failures
+- [x] 10.4 Add/refresh documentation index pages for C# 14 rules (and update any versioned docs like [`docs/csharp-13.md`](docs/csharp-13.md:1) if applicable)

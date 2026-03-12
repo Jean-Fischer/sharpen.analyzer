@@ -186,3 +186,18 @@ C# 14 introduces **partial events**. This rule is informational and targets code
 ### Caveats
 
 - No automatic fix is offered: adopting partial events typically requires generator support and project-wide conventions.
+
+## SHARPEN073: Consider compound assignment operators
+
+C# 14 allows user-defined **compound assignment operators** (e.g. `operator +=`).
+
+This rule is informational and triggers when:
+
+- Code uses `+=` on a user-defined type.
+- The type defines a binary `operator +`.
+- The type does **not** define `operator +=`.
+
+### Caveats
+
+- No automatic fix is offered: adding compound assignment operators is a design decision and must preserve expected semantics.
+- Only implement compound assignment operators when the type is designed for in-place mutation and performance benefits are expected.

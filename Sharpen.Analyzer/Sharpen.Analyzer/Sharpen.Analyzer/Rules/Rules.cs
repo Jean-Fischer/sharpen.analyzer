@@ -436,4 +436,5 @@ public static class Rules
     public static readonly DiagnosticDescriptor UseExtensionBlocksRule = CSharp14Rules.UseExtensionBlocksRule;
     public static readonly DiagnosticDescriptor UsePartialConstructorsRule = CSharp14Rules.UsePartialConstructorsRule;
     public static readonly DiagnosticDescriptor UsePartialEventsRule = CSharp14Rules.UsePartialEventsRule;
+    public static readonly DiagnosticDescriptor SuggestCompoundAssignmentOperatorsRule = CSharp14Rules.SuggestCompoundAssignmentOperatorsRule;
 }

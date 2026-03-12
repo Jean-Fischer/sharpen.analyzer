@@ -106,45 +106,4 @@ class C2
         await VerifierAnalyzer.VerifyAnalyzerAsync(code);
     }
 
-    // TODO: Re-enable once the test harness supports parsing `x?.Member = rhs` as a top-level
-    // ConditionalAccessExpression statement (currently it normalizes to a SimpleAssignmentExpression
-    // with ConditionalAccessExpression on the LHS, causing iterative fix verification to fail).
-    //
-    // [Fact]
-    // public async Task Code_fix_rewrites_to_null_conditional_assignment()
-    // {
-    //     const string code = @"
-    // class C
-    // {
-    //     void M(C2 c)
-    //     {
-    //         if (c != null) c.X = 1;
-    //     }
-    // }
-    //
-    // class C2
-    // {
-    //     public int X { get; set; }
-    // }";
-    //
-    //     const string fixedCode = @"
-    // class C
-    // {
-    //     void M(C2 c)
-    //     {
-    //         c?.X = 1;
-    //     }
-    // }
-    //
-    // class C2
-    // {
-    //     public int X { get; set; }
-    // }";
-    //
-    //     await VerifierCodeFix.VerifyCodeFixAsync(
-    //         code,
-    //         new DiagnosticResult(CSharp14Rules.UseNullConditionalAssignmentRule)
-    //             .WithSpan(6, 9, 6, 32),
-    //         fixedCode);
-    // }
 }

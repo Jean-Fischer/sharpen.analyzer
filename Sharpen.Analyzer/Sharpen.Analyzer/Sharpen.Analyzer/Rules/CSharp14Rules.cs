@@ -85,4 +85,14 @@ public static class CSharp14Rules
         isEnabledByDefault: true,
         description: "C# 14 introduces extension blocks. This rule suggests organizing multiple extension methods for the same receiver type into an extension block."
     );
+
+    public static readonly DiagnosticDescriptor SuggestCompoundAssignmentOperatorsRule = new DiagnosticDescriptor(
+        id: "SHARPEN073",
+        title: "Consider compound assignment operators",
+        messageFormat: "Consider implementing a compound assignment operator for type '{0}'",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "C# 14 allows user-defined compound assignment operators. This rule suggests considering them for performance-sensitive types when '+=' is used and only a binary operator exists."
+    );
 }
