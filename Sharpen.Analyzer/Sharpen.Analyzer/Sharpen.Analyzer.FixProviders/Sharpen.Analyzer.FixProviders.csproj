@@ -8,13 +8,35 @@
     <RootNamespace>Sharpen.Analyzer</RootNamespace>
     <AssemblyName>Sharpen.Analyzer.FixProviders</AssemblyName>
 
-    <!-- Not packed separately; the main analyzer package will include this assembly under analyzers/dotnet/cs. -->
-    <IsPackable>false</IsPackable>
+    <!-- NuGet packaging (Roslyn code fix providers) -->
+    <IsPackable>true</IsPackable>
+    <PackageId>Sharpen.Analyzer.FixProviders</PackageId>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <Authors>Jean Fischer</Authors>
+    <Description>Roslyn analyzers + code fixes to help modernize C# codebases.</Description>
+    <PackageTags>roslyn;analyzer;codefix;csharp</PackageTags>
+    <PackageProjectUrl>https://github.com/Jean-Fischer/sharpen.analyzer</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Jean-Fischer/sharpen.analyzer</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+    <!-- Do not put the fix provider assembly under lib/. We'll pack it under analyzers/dotnet/cs instead. -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+
+    <!-- Ensure installing FixProviders also installs the analyzers package (lockstep version injected by CI). -->
+    <PackageReference Include="Sharpen.Analyzer" Version="$(Version)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Pack the fix provider assembly in the conventional analyzer location. -->
+    <None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Update="Readme.md" Pack="true" />
   </ItemGroup>
 
   <ItemGroup>
