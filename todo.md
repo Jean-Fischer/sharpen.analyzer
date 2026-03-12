@@ -1,5 +1,25 @@
 TODO: Review whether the C# 13 test verifier should use real reference assemblies (e.g., a future `ReferenceAssemblies.Net.NetX_Y` that includes `System.Threading.Lock`) instead of the current minimal stub in [`CSharp13CodeFixVerifier<TAnalyzer, TCodeFix>`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.Tests/Infrastructure/CSharp13CodeFixVerifier.cs:1).
 
+## C# 13 implementation follow-ups (shortcuts / known limitations)
+
+- **Partial properties/indexers refactoring: indexers excluded**
+  - Limitation: [`PartialPropertiesIndexersRefactoringAnalyzer`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Analyzers/CSharp13/PartialPropertiesIndexersRefactoringAnalyzer.cs:11) currently returns `false` for indexers and only suggests auto-properties.
+  - Why: Roslyn preview support in this repo makes it hard to safely test “auto-indexers without bodies”, so indexers were intentionally excluded (see analyzer comment).
+  - Long-term fix: Add indexer support end-to-end (analyzer + safety checker + code fix + tests) once the test infrastructure can compile/verify partial indexers reliably.
+  - Pointers: [`PartialPropertiesIndexersRefactoringAnalyzer.IsCandidate()`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Analyzers/CSharp13/PartialPropertiesIndexersRefactoringAnalyzer.cs:53), [`PartialPropertiesIndexersRefactoringCodeFixProvider.CreateImplementingDeclaration()`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.FixProviders/FixProvider/CSharp13/PartialPropertiesIndexersRefactoringCodeFixProvider.cs:104), [`PartialPropertiesIndexersRefactoringCodeFixTests`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.Tests/PartialPropertiesIndexersRefactoringCodeFixTests.cs:11).
+
+- **C# 13 test infrastructure: `CSharp13CodeFixVerifier` pins `ReferenceAssemblies.Net.Net90`**
+  - Limitation: Tests using [`CSharp13CodeFixVerifier<TAnalyzer, TCodeFix>`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.Tests/Infrastructure/CSharp13CodeFixVerifier.cs:20) compile against .NET 9 reference assemblies regardless of the repo’s baseline.
+  - Why: Needed a “modern target framework” so preview C# 13 features that depend on runtime support can compile in fixed-state (see comment in verifier).
+  - Long-term fix: Revisit whether .NET 9 is the right baseline for tests (or whether it should be conditional / centralized), and switch to the smallest reference set that still supports the required C# 13 features.
+  - Pointers: [`CSharp13CodeFixVerifier.CreateTest()`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.Tests/Infrastructure/CSharp13CodeFixVerifier.cs:70).
+
+- **`System.Threading.Lock` is injected as a test stub**
+  - Limitation: The verifier injects a minimal `System.Threading.Lock` implementation into both test and fixed states, which can mask real API shape differences.
+  - Why: Current reference assemblies used by tests don’t provide `System.Threading.Lock`, but safety checkers/code fixes need the symbol to resolve.
+  - Long-term fix: Remove the stub and rely on real reference assemblies once they include `System.Threading.Lock` (or use a dedicated reference assembly package that contains it).
+  - Pointers: [`CSharp13CodeFixVerifier.LockStubSource`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.Tests/Infrastructure/CSharp13CodeFixVerifier.cs:93), [`UseSystemThreadingLockSafetyChecker`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/UseSystemThreadingLockSafetyChecker.cs:9).
+
 # Inventory: original-sharpen vs sharpen.analyzer
 
 ## Scope
