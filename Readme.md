@@ -4,11 +4,26 @@ Roslyn analyzers + code fixes to help modernize C# codebases.
 
 ## Install
 
-Add the NuGet package to the project(s) you want to analyze:
+Two packages are published:
+
+- [`Sharpen.Analyzer`](Readme.md:1): diagnostics only (analyzers)
+- [`Sharpen.Analyzer.FixProviders`](Readme.md:1): diagnostics + IDE code fixes (depends on `Sharpen.Analyzer`)
+
+Install **one** of them:
+
+### Option A: analyzers only
 
 ```bash
 dotnet add package Sharpen.Analyzer
 ```
+
+### Option B: analyzers + code fixes (recommended)
+
+```bash
+dotnet add package Sharpen.Analyzer.FixProviders
+```
+
+`Sharpen.Analyzer.FixProviders` brings `Sharpen.Analyzer` automatically, so you don’t need to install both.
 
 ## Use
 
