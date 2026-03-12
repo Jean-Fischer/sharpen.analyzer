@@ -136,3 +136,28 @@ void M(ReadOnlySpan<int> s) { }
 
 M(a.AsSpan()); // do not fix: would change to M(int[])
 ```
+
+## SHARPEN070: Use extension blocks
+
+C# 14 introduces **extension blocks**:
+
+```csharp
+static class Extensions
+{
+    extension string
+    {
+        public static int A(this string s) => s.Length;
+        public static int B(this string s) => s.GetHashCode();
+    }
+}
+```
+
+This rule suggests grouping multiple extension methods that share the same receiver type into an extension block.
+
+### Safe-to-fix (conservative)
+
+The analyzer reports when a `static` class contains **at least two** extension methods for the same receiver type.
+
+### Do not fix automatically
+
+A code fix may be offered only in very conservative cases (same file, non-`partial`, no preprocessor directives). The current implementation is intentionally limited.

@@ -57,12 +57,12 @@
 
 ## 7. C# 14: Extension members (extension blocks)
 
-- [ ] 7.1 Add informational analyzer rule (new `SHARPENxxx`) suggesting extension blocks for static classes with many extension methods for the same receiver
-- [ ] 7.2 (Optional) Implement limited code fix: refactor same-file extension methods into an extension block when purely mechanical
-- [ ] 7.3 Implement safety checker for optional fix: reject cross-file/partial/preprocessor-complex cases
-- [ ] 7.4 Add tests: diagnostic triggers and non-triggers
-- [ ] 7.5 Add tests: code fix (if implemented)
-- [ ] 7.6 Update docs: rule description and conservative scope
+- [x] 7.1 Add informational analyzer rule (new `SHARPENxxx`) suggesting extension blocks for static classes with many extension methods for the same receiver
+- [x] 7.2 (Optional) Implement limited code fix: refactor same-file extension methods into an extension block when purely mechanical
+- [x] 7.3 Implement safety checker for optional fix: reject cross-file/partial/preprocessor-complex cases
+- [x] 7.4 Add tests: diagnostic triggers and non-triggers
+- [x] 7.5 Add tests: code fix (if implemented)
+- [x] 7.6 Update docs: rule description and conservative scope
 
 ## 8. C# 14: Partial constructors and partial events (informational)
 

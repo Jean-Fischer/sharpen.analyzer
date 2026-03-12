@@ -55,4 +55,14 @@ public static class CSharp14Rules
         isEnabledByDefault: true,
         description: "C# 14 introduces additional implicit conversions to Span<T>/ReadOnlySpan<T>. This rule suggests removing redundant explicit conversions such as AsSpan() when they add no semantic value."
     );
+
+    public static readonly DiagnosticDescriptor UseExtensionBlocksRule = new DiagnosticDescriptor(
+        id: "SHARPEN070",
+        title: "Use extension blocks",
+        messageFormat: "Consider organizing extension methods into an extension block",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "C# 14 introduces extension blocks. This rule suggests organizing multiple extension methods for the same receiver type into an extension block."
+    );
 }
