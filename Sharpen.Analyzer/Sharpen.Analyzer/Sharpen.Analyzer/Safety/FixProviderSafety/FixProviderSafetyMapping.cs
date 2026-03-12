@@ -88,6 +88,36 @@ public static class FixProviderSafetyMapping
             fixProviderFullName: "Sharpen.Analyzer.PartialPropertiesIndexersRefactoringCodeFixProvider",
             safetyCheckerType: typeof(PartialPropertiesIndexersRefactoringSafetyChecker));
 
+        // CSharp14: Field-backed properties
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.UseFieldKeywordInPropertiesCodeFixProvider",
+            safetyCheckerType: typeof(FieldBackedPropertySafetyChecker));
+
+        // CSharp14: Null-conditional assignment
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.UseNullConditionalAssignmentCodeFixProvider",
+            safetyCheckerType: typeof(NullConditionalAssignmentSafetyChecker));
+
+        // CSharp14: nameof with unbound generic types
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.UseUnboundGenericTypeInNameofCodeFixProvider",
+            safetyCheckerType: typeof(UnboundGenericTypeInNameofSafetyChecker));
+
+        // CSharp14: Lambda parameter modifiers without types
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.UseLambdaParameterModifiersWithoutTypesCodeFixProvider",
+            safetyCheckerType: typeof(LambdaParameterModifiersWithoutTypesSafetyChecker));
+
+        // CSharp14: Implicit span conversions
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.UseImplicitSpanConversionsCodeFixProvider",
+            safetyCheckerType: typeof(ImplicitSpanConversionsSafetyChecker));
+
         return builder.ToImmutable();
     }
 

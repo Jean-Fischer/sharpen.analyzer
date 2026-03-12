@@ -426,4 +426,15 @@ public static class Rules
     public static readonly DiagnosticDescriptor PartialPropertiesIndexersRefactoringRule = CSharp13Rules.PartialPropertiesIndexersRefactoringRule;
     public static readonly DiagnosticDescriptor SuggestAllowsRefStructConstraintRule = CSharp13Rules.SuggestAllowsRefStructConstraintRule;
     public static readonly DiagnosticDescriptor SuggestOverloadResolutionPriorityRule = CSharp13Rules.SuggestOverloadResolutionPriorityRule;
+
+    // C# 14
+    public static readonly DiagnosticDescriptor UseFieldKeywordInPropertiesRule = CSharp14Rules.UseFieldKeywordInPropertiesRule;
+    public static readonly DiagnosticDescriptor UseNullConditionalAssignmentRule = CSharp14Rules.UseNullConditionalAssignmentRule;
+    public static readonly DiagnosticDescriptor UseUnboundGenericTypeInNameofRule = CSharp14Rules.UseUnboundGenericTypeInNameofRule;
+    public static readonly DiagnosticDescriptor UseLambdaParameterModifiersWithoutTypesRule = CSharp14Rules.UseLambdaParameterModifiersWithoutTypesRule;
+    public static readonly DiagnosticDescriptor UseImplicitSpanConversionsRule = CSharp14Rules.UseImplicitSpanConversionsRule;
+    public static readonly DiagnosticDescriptor UseExtensionBlocksRule = CSharp14Rules.UseExtensionBlocksRule;
+    public static readonly DiagnosticDescriptor UsePartialConstructorsRule = CSharp14Rules.UsePartialConstructorsRule;
+    public static readonly DiagnosticDescriptor UsePartialEventsRule = CSharp14Rules.UsePartialEventsRule;
+    public static readonly DiagnosticDescriptor SuggestCompoundAssignmentOperatorsRule = CSharp14Rules.SuggestCompoundAssignmentOperatorsRule;
 }
