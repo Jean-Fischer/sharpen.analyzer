@@ -426,4 +426,7 @@ public static class Rules
     public static readonly DiagnosticDescriptor PartialPropertiesIndexersRefactoringRule = CSharp13Rules.PartialPropertiesIndexersRefactoringRule;
     public static readonly DiagnosticDescriptor SuggestAllowsRefStructConstraintRule = CSharp13Rules.SuggestAllowsRefStructConstraintRule;
     public static readonly DiagnosticDescriptor SuggestOverloadResolutionPriorityRule = CSharp13Rules.SuggestOverloadResolutionPriorityRule;
+
+    // C# 14
+    public static readonly DiagnosticDescriptor UseFieldKeywordInPropertiesRule = CSharp14Rules.UseFieldKeywordInPropertiesRule;
 }

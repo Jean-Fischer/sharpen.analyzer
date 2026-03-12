@@ -1,12 +1,12 @@
 ## 1. Rule ID migration (EDR → SHARPEN)
 
-- [ ] 1.1 Inventory existing rule IDs: locate all `EDR\d+` and `SHARPEN\d+` usages and determine the current highest `SHARPEN` ID
-- [ ] 1.2 Define the mapping table for `EDRxxx` → `SHARPENxxx` (ensure `EDR001` → `SHARPEN001`, then increment deterministically)
-- [ ] 1.3 Update diagnostic descriptors and rule catalogs to use the new `SHARPEN` IDs
-- [ ] 1.4 Update fix providers and safety checkers to reference the new `SHARPEN` IDs
-- [ ] 1.5 Update unit tests and baselines to assert the new `SHARPEN` IDs
-- [ ] 1.6 Update documentation to replace `EDR` references and add a short migration note
-- [ ] 1.7 Add/refresh any internal mapping documentation (if the project maintains a rule index)
+- [x] 1.1 Inventory existing rule IDs: locate all `EDR\d+` and `SHARPEN\d+` usages and determine the current highest `SHARPEN` ID
+- [x] 1.2 Define the mapping table for `EDRxxx` → `SHARPENxxx` (ensure `EDR001` → `SHARPEN001`, then increment deterministically)
+- [x] 1.3 Update diagnostic descriptors and rule catalogs to use the new `SHARPEN` IDs
+- [x] 1.4 Update fix providers and safety checkers to reference the new `SHARPEN` IDs
+- [x] 1.5 Update unit tests and baselines to assert the new `SHARPEN` IDs
+- [x] 1.6 Update documentation to replace `EDR` references and add a short migration note
+- [x] 1.7 Add/refresh any internal mapping documentation (if the project maintains a rule index)
 
 ## 2. C# 14: Field-backed properties (`field` keyword)
 
