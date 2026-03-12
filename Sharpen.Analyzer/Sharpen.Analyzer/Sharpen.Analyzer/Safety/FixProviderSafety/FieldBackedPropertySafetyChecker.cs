@@ -4,6 +4,7 @@ using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Sharpen.Analyzer.Helpers.CSharp14;
 
 namespace Sharpen.Analyzer.Safety.FixProviderSafety;
 
@@ -37,7 +38,7 @@ public sealed class FieldBackedPropertySafetyChecker : IFixProviderSafetyChecker
         if (getAccessor is null || setAccessor is null)
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "missing-get-or-set");
 
-        if (!TryGetBackingFieldFromGetter(semanticModel, getAccessor, cancellationToken, out var backingFieldSymbol) || backingFieldSymbol is null)
+        if (!FieldBackedPropertyHelper.TryGetBackingFieldFromGetter(semanticModel, getAccessor, cancellationToken, out var backingFieldSymbol) || backingFieldSymbol is null)
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "backing-field-not-found");
 
         if (backingFieldSymbol.DeclaredAccessibility != Accessibility.Private)
@@ -61,43 +62,6 @@ public sealed class FieldBackedPropertySafetyChecker : IFixProviderSafetyChecker
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "field-referenced-elsewhere");
 
         return FixProviderSafetyResult.Safe();
-    }
-
-    private static bool TryGetBackingFieldFromGetter(
-        SemanticModel semanticModel,
-        AccessorDeclarationSyntax getAccessor,
-        CancellationToken ct,
-        out IFieldSymbol? backingFieldSymbol)
-    {
-        backingFieldSymbol = null;
-
-        ExpressionSyntax? returnedExpression = null;
-
-        if (getAccessor.ExpressionBody is not null)
-        {
-            returnedExpression = getAccessor.ExpressionBody.Expression;
-        }
-        else if (getAccessor.Body is not null)
-        {
-            var statements = getAccessor.Body.Statements;
-            if (statements.Count != 1)
-                return false;
-
-            if (statements[0] is not ReturnStatementSyntax returnStatement)
-                return false;
-
-            returnedExpression = returnStatement.Expression;
-        }
-
-        if (returnedExpression is null)
-            return false;
-
-        var symbol = semanticModel.GetSymbolInfo(returnedExpression, ct).Symbol;
-        if (symbol is not IFieldSymbol fieldSymbol)
-            return false;
-
-        backingFieldSymbol = fieldSymbol;
-        return true;
     }
 
     private static bool IsSimpleSetterAssigningField(

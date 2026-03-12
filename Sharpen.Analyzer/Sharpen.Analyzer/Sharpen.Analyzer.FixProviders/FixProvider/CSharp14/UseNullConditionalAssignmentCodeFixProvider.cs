@@ -61,19 +61,11 @@ public sealed class UseNullConditionalAssignmentCodeFixProvider : SharpenCodeFix
         if (currentIf is null)
             return document;
 
-        if (!TryGetNullCheckedExpression(currentIf.Condition, out var checkedExpression))
-            return document;
-
-        if (!TryGetSingleStatement(currentIf.Statement, out var singleStatement))
-            return document;
-
-        if (singleStatement is not ExpressionStatementSyntax { Expression: AssignmentExpressionSyntax assignment })
-            return document;
-
-        if (!assignment.IsKind(SyntaxKind.SimpleAssignmentExpression))
-            return document;
-
-        if (assignment.Left is not MemberAccessExpressionSyntax memberAccess)
+        if (!Analyzers.CSharp14.NullConditionalAssignmentPattern.TryMatch(
+                currentIf,
+                out var checkedExpression,
+                out var memberAccess,
+                out var assignment))
             return document;
 
         // Build: x?.Member = rhs;
@@ -81,7 +73,7 @@ public sealed class UseNullConditionalAssignmentCodeFixProvider : SharpenCodeFix
         // Roslyn represents this as a SimpleAssignmentExpression whose LHS is a ConditionalAccessExpression.
         // (Not as a ConditionalAccessExpression whose WhenNotNull is an assignment.)
         var conditionalAccess = SyntaxFactory.ConditionalAccessExpression(
-            expression: StripParentheses(checkedExpression).WithTriviaFrom(memberAccess.Expression),
+            expression: Analyzers.CSharp14.NullConditionalAssignmentPattern.StripParentheses(checkedExpression).WithTriviaFrom(memberAccess.Expression),
             whenNotNull: SyntaxFactory.MemberBindingExpression(memberAccess.Name));
 
         var newAssignment = SyntaxFactory.AssignmentExpression(
@@ -100,54 +92,4 @@ public sealed class UseNullConditionalAssignmentCodeFixProvider : SharpenCodeFix
         return editor.GetChangedDocument();
     }
 
-    private static bool TryGetNullCheckedExpression(ExpressionSyntax condition, out ExpressionSyntax checkedExpression)
-    {
-        checkedExpression = null!;
-
-        if (condition is BinaryExpressionSyntax binary && binary.IsKind(SyntaxKind.NotEqualsExpression))
-        {
-            if (IsNullLiteral(binary.Right))
-            {
-                checkedExpression = binary.Left;
-                return true;
-            }
-
-            if (IsNullLiteral(binary.Left))
-            {
-                checkedExpression = binary.Right;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool TryGetSingleStatement(StatementSyntax statement, out StatementSyntax singleStatement)
-    {
-        if (statement is BlockSyntax block)
-        {
-            if (block.Statements.Count == 1)
-            {
-                singleStatement = block.Statements[0];
-                return true;
-            }
-
-            singleStatement = null!;
-            return false;
-        }
-
-        singleStatement = statement;
-        return true;
-    }
-
-    private static bool IsNullLiteral(ExpressionSyntax expression) =>
-        expression is LiteralExpressionSyntax literal && literal.IsKind(SyntaxKind.NullLiteralExpression);
-
-    private static ExpressionSyntax StripParentheses(ExpressionSyntax expression)
-    {
-        while (expression is ParenthesizedExpressionSyntax parenthesized)
-            expression = parenthesized.Expression;
-
-        return expression;
-    }
 }

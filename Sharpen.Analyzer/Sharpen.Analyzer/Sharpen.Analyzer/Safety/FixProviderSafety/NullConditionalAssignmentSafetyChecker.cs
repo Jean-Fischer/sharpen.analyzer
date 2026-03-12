@@ -25,10 +25,10 @@ public sealed class NullConditionalAssignmentSafetyChecker : IFixProviderSafetyC
         if (ifStatement is null)
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "if-not-found");
 
-        if (!TryGetNullCheckedExpression(ifStatement.Condition, out var checkedExpression))
+        if (!Analyzers.CSharp14.NullConditionalAssignmentPattern.TryGetNullCheckedExpression(ifStatement.Condition, out var checkedExpression))
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "condition-not-null-check");
 
-        if (!TryGetSingleStatement(ifStatement.Statement, out var singleStatement))
+        if (!Analyzers.CSharp14.NullConditionalAssignmentPattern.TryGetSingleStatement(ifStatement.Statement, out var singleStatement))
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "not-single-statement");
 
         if (singleStatement is not ExpressionStatementSyntax { Expression: AssignmentExpressionSyntax assignment })
@@ -40,68 +40,11 @@ public sealed class NullConditionalAssignmentSafetyChecker : IFixProviderSafetyC
         if (assignment.Left is not MemberAccessExpressionSyntax memberAccess)
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "lhs-not-member-access");
 
-        if (!AreEquivalentIgnoringParentheses(checkedExpression, memberAccess.Expression))
+        if (!SyntaxFactory.AreEquivalent(
+                Analyzers.CSharp14.NullConditionalAssignmentPattern.StripParentheses(checkedExpression),
+                Analyzers.CSharp14.NullConditionalAssignmentPattern.StripParentheses(memberAccess.Expression)))
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "receiver-mismatch");
 
         return FixProviderSafetyResult.Safe();
-    }
-
-    private static bool TryGetNullCheckedExpression(ExpressionSyntax condition, out ExpressionSyntax checkedExpression)
-    {
-        checkedExpression = null!;
-
-        if (condition is BinaryExpressionSyntax binary && binary.IsKind(SyntaxKind.NotEqualsExpression))
-        {
-            if (IsNullLiteral(binary.Right))
-            {
-                checkedExpression = binary.Left;
-                return true;
-            }
-
-            if (IsNullLiteral(binary.Left))
-            {
-                checkedExpression = binary.Right;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static bool TryGetSingleStatement(StatementSyntax statement, out StatementSyntax singleStatement)
-    {
-        if (statement is BlockSyntax block)
-        {
-            if (block.Statements.Count == 1)
-            {
-                singleStatement = block.Statements[0];
-                return true;
-            }
-
-            singleStatement = null!;
-            return false;
-        }
-
-        singleStatement = statement;
-        return true;
-    }
-
-    private static bool IsNullLiteral(ExpressionSyntax expression) =>
-        expression is LiteralExpressionSyntax literal && literal.IsKind(SyntaxKind.NullLiteralExpression);
-
-    private static bool AreEquivalentIgnoringParentheses(ExpressionSyntax left, ExpressionSyntax right)
-    {
-        left = StripParentheses(left);
-        right = StripParentheses(right);
-
-        return SyntaxFactory.AreEquivalent(left, right);
-    }
-
-    private static ExpressionSyntax StripParentheses(ExpressionSyntax expression)
-    {
-        while (expression is ParenthesizedExpressionSyntax parenthesized)
-            expression = parenthesized.Expression;
-
-        return expression;
     }
 }
