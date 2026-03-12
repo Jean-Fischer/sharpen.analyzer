@@ -29,8 +29,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
 
-    <!-- Ensure installing FixProviders also installs the analyzers package (lockstep version injected by CI). -->
-    <PackageReference Include="Sharpen.Analyzer" Version="$(Version)" />
+    
   </ItemGroup>
 
   <ItemGroup>
