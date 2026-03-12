@@ -19,6 +19,6 @@ internal static class SafetyCheckHelpers
     public static FixProviderSafetyResult UnsafeIfNull(object? value, string reasonId, string? message = null)
         => value is null ? Unsafe(reasonId, message) : Safe();
 
-    public static FixProviderSafetyResult UnsafeIfNotCSharp(Document? document, string reasonId, string? message = null)
-        => document?.Project.Language != LanguageNames.CSharp ? Unsafe(reasonId, message) : Safe();
+    public static FixProviderSafetyResult UnsafeIfNotCSharp(SyntaxTree? syntaxTree, string reasonId, string? message = null)
+        => syntaxTree?.Options.Language != LanguageNames.CSharp ? Unsafe(reasonId, message) : Safe();
 }

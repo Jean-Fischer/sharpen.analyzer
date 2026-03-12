@@ -13,7 +13,7 @@ namespace Sharpen.Analyzer.Safety;
 public static class FirstPassSafetyRunner
 {
     public static FirstPassSafetyEvaluation EvaluateOrMatchFailed(
-        Document document,
+        SyntaxTree syntaxTree,
         SemanticModel semanticModel,
         Diagnostic diagnostic,
         bool matchSucceeded,
@@ -22,7 +22,7 @@ public static class FirstPassSafetyRunner
         if (!matchSucceeded)
             return FirstPassSafetyEvaluation.MatchFailed();
 
-        var safety = FirstPassSafety.Gate.Evaluate(document, semanticModel, diagnostic, cancellationToken);
+        var safety = FirstPassSafety.Gate.Evaluate(syntaxTree, semanticModel, diagnostic, cancellationToken);
         if (!safety.IsSafe)
         {
             FirstPassSafety.UnsafeLogger?.Invoke(safety);

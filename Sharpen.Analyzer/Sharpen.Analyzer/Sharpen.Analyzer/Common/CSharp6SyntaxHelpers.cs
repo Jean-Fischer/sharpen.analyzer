@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Sharpen.Analyzer.Common;
 
-internal static class CSharp6SyntaxHelpers
+public static class CSharp6SyntaxHelpers
 {
     public static bool TryGetSingleReturnExpressionFromGetter(AccessorDeclarationSyntax getter, out ExpressionSyntax expression)
     {

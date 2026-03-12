@@ -8,57 +8,35 @@ namespace Sharpen.Analyzer.Tests;
 public sealed class FixProviderSafetyMappingValidationTests
 {
     [Fact]
-    public void ValidateInitialSetCompleteness_Throws_WhenRequiredCheckerMissing()
+    public void ValidateInitialSetCompleteness_Throws_WhenRequiredFixProviderMappingMissing()
     {
-        var mapping = new Dictionary<Type, Type>
-        {
-            // Intentionally omit PlaceholderSafetyChecker
-            { typeof(object), typeof(CollectionExpressionSafetyChecker) },
-            { typeof(string), typeof(StringInterpolationSafetyChecker) },
-        };
-
         var ex = Assert.Throws<InvalidOperationException>(() =>
-            FixProviderSafetyMappingValidation.ValidateInitialSetCompleteness(mapping));
+            FixProviderSafetyMappingValidation.ValidateInitialSetCompleteness(new Dictionary<Type, Type>()));
 
-        Assert.Contains(nameof(PlaceholderSafetyChecker), ex.Message);
+        Assert.Contains("Missing safety checker mapping", ex.Message);
     }
 
     [Fact]
     public void ValidateInitialSetCompleteness_DoesNotThrow_WhenAllRequiredCheckersPresent()
     {
-        var mapping = new Dictionary<Type, Type>
-        {
-            { typeof(object), typeof(CollectionExpressionSafetyChecker) },
-            { typeof(string), typeof(StringInterpolationSafetyChecker) },
-            { typeof(int), typeof(PlaceholderSafetyChecker) },
-        };
+        var mapping = FixProviderSafetyMapping.ToDictionary();
 
         FixProviderSafetyMappingValidation.ValidateInitialSetCompleteness(mapping);
     }
 
     [Fact]
-    public void ValidateAllKnownFixProvidersAreMapped_Throws_WhenRequiredFixProviderMissing()
+    public void ValidateAllKnownFixProvidersAreMapped_Throws_WhenRequiredFixProviderMappingMissing()
     {
-        var mapping = new Dictionary<Type, Type>
-        {
-            // Intentionally omit UseInterpolatedStringCodeFixProvider
-            { typeof(Sharpen.Analyzer.UseCollectionExpressionCodeFixProvider), typeof(CollectionExpressionSafetyChecker) },
-        };
-
         var ex = Assert.Throws<InvalidOperationException>(() =>
-            FixProviderSafetyMappingValidation.ValidateAllKnownFixProvidersAreMapped(mapping));
+            FixProviderSafetyMappingValidation.ValidateAllKnownFixProvidersAreMapped(new Dictionary<Type, Type>()));
 
-        Assert.Contains(nameof(Sharpen.Analyzer.FixProvider.CSharp10.UseInterpolatedStringCodeFixProvider), ex.Message);
+        Assert.Contains("Missing safety checker mapping", ex.Message);
     }
 
     [Fact]
     public void ValidateAllKnownFixProvidersAreMapped_DoesNotThrow_WhenAllRequiredFixProvidersPresent()
     {
-        var mapping = new Dictionary<Type, Type>
-        {
-            { typeof(Sharpen.Analyzer.UseCollectionExpressionCodeFixProvider), typeof(CollectionExpressionSafetyChecker) },
-            { typeof(Sharpen.Analyzer.FixProvider.CSharp10.UseInterpolatedStringCodeFixProvider), typeof(StringInterpolationSafetyChecker) },
-        };
+        var mapping = FixProviderSafetyMapping.ToDictionary();
 
         FixProviderSafetyMappingValidation.ValidateAllKnownFixProvidersAreMapped(mapping);
     }

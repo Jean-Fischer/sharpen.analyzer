@@ -6,7 +6,7 @@ using Sharpen.Engine.Extensions;
 
 namespace Sharpen.Engine.SharpenSuggestions.Common.AsyncAwaitAndAsyncStreams
 {
-    internal static class EquivalentAsynchronousMethodResolver
+    public static class EquivalentAsynchronousMethodResolver
     {
         public static IMethodSymbol ResolveAsyncEquivalent(
             InvocationExpressionSyntax invocation,

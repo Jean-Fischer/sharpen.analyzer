@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Code fix providers can target netstandard2.0 for broad host compatibility. -->
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <RootNamespace>Sharpen.Analyzer</RootNamespace>
+    <AssemblyName>Sharpen.Analyzer.FixProviders</AssemblyName>
+
+    <!-- Not packed separately; the main analyzer package will include this assembly under analyzers/dotnet/cs. -->
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Fix providers depend on shared analyzer infrastructure (rules, helpers, safety pipeline). -->
+    <ProjectReference Include="..\Sharpen.Analyzer\Sharpen.Analyzer.csproj" />
+  </ItemGroup>
+</Project>

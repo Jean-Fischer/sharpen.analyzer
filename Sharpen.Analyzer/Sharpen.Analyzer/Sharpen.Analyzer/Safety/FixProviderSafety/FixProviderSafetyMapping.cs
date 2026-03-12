@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Sharpen.Analyzer.FixProvider.CSharp10;
 
 namespace Sharpen.Analyzer.Safety.FixProviderSafety;
 
@@ -15,20 +14,13 @@ public static class FixProviderSafetyMapping
     /// Returns the canonical mapping table.
     /// </summary>
     /// <remarks>
-    /// Keep this list sorted by fix provider type name for merge-friendliness.
+    /// This mapping must not introduce a compile-time dependency from the analyzer assembly to the fix-provider assembly.
+    ///
+    /// We therefore resolve fix provider types by name at runtime, scanning already-loaded assemblies only.
+    /// (No <c>Assembly.Load</c> calls; analyzer assemblies are subject to RS1035.)
     /// </remarks>
     public static ImmutableArray<(Type FixProviderType, Type SafetyCheckerType)> Entries { get; } =
-        ImmutableArray.Create(
-            // NOTE: Initial set required by spec.
-            (FixProviderType: typeof(UseCollectionExpressionCodeFixProvider), SafetyCheckerType: typeof(CollectionExpressionSafetyChecker)),
-            (FixProviderType: typeof(UseInterpolatedStringCodeFixProvider), SafetyCheckerType: typeof(StringInterpolationSafetyChecker))
-
-            // NOTE: Spec-required families that do not exist yet in this codebase.
-            // Keep placeholders so the mapping table remains aligned with the spec.
-            // (FixProviderType: typeof(NullCheckFixProvider), SafetyCheckerType: typeof(NullCheckSafetyChecker)),
-            // (FixProviderType: typeof(SwitchExpressionFixProvider), SafetyCheckerType: typeof(SwitchExpressionSafetyChecker)),
-            // (FixProviderType: typeof(LinqFixProvider), SafetyCheckerType: typeof(LinqSafetyChecker))
-        );
+        CreateEntries();
 
     public static IReadOnlyDictionary<Type, Type> ToDictionary()
     {
@@ -55,6 +47,33 @@ public static class FixProviderSafetyMapping
             throw new InvalidOperationException($"No safety checker mapping found for fix provider: {fixProviderType.FullName}");
 
         return checkerType;
+    }
+
+    private static ImmutableArray<(Type FixProviderType, Type SafetyCheckerType)> CreateEntries()
+    {
+        var builder = ImmutableArray.CreateBuilder<(Type FixProviderType, Type SafetyCheckerType)>();
+
+        // CSharp12: UseCollectionExpression
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.UseCollectionExpressionCodeFixProvider",
+            safetyCheckerType: typeof(CollectionExpressionSafetyChecker));
+
+
+        return builder.ToImmutable();
+    }
+
+    private static void AddIfResolved(
+        ImmutableArray<(Type FixProviderType, Type SafetyCheckerType)>.Builder builder,
+        string fixProviderFullName,
+        Type safetyCheckerType,
+        string? preferredAssemblyName = null)
+    {
+        var fixProviderType = FixProviderSafetyTypeResolution.ResolveType(fixProviderFullName, preferredAssemblyName);
+        if (fixProviderType is null)
+            return;
+
+        builder.Add((fixProviderType, safetyCheckerType));
     }
 
     public static void ValidateUniqueness()

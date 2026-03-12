@@ -12,12 +12,12 @@ public interface IFirstPassSafetyCheck
     /// Returns whether the transformation associated with <paramref name="diagnostic"/> is safe.
     /// </summary>
     /// <remarks>
-    /// Some call sites (e.g. analyzer path) do not have a <see cref="Document"/> or a
+    /// Some call sites (e.g. analyzer path) do not have a <see cref="SyntaxTree"/> or a
     /// <see cref="Diagnostic"/> instance. Implementations must tolerate nulls and treat them as
     /// "insufficient context".
     /// </remarks>
     SafetyResult IsSafe(
-        Document? document,
+        SyntaxTree? syntaxTree,
         SemanticModel semanticModel,
         Diagnostic? diagnostic,
         CancellationToken cancellationToken = default);

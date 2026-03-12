@@ -19,7 +19,7 @@ public sealed class FixProviderSafetyRunnerTests
 
         var evaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
             checker: new AlwaysSafeChecker(),
-            document: document,
+            syntaxTree: document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!,
             semanticModel: semanticModel,
             diagnostic: diagnostic,
             matchSucceeded: false,
@@ -48,7 +48,7 @@ public sealed class FixProviderSafetyRunnerTests
 
             var evaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
                 checker: localChecker,
-                document: document,
+                syntaxTree: document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!,
                 semanticModel: semanticModel,
                 diagnostic: diagnostic,
                 matchSucceeded: true,
@@ -79,7 +79,7 @@ public sealed class FixProviderSafetyRunnerTests
 
             var evaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
                 checker: new AlwaysUnsafeChecker(),
-                document: document,
+                syntaxTree: document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!,
                 semanticModel: semanticModel,
                 diagnostic: diagnostic,
                 matchSucceeded: true,
@@ -109,7 +109,7 @@ public sealed class FixProviderSafetyRunnerTests
 
             var evaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
                 checker: new AlwaysSafeChecker(),
-                document: document,
+                syntaxTree: document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!,
                 semanticModel: semanticModel,
                 diagnostic: diagnostic,
                 matchSucceeded: true,
@@ -144,13 +144,13 @@ public sealed class FixProviderSafetyRunnerTests
 
     private sealed class AlwaysSafeChecker : IFixProviderSafetyChecker
     {
-        public FixProviderSafetyResult IsSafe(Document document, SemanticModel semanticModel, Diagnostic diagnostic, CancellationToken cancellationToken) =>
+        public FixProviderSafetyResult IsSafe(SyntaxTree syntaxTree, SemanticModel semanticModel, Diagnostic diagnostic, CancellationToken cancellationToken) =>
             FixProviderSafetyResult.Safe();
     }
 
     private sealed class AlwaysUnsafeChecker : IFixProviderSafetyChecker
     {
-        public FixProviderSafetyResult IsSafe(Document document, SemanticModel semanticModel, Diagnostic diagnostic, CancellationToken cancellationToken) =>
+        public FixProviderSafetyResult IsSafe(SyntaxTree syntaxTree, SemanticModel semanticModel, Diagnostic diagnostic, CancellationToken cancellationToken) =>
             FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "local-unsafe");
     }
 
@@ -162,7 +162,7 @@ public sealed class FixProviderSafetyRunnerTests
 
         public CountingChecker(bool isSafe) => _isSafe = isSafe;
 
-        public FixProviderSafetyResult IsSafe(Document document, SemanticModel semanticModel, Diagnostic diagnostic, CancellationToken cancellationToken)
+        public FixProviderSafetyResult IsSafe(SyntaxTree syntaxTree, SemanticModel semanticModel, Diagnostic diagnostic, CancellationToken cancellationToken)
         {
             CallCount++;
             return _isSafe
@@ -173,7 +173,7 @@ public sealed class FixProviderSafetyRunnerTests
 
     private sealed class AlwaysUnsafeFirstPassCheck : IFirstPassSafetyCheck
     {
-        public SafetyResult IsSafe(Document? document, SemanticModel semanticModel, Diagnostic? diagnostic, CancellationToken cancellationToken = default) =>
+        public SafetyResult IsSafe(SyntaxTree? syntaxTree, SemanticModel semanticModel, Diagnostic? diagnostic, CancellationToken cancellationToken = default) =>
             SafetyResult.Unsafe(reasonId: "global-unsafe", message: "forced");
     }
 }

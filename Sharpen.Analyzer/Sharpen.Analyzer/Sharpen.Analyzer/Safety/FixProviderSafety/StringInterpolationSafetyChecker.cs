@@ -9,7 +9,7 @@ namespace Sharpen.Analyzer.Safety.FixProviderSafety;
 public sealed class StringInterpolationSafetyChecker : IFixProviderSafetyChecker
 {
     public FixProviderSafetyResult IsSafe(
-        Document document,
+        SyntaxTree syntaxTree,
         SemanticModel semanticModel,
         Diagnostic diagnostic,
         CancellationToken cancellationToken = default)
@@ -19,7 +19,7 @@ public sealed class StringInterpolationSafetyChecker : IFixProviderSafetyChecker
         // - ensure semantic model exists
         // - deeper checks (formatting behavior, side effects) can be added later
 
-        var langCheck = SafetyCheckHelpers.UnsafeIfNotCSharp(document, reasonId: "not-csharp", message: "Document is not C#.");
+        var langCheck = SafetyCheckHelpers.UnsafeIfNotCSharp(syntaxTree, reasonId: "not-csharp", message: "SyntaxTree is not C#.");
         if (!langCheck.IsSafe)
             return langCheck;
 

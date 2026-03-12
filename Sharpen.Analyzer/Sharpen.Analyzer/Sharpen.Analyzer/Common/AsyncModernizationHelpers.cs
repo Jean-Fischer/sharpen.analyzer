@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Sharpen.Analyzer.Common;
 
-internal static class AsyncModernizationHelpers
+public static class AsyncModernizationHelpers
 {
     public static bool IsWithinAsyncCallable(SyntaxNode node, SemanticModel semanticModel)
     {

@@ -18,7 +18,7 @@ public sealed class FixProviderSafetyCheckerTests
             location: Location.None);
 
         var checker = new CollectionExpressionSafetyChecker();
-        var result = checker.IsSafe(document, semanticModel, diagnostic, CancellationToken.None);
+        var result = checker.IsSafe(document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!, semanticModel, diagnostic, CancellationToken.None);
 
         Assert.True(result.IsSafe);
     }
@@ -29,7 +29,7 @@ public sealed class FixProviderSafetyCheckerTests
         var (document, semanticModel) = CreateCSharpDocumentAndSemanticModel("class C { void M() { } }");
 
         var checker = new CollectionExpressionSafetyChecker();
-        var result = checker.IsSafe(document, semanticModel, diagnostic: null!, CancellationToken.None);
+        var result = checker.IsSafe(document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!, semanticModel, diagnostic: null!, CancellationToken.None);
 
         Assert.False(result.IsSafe);
         Assert.Equal("no-diagnostic", result.ReasonId);
@@ -44,7 +44,7 @@ public sealed class FixProviderSafetyCheckerTests
             location: Location.None);
 
         var checker = new StringInterpolationSafetyChecker();
-        var result = checker.IsSafe(document, semanticModel, diagnostic, CancellationToken.None);
+        var result = checker.IsSafe(document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!, semanticModel, diagnostic, CancellationToken.None);
 
         Assert.True(result.IsSafe);
     }
@@ -58,7 +58,7 @@ public sealed class FixProviderSafetyCheckerTests
             location: Location.None);
 
         var checker = new NullCheckSafetyChecker();
-        var result = checker.IsSafe(document, semanticModel, diagnostic, CancellationToken.None);
+        var result = checker.IsSafe(document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!, semanticModel, diagnostic, CancellationToken.None);
 
         Assert.False(result.IsSafe);
         Assert.Equal("null-check-not-implemented", result.ReasonId);
@@ -73,7 +73,7 @@ public sealed class FixProviderSafetyCheckerTests
             location: Location.None);
 
         var checker = new SwitchExpressionSafetyChecker();
-        var result = checker.IsSafe(document, semanticModel, diagnostic, CancellationToken.None);
+        var result = checker.IsSafe(document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!, semanticModel, diagnostic, CancellationToken.None);
 
         Assert.False(result.IsSafe);
         Assert.Equal("switch-expression-not-implemented", result.ReasonId);
@@ -88,7 +88,7 @@ public sealed class FixProviderSafetyCheckerTests
             location: Location.None);
 
         var checker = new LinqSafetyChecker();
-        var result = checker.IsSafe(document, semanticModel, diagnostic, CancellationToken.None);
+        var result = checker.IsSafe(document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!, semanticModel, diagnostic, CancellationToken.None);
 
         Assert.False(result.IsSafe);
         Assert.Equal("linq-not-implemented", result.ReasonId);

@@ -17,7 +17,7 @@ public interface IFixProviderSafetyChecker
     /// Returns whether the transformation associated with <paramref name="diagnostic"/> is safe.
     /// </summary>
     FixProviderSafetyResult IsSafe(
-        Document document,
+        SyntaxTree syntaxTree,
         SemanticModel semanticModel,
         Diagnostic diagnostic,
         CancellationToken cancellationToken = default);
