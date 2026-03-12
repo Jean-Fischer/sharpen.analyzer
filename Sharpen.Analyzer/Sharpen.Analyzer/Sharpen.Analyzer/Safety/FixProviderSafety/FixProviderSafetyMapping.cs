@@ -69,40 +69,11 @@ public static class FixProviderSafetyMapping
         Type safetyCheckerType,
         string? preferredAssemblyName = null)
     {
-        var fixProviderType = ResolveType(fixProviderFullName, preferredAssemblyName);
+        var fixProviderType = FixProviderSafetyTypeResolution.ResolveType(fixProviderFullName, preferredAssemblyName);
         if (fixProviderType is null)
             return;
 
         builder.Add((fixProviderType, safetyCheckerType));
-    }
-
-    private static Type? ResolveType(string fullName, string? preferredAssemblyName = null)
-    {
-        foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
-        {
-            if (preferredAssemblyName is not null)
-            {
-                var asmName = asm.GetName().Name;
-                if (!string.Equals(asmName, preferredAssemblyName, StringComparison.Ordinal))
-                    continue;
-            }
-
-            var t = asm.GetType(fullName, throwOnError: false, ignoreCase: false);
-            if (t is not null)
-                return t;
-        }
-
-        if (preferredAssemblyName is not null)
-        {
-            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                var t = asm.GetType(fullName, throwOnError: false, ignoreCase: false);
-                if (t is not null)
-                    return t;
-            }
-        }
-
-        return null;
     }
 
     public static void ValidateUniqueness()
