@@ -25,6 +25,9 @@ public static partial class FixProviderSafetyMappingValidation
 
         // CSharp12: UseCollectionExpression
         EnsureMapped(mapping, "Sharpen.Analyzer.UseCollectionExpressionCodeFixProvider");
+
+        // CSharp13: PreferParamsCollections
+        EnsureMapped(mapping, "Sharpen.Analyzer.PreferParamsCollectionsCodeFixProvider");
     }
 
     /// <summary>

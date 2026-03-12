@@ -59,6 +59,11 @@ public static class FixProviderSafetyMapping
             fixProviderFullName: "Sharpen.Analyzer.UseCollectionExpressionCodeFixProvider",
             safetyCheckerType: typeof(CollectionExpressionSafetyChecker));
 
+        // CSharp13: PreferParamsCollections
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.PreferParamsCollectionsCodeFixProvider",
+            safetyCheckerType: typeof(PreferParamsCollectionsSafetyChecker));
 
         return builder.ToImmutable();
     }
