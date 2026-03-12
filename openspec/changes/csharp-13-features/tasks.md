@@ -1,35 +1,35 @@
 ## 1. Baseline / scaffolding
 
-- [ ] 1.1 Create C# 13 analyzer/fix-provider folder/namespace structure consistent with existing C# versioned rules
-- [ ] 1.2 Allocate SHARPEN diagnostic IDs and titles for the C# 13 rules in the central diagnostics catalog
-- [ ] 1.3 Add documentation stubs/entries for the new C# 13 rules in the docs site/readme
+- [x] 1.1 Create C# 13 analyzer/fix-provider folder/namespace structure consistent with existing C# versioned rules
+- [x] 1.2 Allocate SHARPEN diagnostic IDs and titles for the C# 13 rules in the central diagnostics catalog
+- [x] 1.3 Add documentation stubs/entries for the new C# 13 rules in the docs site/readme
 
 ## 2. SHARPEN0XX Prefer params collections (prefer-params-collections)
 
-- [ ] 2.1 Implement analyzer: detect `params T[]` candidates and classify (public vs non-public)
-- [ ] 2.2 Implement safety checker: verify non-public symbol, target type availability, and safe body usage (no array-only semantics)
-- [ ] 2.3 Implement fix provider: change signature to supported collection params type and update in-solution call sites
-- [ ] 2.4 Add analyzer tests: positive + negative cases (public API, array semantics usage)
-- [ ] 2.5 Add fix-provider tests: safe transformation + blocked transformation cases
-- [ ] 2.6 Update documentation: intent, constraints, and examples
+- [x] 2.1 Implement analyzer: detect `params T[]` candidates and classify (public vs non-public)
+- [x] 2.2 Implement safety checker: verify non-public symbol, target type availability, and safe body usage (no array-only semantics)
+- [x] 2.3 Implement fix provider: change signature to supported collection params type and update in-solution call sites
+- [x] 2.4 Add analyzer tests: positive + negative cases (public API, array semantics usage)
+- [x] 2.5 Add fix-provider tests: safe transformation + blocked transformation cases
+- [x] 2.6 Update documentation: intent, constraints, and examples
 
 ## 3. SHARPEN0XX Use from-end index in object initializers (use-from-end-index-in-object-initializers)
 
-- [ ] 3.1 Implement analyzer: detect end-based index patterns in initializers (e.g., `Length - 1`)
-- [ ] 3.2 Implement safety checker: ensure target supports `System.Index` indexing and pattern is provably equivalent
-- [ ] 3.3 Implement fix provider: replace with `^` index (`^1`, etc.)
-- [ ] 3.4 Add analyzer tests: positive + negative patterns
-- [ ] 3.5 Add fix-provider tests: correct rewrite + blocked ambiguous cases
-- [ ] 3.6 Update documentation: examples and limitations
+- [x] 3.1 Implement analyzer: detect end-based index patterns in initializers (e.g., `Length - 1`)
+- [x] 3.2 Implement safety checker: ensure target supports `System.Index` indexing and pattern is provably equivalent
+- [x] 3.3 Implement fix provider: replace with `^` index (`^1`, etc.)
+- [x] 3.4 Add analyzer tests: positive + negative patterns
+- [x] 3.5 Add fix-provider tests: correct rewrite + blocked ambiguous cases
+- [x] 3.6 Update documentation: examples and limitations
 
 ## 4. SHARPEN0XX Use \e escape sequence (use-escape-sequence-e)
 
-- [ ] 4.1 Implement analyzer: detect `\u001b` and `\x1b` in string/char literals
-- [ ] 4.2 Implement safety checker: ensure `\x` replacement is unambiguous and preserves tokenization
-- [ ] 4.3 Implement fix provider: replace with `\e` where safe
-- [ ] 4.4 Add analyzer tests: string + char cases
-- [ ] 4.5 Add fix-provider tests: safe replacements + blocked ambiguous `\x` cases
-- [ ] 4.6 Update documentation: examples and caveats
+- [x] 4.1 Implement analyzer: detect `\u001b` and `\x1b` in string/char literals
+- [x] 4.2 Implement safety checker: ensure `\x` replacement is unambiguous and preserves tokenization
+- [x] 4.3 Implement fix provider: replace with `\e` where safe
+- [x] 4.4 Add analyzer tests: string + char cases
+- [x] 4.5 Add fix-provider tests: safe replacements + blocked ambiguous `\x` cases
+- [x] 4.6 Update documentation: examples and caveats
 
 ## 5. SHARPEN0XX Use System.Threading.Lock (use-system-threading-lock)
 

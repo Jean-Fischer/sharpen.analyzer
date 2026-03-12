@@ -65,6 +65,18 @@ public static class FixProviderSafetyMapping
             fixProviderFullName: "Sharpen.Analyzer.PreferParamsCollectionsCodeFixProvider",
             safetyCheckerType: typeof(PreferParamsCollectionsSafetyChecker));
 
+        // CSharp13: UseFromEndIndexInObjectInitializers
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.UseFromEndIndexInObjectInitializersCodeFixProvider",
+            safetyCheckerType: typeof(UseFromEndIndexInObjectInitializersSafetyChecker));
+
+        // CSharp13: UseEscapeSequenceE
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.UseEscapeSequenceECodeFixProvider",
+            safetyCheckerType: typeof(UseEscapeSequenceESafetyChecker));
+
         return builder.ToImmutable();
     }
 
