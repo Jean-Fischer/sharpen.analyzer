@@ -18,6 +18,9 @@ internal static class CSharpLanguageVersion
     internal static bool IsCSharp12OrAbove(Compilation compilation) =>
         compilation is not null && compilation.LanguageVersion() >= 12;
 
+    internal static bool IsCSharp13OrAbove(Compilation compilation) =>
+        compilation is not null && compilation.LanguageVersion() >= 13;
+
     private static int LanguageVersion(this Compilation compilation)
     {
         // Keep this helper self-contained in FixProviders assembly.

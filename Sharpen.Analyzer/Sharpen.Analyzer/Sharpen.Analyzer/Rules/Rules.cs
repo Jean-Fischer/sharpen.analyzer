@@ -417,4 +417,13 @@ public static class Rules
         description: "C# 7.1 allows using the default literal instead of default(T) in optional parameters when the type can be inferred.",
         customTags: new[] { WellKnownDiagnosticTags.Unnecessary }
     );
+
+    // C# 13
+    public static readonly DiagnosticDescriptor PreferParamsCollectionsRule = CSharp13Rules.PreferParamsCollectionsRule;
+    public static readonly DiagnosticDescriptor UseFromEndIndexInObjectInitializersRule = CSharp13Rules.UseFromEndIndexInObjectInitializersRule;
+    public static readonly DiagnosticDescriptor UseEscapeSequenceERule = CSharp13Rules.UseEscapeSequenceERule;
+    public static readonly DiagnosticDescriptor UseSystemThreadingLockRule = CSharp13Rules.UseSystemThreadingLockRule;
+    public static readonly DiagnosticDescriptor PartialPropertiesIndexersRefactoringRule = CSharp13Rules.PartialPropertiesIndexersRefactoringRule;
+    public static readonly DiagnosticDescriptor SuggestAllowsRefStructConstraintRule = CSharp13Rules.SuggestAllowsRefStructConstraintRule;
+    public static readonly DiagnosticDescriptor SuggestOverloadResolutionPriorityRule = CSharp13Rules.SuggestOverloadResolutionPriorityRule;
 }

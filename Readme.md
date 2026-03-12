@@ -143,6 +143,18 @@ Rules are grouped by the C# language version they target (when applicable).
 | SHARPEN053 | Use default lambda parameters | Use default values in explicitly-typed lambda parameter lists when applicable. | Yes |
 | SHARPEN054 | Use InlineArray | Convert fixed-size buffer-like structs to `[InlineArray(N)]` when safe. | Yes |
 
+### C# 13
+
+| Rule ID | Title | Description | Code fix |
+|---|---|---|---|
+| SHARPEN058 | Prefer params collections | Suggest migrating non-public `params T[]` to collection-based `params` when safe. | Yes |
+| SHARPEN059 | Use from-end index in object initializers | Suggest using `^` indices in object/collection initializers when provably equivalent. | Yes |
+| SHARPEN060 | Use \e escape sequence | Suggest replacing `\u001b` / `\x1b` with `\e` when unambiguous. | Yes |
+| SHARPEN061 | Use System.Threading.Lock | Suggest migrating dedicated private lock objects to `System.Threading.Lock` when available and safe. | Yes |
+| SHARPEN062 | Partial properties/indexers refactoring | Suggest/refactor eligible members to C# 13 partial properties/indexers when safe. | No (refactoring) |
+| SHARPEN063 | Suggest allows ref struct constraint | Guidance-only: suggest `allows ref struct` for eligible generic APIs. | No |
+| SHARPEN064 | Suggest OverloadResolutionPriorityAttribute | Guidance-only: suggest `OverloadResolutionPriorityAttribute` for eligible overload sets. | No |
+
 ## Development
 
 Open [Sharpen.Analyzer/Sharpen.Analyzer.sln](Sharpen.Analyzer/Sharpen.Analyzer.sln:1) and run the test project (`Sharpen.Analyzer.Tests`).

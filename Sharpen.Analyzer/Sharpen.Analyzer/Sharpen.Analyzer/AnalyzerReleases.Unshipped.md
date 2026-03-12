@@ -58,4 +58,11 @@ SHARPEN054 | Sharpen.CSharp12 | Info | Use InlineArray
 SHARPEN055 | Sharpen.CSharp7 | Info | Use expression-bodied member for set accessor in indexer
 SHARPEN056 | Sharpen.CSharp7 | Info | Use expression-bodied member for set accessor in property
 SHARPEN057 | Sharpen.CSharp7 | Info | Use expression-bodied member for get accessor in indexer
+SHARPEN058 | Sharpen.CSharp13 | Info | Prefer params collections
+SHARPEN059 | Sharpen.CSharp13 | Info | Use from-end index in object initializers
+SHARPEN060 | Sharpen.CSharp13 | Info | Use \e escape sequence
+SHARPEN061 | Sharpen.CSharp13 | Info | Use System.Threading.Lock
+SHARPEN062 | Sharpen.CSharp13 | Info | Partial properties/indexers refactoring
+SHARPEN063 | Sharpen.CSharp13 | Info | Suggest allows ref struct constraint
+SHARPEN064 | Sharpen.CSharp13 | Info | Suggest OverloadResolutionPriorityAttribute
 

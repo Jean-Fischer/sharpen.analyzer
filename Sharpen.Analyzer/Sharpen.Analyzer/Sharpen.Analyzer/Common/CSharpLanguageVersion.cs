@@ -40,4 +40,13 @@ public static class CSharpLanguageVersion
         // Treat Preview as "latest".
         return csharpCompilation.LanguageVersion is LanguageVersion.CSharp12 or LanguageVersion.Preview;
     }
+
+    public static bool IsCSharp13OrAbove(Compilation compilation)
+    {
+        if (compilation is not CSharpCompilation csharpCompilation)
+            return false;
+
+        // Treat Preview as "latest".
+        return csharpCompilation.LanguageVersion is LanguageVersion.CSharp13 or LanguageVersion.Preview;
+    }
 }

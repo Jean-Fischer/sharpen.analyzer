@@ -59,6 +59,34 @@ public static class FixProviderSafetyMapping
             fixProviderFullName: "Sharpen.Analyzer.UseCollectionExpressionCodeFixProvider",
             safetyCheckerType: typeof(CollectionExpressionSafetyChecker));
 
+        // CSharp13: PreferParamsCollections
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.PreferParamsCollectionsCodeFixProvider",
+            safetyCheckerType: typeof(PreferParamsCollectionsSafetyChecker));
+
+        // CSharp13: UseFromEndIndexInObjectInitializers
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.UseFromEndIndexInObjectInitializersCodeFixProvider",
+            safetyCheckerType: typeof(UseFromEndIndexInObjectInitializersSafetyChecker));
+
+        // CSharp13: UseEscapeSequenceE
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.UseEscapeSequenceECodeFixProvider",
+            safetyCheckerType: typeof(UseEscapeSequenceESafetyChecker));
+
+        // CSharp13: UseSystemThreadingLock
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.UseSystemThreadingLockCodeFixProvider",
+            safetyCheckerType: typeof(UseSystemThreadingLockSafetyChecker));
+
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.PartialPropertiesIndexersRefactoringCodeFixProvider",
+            safetyCheckerType: typeof(PartialPropertiesIndexersRefactoringSafetyChecker));
 
         return builder.ToImmutable();
     }
