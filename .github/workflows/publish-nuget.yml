@@ -1,4 +1,4 @@
-name: Publish NuGet Package
+name: Publish NuGet Packages
 
 on:
   workflow_dispatch:
@@ -21,14 +21,28 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Restore dependencies (target project only)
-        run: dotnet restore "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.csproj"
+      - name: Compute package version from tag
+        id: version
+        shell: bash
+        run: |
+          # GITHUB_REF_NAME is the tag name (e.g., v1.2.3)
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-      - name: Build (target project only)
-        run: dotnet build "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.csproj" --configuration Release --no-restore
+      - name: Restore
+        run: |
+          dotnet restore "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.csproj"
+          dotnet restore "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.FixProviders/Sharpen.Analyzer.FixProviders.csproj"
 
-      - name: Pack (target project only)
-        run: dotnet pack "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.csproj" --configuration Release --no-build --output nupkgs
+      - name: Build
+        run: |
+          dotnet build "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.csproj" --configuration Release --no-restore
+          dotnet build "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.FixProviders/Sharpen.Analyzer.FixProviders.csproj" --configuration Release --no-restore
+
+      - name: Pack (lockstep version)
+        run: |
+          dotnet pack "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.csproj" --configuration Release --no-build --output nupkgs /p:Version=${{ steps.version.outputs.version }}
+          dotnet pack "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.FixProviders/Sharpen.Analyzer.FixProviders.csproj" --configuration Release --no-build --output nupkgs /p:Version=${{ steps.version.outputs.version }}
 
       - name: Publish to NuGet
         env:
