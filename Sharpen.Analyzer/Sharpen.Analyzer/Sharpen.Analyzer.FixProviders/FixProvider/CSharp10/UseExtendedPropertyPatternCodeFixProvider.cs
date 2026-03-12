@@ -1,37 +1,26 @@
 using System.Collections.Immutable;
 using System.Composition;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
+using Sharpen.Analyzer.FixProvider.Common;
 
 namespace Sharpen.Analyzer.FixProvider.CSharp10;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseExtendedPropertyPatternCodeFixProvider))]
 [Shared]
-public sealed class UseExtendedPropertyPatternCodeFixProvider : CodeFixProvider
+public sealed class UseExtendedPropertyPatternCodeFixProvider : CSharp10OrAboveSharpenCodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(Rules.CSharp10Rules.UseExtendedPropertyPatternRule.Id);
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
-
-    public override async Task RegisterCodeFixesAsync(CodeFixContext context)
+    protected override Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
     {
-        if (!await IsCSharp10OrAboveAsync(context.Document, context.CancellationToken).ConfigureAwait(false))
-            return;
-
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-        if (root == null)
-            return;
-
-        var diagnostic = context.Diagnostics.First();
         var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 
         // Two supported patterns:
@@ -40,30 +29,27 @@ public sealed class UseExtendedPropertyPatternCodeFixProvider : CodeFixProvider
 
         if (node is BinaryExpressionSyntax andExpr && andExpr.IsKind(SyntaxKind.LogicalAndExpression))
         {
-            context.RegisterCodeFix(
-                CodeAction.Create(
-                    title: "Use property pattern",
-                    createChangedDocument: c => ApplyAndPatternFixAsync(context.Document, andExpr, c),
-                    equivalenceKey: "UsePropertyPattern"),
-                diagnostic);
-            return;
+            RegisterCodeFix(
+                context,
+                diagnostic,
+                title: "Use property pattern",
+                equivalenceKey: "UsePropertyPattern",
+                createChangedDocument: c => ApplyAndPatternFixAsync(context.Document, andExpr, c));
+
+            return Task.CompletedTask;
         }
 
         if (node is BinaryExpressionSyntax equalsExpr && equalsExpr.IsKind(SyntaxKind.EqualsExpression))
         {
-            context.RegisterCodeFix(
-                CodeAction.Create(
-                    title: "Use nested property pattern",
-                    createChangedDocument: c => ApplyNullConditionalFixAsync(context.Document, equalsExpr, c),
-                    equivalenceKey: "UseNestedPropertyPattern"),
-                diagnostic);
+            RegisterCodeFix(
+                context,
+                diagnostic,
+                title: "Use nested property pattern",
+                equivalenceKey: "UseNestedPropertyPattern",
+                createChangedDocument: c => ApplyNullConditionalFixAsync(context.Document, equalsExpr, c));
         }
-    }
 
-    private static async Task<bool> IsCSharp10OrAboveAsync(Document document, CancellationToken ct)
-    {
-        var compilation = await document.Project.GetCompilationAsync(ct).ConfigureAwait(false);
-        return compilation != null && Common.CSharpLanguageVersion.IsCSharp10OrAbove(compilation);
+        return Task.CompletedTask;
     }
 
     private static async Task<Document> ApplyAndPatternFixAsync(Document document, BinaryExpressionSyntax andExpr, CancellationToken ct)
