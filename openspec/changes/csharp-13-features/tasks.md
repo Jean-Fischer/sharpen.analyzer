@@ -33,18 +33,18 @@
 
 ## 5. SHARPEN0XX Use System.Threading.Lock (use-system-threading-lock)
 
-- [ ] 5.1 Implement analyzer: detect dedicated private sync fields used only in `lock` statements
-- [ ] 5.2 Implement safety checker: ensure no `Monitor.*` usage and no non-lock usages; ensure `System.Threading.Lock` is resolvable
-- [ ] 5.3 Implement fix provider: change field type/initializer to `System.Threading.Lock` and keep `lock(field)` usage
-- [ ] 5.4 Add analyzer tests: positive + negative (field used elsewhere, Monitor usage)
-- [ ] 5.5 Add fix-provider tests: safe migration + blocked migration
+- [x] 5.1 Implement analyzer: detect dedicated private sync fields used only in `lock` statements
+- [x] 5.2 Implement safety checker: ensure no `Monitor.*` usage and no non-lock usages; ensure `System.Threading.Lock` is resolvable
+- [x] 5.3 Implement fix provider: change field type/initializer to `System.Threading.Lock` and keep `lock(field)` usage
+- [x] 5.4 Add analyzer tests: positive + negative (field used elsewhere, Monitor usage)
+- [x] 5.5 Add fix-provider tests: safe migration + blocked migration
 - [ ] 5.6 Update documentation: intent, framework requirements, and constraints
 
 ## 6. SHARPEN0XX Partial properties/indexers refactoring (partial-properties-indexers-refactoring)
 
-- [ ] 6.1 Implement analyzer: detect eligible property/indexer patterns in partial types
-- [ ] 6.2 Implement safety checker: validate signature match and that produced partial member is valid
-- [ ] 6.3 Implement code action: generate declaring + implementing partial declarations (refactoring-style)
+- [x] 6.1 Implement analyzer: detect eligible property/indexer patterns in partial types
+- [x] 6.2 Implement safety checker: validate signature match and that produced partial member is valid
+- [x] 6.3 Implement code action: generate declaring + implementing partial declarations (refactoring-style)
 - [ ] 6.4 Add analyzer tests: eligible + ineligible patterns
 - [ ] 6.5 Add code-action tests: produced code compiles and preserves behavior
 - [ ] 6.6 Update documentation: usage guidance and limitations

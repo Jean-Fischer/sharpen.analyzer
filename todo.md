@@ -1,3 +1,5 @@
+TODO: Review whether the C# 13 test verifier should use real reference assemblies (e.g., a future `ReferenceAssemblies.Net.NetX_Y` that includes `System.Threading.Lock`) instead of the current minimal stub in [`CSharp13CodeFixVerifier<TAnalyzer, TCodeFix>`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.Tests/Infrastructure/CSharp13CodeFixVerifier.cs:1).
+
 # Inventory: original-sharpen vs sharpen.analyzer
 
 ## Scope

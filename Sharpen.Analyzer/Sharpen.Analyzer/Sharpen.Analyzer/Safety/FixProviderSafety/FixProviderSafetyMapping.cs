@@ -77,6 +77,17 @@ public static class FixProviderSafetyMapping
             fixProviderFullName: "Sharpen.Analyzer.UseEscapeSequenceECodeFixProvider",
             safetyCheckerType: typeof(UseEscapeSequenceESafetyChecker));
 
+        // CSharp13: UseSystemThreadingLock
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.UseSystemThreadingLockCodeFixProvider",
+            safetyCheckerType: typeof(UseSystemThreadingLockSafetyChecker));
+
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.PartialPropertiesIndexersRefactoringCodeFixProvider",
+            safetyCheckerType: typeof(PartialPropertiesIndexersRefactoringSafetyChecker));
+
         return builder.ToImmutable();
     }
 
