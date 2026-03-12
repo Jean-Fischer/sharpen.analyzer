@@ -106,6 +106,12 @@ public static class FixProviderSafetyMapping
             fixProviderFullName: "Sharpen.Analyzer.UseUnboundGenericTypeInNameofCodeFixProvider",
             safetyCheckerType: typeof(UnboundGenericTypeInNameofSafetyChecker));
 
+        // CSharp14: Lambda parameter modifiers without types
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.UseLambdaParameterModifiersWithoutTypesCodeFixProvider",
+            safetyCheckerType: typeof(LambdaParameterModifiersWithoutTypesSafetyChecker));
+
         return builder.ToImmutable();
     }
 

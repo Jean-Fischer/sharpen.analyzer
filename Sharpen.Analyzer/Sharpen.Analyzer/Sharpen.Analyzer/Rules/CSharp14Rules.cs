@@ -35,4 +35,14 @@ public static class CSharp14Rules
         isEnabledByDefault: true,
         description: "When using nameof on a constructed generic type, prefer the unbound generic form (e.g., nameof(Dictionary<,>))."
     );
+
+    public static readonly DiagnosticDescriptor UseLambdaParameterModifiersWithoutTypesRule = new DiagnosticDescriptor(
+        id: "SHARPEN068",
+        title: "Use lambda parameter modifiers without types",
+        messageFormat: "Use lambda parameter modifiers without types",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "Remove redundant lambda parameter types when they are only present to allow modifiers."
+    );
 }

@@ -91,3 +91,28 @@ nameof(Dictionary<,>)
 ```csharp
 nameof(C)
 ```
+
+## SHARPEN068: Use lambda parameter modifiers without types
+
+C# 14 allows lambda parameter modifiers without explicit parameter types.
+
+This rule suggests removing redundant parameter types when they are only present to allow modifiers:
+
+```csharp
+Func<int, int> f = (ref int x) => x;
+```
+
+Becomes:
+
+```csharp
+Func<int, int> f = (ref x) => x;
+```
+
+### Safe-to-fix
+
+- The lambda is target-typed to a known delegate type.
+- Removing explicit parameter types does not change binding.
+
+### Do not fix
+
+- The lambda is not target-typed (e.g. `var f = (ref int x) => x;`).

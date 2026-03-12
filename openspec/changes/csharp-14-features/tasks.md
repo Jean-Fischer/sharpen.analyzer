@@ -39,12 +39,12 @@
 
 ## 5. C# 14: Lambda parameter modifiers without types
 
-- [ ] 5.1 Add analyzer rule (new `SHARPENxxx`) to detect lambdas where parameter types are redundant and only present for modifiers
-- [ ] 5.2 Implement safety checker: confirm target typing is unambiguous and converted delegate type is unchanged
-- [ ] 5.3 Implement code fix: remove explicit parameter types while preserving modifiers
-- [ ] 5.4 Add tests: safe contexts where target delegate type is known
-- [ ] 5.5 Add tests: no diagnostic when overload resolution would change or binding is ambiguous
-- [ ] 5.6 Update docs: rule description and examples
+- [x] 5.1 Add analyzer rule (new `SHARPENxxx`) to detect lambdas where parameter types are redundant and only present for modifiers
+- [x] 5.2 Implement safety checker: confirm target typing is unambiguous and converted delegate type is unchanged
+- [x] 5.3 Implement code fix: remove explicit parameter types while preserving modifiers
+- [x] 5.4 Add tests: safe contexts where target delegate type is known
+- [x] 5.5 Add tests: no diagnostic when overload resolution would change or binding is ambiguous
+- [x] 5.6 Update docs: rule description and examples
 
 ## 6. C# 14: Implicit Span/ReadOnlySpan conversions (redundant conversions)
 
