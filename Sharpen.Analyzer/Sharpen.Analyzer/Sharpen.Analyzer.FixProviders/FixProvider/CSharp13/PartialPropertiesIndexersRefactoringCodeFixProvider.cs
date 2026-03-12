@@ -70,19 +70,12 @@ public sealed class PartialPropertiesIndexersRefactoringCodeFixProvider : CodeFi
         if (propertyOrIndexer is null)
             return document;
 
-        var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-
-        // Declaring declaration: original member + add 'partial' modifier.
+        // Avoid SyntaxEditor tracking issues by doing a pure syntax rewrite.
         var declaring = AddPartialModifier(propertyOrIndexer);
-
-        // Implementing declaration: clone signature + add 'partial' + add trivial bodies.
         var implementing = CreateImplementingDeclaration(propertyOrIndexer);
 
-        // Replace original with declaring, and insert implementing right after.
-        editor.ReplaceNode(propertyOrIndexer, declaring);
-        editor.InsertAfter(declaring, implementing);
-
-        return editor.GetChangedDocument();
+        var newRoot = root.ReplaceNode(propertyOrIndexer, new SyntaxNode[] { declaring, implementing });
+        return document.WithSyntaxRoot(newRoot);
     }
 
     private static BasePropertyDeclarationSyntax AddPartialModifier(BasePropertyDeclarationSyntax member)
@@ -123,10 +116,13 @@ public sealed class PartialPropertiesIndexersRefactoringCodeFixProvider : CodeFi
         var accessorList = implementing.AccessorList.WithAccessors(SyntaxFactory.List(newAccessors));
         implementing = implementing.WithAccessorList(accessorList);
 
-        // Remove initializer/expression body if any (should already be filtered by analyzer/safety checker).
+        // Ensure the implementing part is a full declaration (not a semicolon-only property).
         if (implementing is PropertyDeclarationSyntax prop)
         {
-            implementing = prop.WithInitializer(null).WithSemicolonToken(default);
+            implementing = prop
+                .WithInitializer(null)
+                .WithSemicolonToken(default)
+                .WithExpressionBody(null);
         }
 
         return implementing;

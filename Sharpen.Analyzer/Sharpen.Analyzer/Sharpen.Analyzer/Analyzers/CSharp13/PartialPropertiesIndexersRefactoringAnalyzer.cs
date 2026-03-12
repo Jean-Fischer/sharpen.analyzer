@@ -53,44 +53,48 @@ public sealed class PartialPropertiesIndexersRefactoringAnalyzer : DiagnosticAna
     private static bool IsCandidate(BasePropertyDeclarationSyntax propertyOrIndexer, SemanticModel semanticModel, System.Threading.CancellationToken cancellationToken)
     {
         // Conservative first iteration:
-        // - Must be inside a partial type
-        // - Must be an auto-property/indexer (no accessor bodies)
+        // - Must be inside a partial type (class/struct/record)
+        // - Must be an auto-property (indexers are excluded for now)
         // - Must not already be partial
         // - Must not be expression-bodied
         // - Must not be abstract
+        // - Must not be explicit interface implementation
         //
-        // This is enough to support a safe refactoring that splits into:
-        //   partial <type> P { get; set; }
-        //   partial <type> P { get => field; set => field = value; }
-        // (or get-only / init-only variants)
+        // Note: C# 13 partial indexers exist, but Roslyn's current preview support in this repo
+        // does not allow auto-indexers without bodies, which makes it hard to test safely.
 
-        if (propertyOrIndexer.Modifiers.Any(SyntaxKind.PartialKeyword))
+        if (propertyOrIndexer is not PropertyDeclarationSyntax property)
         {
             return false;
         }
 
-        if (propertyOrIndexer.Modifiers.Any(SyntaxKind.AbstractKeyword))
+        if (property.Modifiers.Any(SyntaxKind.PartialKeyword))
         {
             return false;
         }
 
-        if (propertyOrIndexer is PropertyDeclarationSyntax { ExpressionBody: not null })
+        if (property.Modifiers.Any(SyntaxKind.AbstractKeyword))
         {
             return false;
         }
 
-        if (propertyOrIndexer is IndexerDeclarationSyntax { ExpressionBody: not null })
+        if (property.ExpressionBody is not null)
         {
             return false;
         }
 
-        if (propertyOrIndexer.AccessorList is null)
+        if (property.ExplicitInterfaceSpecifier is not null)
+        {
+            return false;
+        }
+
+        if (property.AccessorList is null)
         {
             return false;
         }
 
         // Only auto accessors (no bodies, no expression bodies)
-        foreach (var accessor in propertyOrIndexer.AccessorList.Accessors)
+        foreach (var accessor in property.AccessorList.Accessors)
         {
             if (accessor.Body is not null || accessor.ExpressionBody is not null)
             {
@@ -99,14 +103,19 @@ public sealed class PartialPropertiesIndexersRefactoringAnalyzer : DiagnosticAna
         }
 
         // Must be in a partial type
-        var containingType = propertyOrIndexer.FirstAncestorOrSelf<TypeDeclarationSyntax>();
+        var containingType = property.FirstAncestorOrSelf<TypeDeclarationSyntax>();
         if (containingType is null || !containingType.Modifiers.Any(SyntaxKind.PartialKeyword))
         {
             return false;
         }
 
+        if (containingType is InterfaceDeclarationSyntax)
+        {
+            return false;
+        }
+
         // Ensure symbol exists (avoid broken code)
-        var symbol = semanticModel.GetDeclaredSymbol(propertyOrIndexer, cancellationToken);
+        var symbol = semanticModel.GetDeclaredSymbol(property, cancellationToken);
         return symbol is not null;
     }
 }

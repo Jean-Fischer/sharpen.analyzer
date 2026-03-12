@@ -71,7 +71,9 @@ public static class CSharp13CodeFixVerifier<TAnalyzer, TCodeFix>
     {
         var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier>
         {
-            ReferenceAssemblies = ReferenceAssemblies.Default,
+            // Use a modern target framework so preview C# 13 features that depend on runtime support
+            // (e.g. byref-like generics) can compile in fixed-state.
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
         };
 
         test.SolutionTransforms.Add((solution, projectId) =>

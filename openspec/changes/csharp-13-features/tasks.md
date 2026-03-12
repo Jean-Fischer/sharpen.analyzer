@@ -38,34 +38,34 @@
 - [x] 5.3 Implement fix provider: change field type/initializer to `System.Threading.Lock` and keep `lock(field)` usage
 - [x] 5.4 Add analyzer tests: positive + negative (field used elsewhere, Monitor usage)
 - [x] 5.5 Add fix-provider tests: safe migration + blocked migration
-- [ ] 5.6 Update documentation: intent, framework requirements, and constraints
+- [x] 5.6 Update documentation: intent, framework requirements, and constraints
 
 ## 6. SHARPEN0XX Partial properties/indexers refactoring (partial-properties-indexers-refactoring)
 
 - [x] 6.1 Implement analyzer: detect eligible property/indexer patterns in partial types
 - [x] 6.2 Implement safety checker: validate signature match and that produced partial member is valid
 - [x] 6.3 Implement code action: generate declaring + implementing partial declarations (refactoring-style)
-- [ ] 6.4 Add analyzer tests: eligible + ineligible patterns
-- [ ] 6.5 Add code-action tests: produced code compiles and preserves behavior
-- [ ] 6.6 Update documentation: usage guidance and limitations
+- [x] 6.4 Add analyzer tests: eligible + ineligible patterns
+- [x] 6.5 Add code-action tests: produced code compiles and preserves behavior
+- [x] 6.6 Update documentation: usage guidance and limitations
 
 ## 7. SHARPEN0XX Suggest allows ref struct constraint (suggest-allows-ref-struct-constraint)
 
-- [ ] 7.1 Implement analyzer: detect candidate generic APIs and emit guidance-only diagnostic
-- [ ] 7.2 (Optional) Implement review-required code action: insert `allows ref struct` constraint
-- [ ] 7.3 Add tests: diagnostic presence + absence; code action (if implemented)
-- [ ] 7.4 Update documentation: explain ref-safety implications and review requirement
+- [x] 7.1 Implement analyzer: detect candidate generic APIs and emit guidance-only diagnostic
+- [x] 7.2 (Optional) Implement review-required code action: insert `allows ref struct` constraint
+- [x] 7.3 Add tests: diagnostic presence + absence; code action (if implemented)
+- [x] 7.4 Update documentation: explain ref-safety implications and review requirement
 
 ## 8. SHARPEN0XX Suggest OverloadResolutionPriorityAttribute (suggest-overload-resolution-priority)
 
-- [ ] 8.1 Implement analyzer: detect overload sets likely to benefit and emit guidance-only diagnostic
-- [ ] 8.2 (Optional) Implement review-required code action: add `OverloadResolutionPriorityAttribute` with suggested priority
-- [ ] 8.3 Add tests: diagnostic presence + absence; code action (if implemented)
-- [ ] 8.4 Update documentation: explain intended use for library authors and review requirement
+- [x] 8.1 Implement analyzer: detect overload sets likely to benefit and emit guidance-only diagnostic
+- [x] 8.2 (Optional) Implement review-required code action: add `OverloadResolutionPriorityAttribute` with suggested priority
+- [x] 8.3 Add tests: diagnostic presence + absence; code action (if implemented)
+- [x] 8.4 Update documentation: explain intended use for library authors and review requirement
 
 ## 9. Documentation and integration
 
-- [ ] 9.1 Update rule index / README to include C# 13 rules and their IDs
-- [ ] 9.2 Update fix-provider safety documentation to include the new safety checkers and their gating rules
-- [ ] 9.3 Ensure all new analyzers/fix providers are wired into the package exports and test discovery
-- [ ] 9.4 Run full test suite and fix any build/test failures
+- [x] 9.1 Update rule index / README to include C# 13 rules and their IDs
+- [x] 9.2 Update fix-provider safety documentation to include the new safety checkers and their gating rules
+- [x] 9.3 Ensure all new analyzers/fix providers are wired into the package exports and test discovery
+- [x] 9.4 Run full test suite and fix any build/test failures
