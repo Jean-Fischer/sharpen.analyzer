@@ -26,16 +26,16 @@
 - [x] 3.4 Add tests: diagnostic triggers for single-statement if (with and without braces)
 - [x] 3.5 Add tests: no diagnostic for multi-statement if bodies or mismatched receivers
 - [ ] 3.6 Add tests: code fix output and formatting
-- [ ] 3.7 Update docs: rule description and safety constraints
+- [x] 3.7 Update docs: rule description and safety constraints
 
 ## 4. C# 14: nameof with unbound generic types
 
-- [ ] 4.1 Add analyzer rule (new `SHARPENxxx`) to detect `nameof(Generic<...>)` and suggest `nameof(Generic<...>)` unbound form
-- [ ] 4.2 Implement safety checker: ensure the `nameof` binds and remains a compile-time constant
-- [ ] 4.3 Implement code fix: replace constructed generic type syntax with unbound generic type syntax
-- [ ] 4.4 Add tests: `nameof(Dictionary<string,int>)` → `nameof(Dictionary<,>)`
-- [ ] 4.5 Add tests: no diagnostic for non-generic `nameof`
-- [ ] 4.6 Update docs: rule description and examples
+- [x] 4.1 Add analyzer rule (new `SHARPENxxx`) to detect `nameof(Generic<...>)` and suggest `nameof(Generic<...>)` unbound form
+- [x] 4.2 Implement safety checker: ensure the `nameof` binds and remains a compile-time constant
+- [x] 4.3 Implement code fix: replace constructed generic type syntax with unbound generic type syntax
+- [x] 4.4 Add tests: `nameof(Dictionary<string,int>)` → `nameof(Dictionary<,>)`
+- [x] 4.5 Add tests: no diagnostic for non-generic `nameof`
+- [x] 4.6 Update docs: rule description and examples
 
 ## 5. C# 14: Lambda parameter modifiers without types
 

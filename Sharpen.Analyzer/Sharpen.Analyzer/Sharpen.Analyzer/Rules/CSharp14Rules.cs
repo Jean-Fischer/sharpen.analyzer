@@ -25,4 +25,14 @@ public static class CSharp14Rules
         isEnabledByDefault: true,
         description: "C# 14 supports null-conditional assignment. This rule suggests rewriting simple guarded assignments to use ?.="
     );
+
+    public static readonly DiagnosticDescriptor UseUnboundGenericTypeInNameofRule = new DiagnosticDescriptor(
+        id: "SHARPEN067",
+        title: "Use unbound generic type in nameof",
+        messageFormat: "Use unbound generic type in nameof",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "When using nameof on a constructed generic type, prefer the unbound generic form (e.g., nameof(Dictionary<,>))."
+    );
 }

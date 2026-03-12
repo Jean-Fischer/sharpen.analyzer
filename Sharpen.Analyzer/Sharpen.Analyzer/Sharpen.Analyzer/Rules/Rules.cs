@@ -430,4 +430,5 @@ public static class Rules
     // C# 14
     public static readonly DiagnosticDescriptor UseFieldKeywordInPropertiesRule = CSharp14Rules.UseFieldKeywordInPropertiesRule;
     public static readonly DiagnosticDescriptor UseNullConditionalAssignmentRule = CSharp14Rules.UseNullConditionalAssignmentRule;
+    public static readonly DiagnosticDescriptor UseUnboundGenericTypeInNameofRule = CSharp14Rules.UseUnboundGenericTypeInNameofRule;
 }

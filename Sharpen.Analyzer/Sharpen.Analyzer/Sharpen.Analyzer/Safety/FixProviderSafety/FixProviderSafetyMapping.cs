@@ -100,6 +100,12 @@ public static class FixProviderSafetyMapping
             fixProviderFullName: "Sharpen.Analyzer.UseNullConditionalAssignmentCodeFixProvider",
             safetyCheckerType: typeof(NullConditionalAssignmentSafetyChecker));
 
+        // CSharp14: nameof with unbound generic types
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.UseUnboundGenericTypeInNameofCodeFixProvider",
+            safetyCheckerType: typeof(UnboundGenericTypeInNameofSafetyChecker));
+
         return builder.ToImmutable();
     }
 
