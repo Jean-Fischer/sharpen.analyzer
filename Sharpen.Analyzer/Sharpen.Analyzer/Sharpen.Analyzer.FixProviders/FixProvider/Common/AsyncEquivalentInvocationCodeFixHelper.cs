@@ -1,6 +1,10 @@
+using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CodeActions;
+using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Sharpen.Engine.SharpenSuggestions.Common.AsyncAwaitAndAsyncStreams;
@@ -9,6 +13,40 @@ namespace Sharpen.Analyzer.FixProvider.Common;
 
 internal static class AsyncEquivalentInvocationCodeFixHelper
 {
+    internal static Task RegisterAsyncEquivalentFixAsync(CodeFixContext context) =>
+        RegisterAsyncEquivalentFixAsync(
+            context,
+            title: "Use async equivalent",
+            equivalenceKey: "UseAsyncEquivalent",
+            fixableDiagnosticIds: static () => ImmutableArray<string>.Empty);
+
+    internal static async Task RegisterAsyncEquivalentFixAsync(
+        CodeFixContext context,
+        string title,
+        string equivalenceKey,
+        System.Func<ImmutableArray<string>> fixableDiagnosticIds)
+    {
+        // NOTE: fixableDiagnosticIds is passed only to keep call sites minimal and consistent.
+        // It is not used here, but it helps ensure providers remain thin wrappers.
+        _ = fixableDiagnosticIds;
+
+        var root = await context.Document
+            .GetSyntaxRootAsync(context.CancellationToken)
+            .ConfigureAwait(false);
+        if (root is null) return;
+
+        var diagnostic = context.Diagnostics.First();
+        var invocation = root.FindNode(diagnostic.Location.SourceSpan) as InvocationExpressionSyntax;
+        if (invocation is null) return;
+
+        context.RegisterCodeFix(
+            CodeAction.Create(
+                title: title,
+                createChangedDocument: c => ApplyAsyncEquivalentAsync(context.Document, invocation, c),
+                equivalenceKey: equivalenceKey),
+            diagnostic);
+    }
+
     internal static async Task<Document> ApplyAsyncEquivalentAsync(
         Document document,
         InvocationExpressionSyntax invocation,
