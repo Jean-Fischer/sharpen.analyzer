@@ -1,46 +1,22 @@
-using System.Collections.Immutable;
 using System.Composition;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Sharpen.Analyzer.FixProvider.Common;
-using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.FixProvider.CSharp7;
 
-[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseExpressionBodyForSetAccessorsInPropertiesCodeFixProvider)), Shared]
-public sealed class UseExpressionBodyForSetAccessorsInPropertiesCodeFixProvider : CodeFixProvider
+[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseExpressionBodyForSetAccessorsInPropertiesCodeFixProvider))]
+public sealed class UseExpressionBodyForSetAccessorsInPropertiesCodeFixProvider : ExpressionBodiedAccessorCodeFixProviderBase
 {
-    public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.Rules.UseExpressionBodyForSetAccessorsInPropertiesRule.Id);
+    protected override string DiagnosticId => Rules.Rules.UseExpressionBodyForSetAccessorsInPropertiesRule.Id;
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    protected override string Title => "Use expression-bodied set accessor";
 
-    public override async Task RegisterCodeFixesAsync(CodeFixContext context)
-    {
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-        if (root == null)
-        {
-            return;
-        }
+    protected override string EquivalenceKey => "UseExpressionBodyForSetAccessorsInProperties";
 
-        var diagnostic = context.Diagnostics[0];
-        var diagnosticSpan = diagnostic.Location.SourceSpan;
-
-        var accessor = root.FindToken(diagnosticSpan.Start).Parent?.AncestorsAndSelf().OfType<AccessorDeclarationSyntax>().FirstOrDefault();
-        if (accessor == null)
-        {
-            return;
-        }
-
-        context.RegisterCodeFix(
-            CodeAction.Create(
-                title: "Use expression-bodied set accessor",
-                createChangedDocument: ct => ExpressionBodiedAccessorCodeFixHelper.UseExpressionBodyForSetAccessorAsync<PropertyDeclarationSyntax>(context.Document, accessor, ct),
-                equivalenceKey: "UseExpressionBodyForSetAccessorsInProperties"),
-            diagnostic);
-    }
+    protected override Task<Document> CreateChangedDocumentAsync(Document document, AccessorDeclarationSyntax accessor, CancellationToken ct) =>
+        ExpressionBodiedAccessorCodeFixHelper.UseExpressionBodyForSetAccessorAsync<PropertyDeclarationSyntax>(document, accessor, ct);
 }

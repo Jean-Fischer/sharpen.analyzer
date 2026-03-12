@@ -1,56 +1,38 @@
 using System;
-using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
+using Sharpen.Analyzer.FixProvider.Common;
 
 namespace Sharpen.Analyzer.FixProvider.CSharp10;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseFileScopedNamespaceCodeFixProvider))]
-[Shared]
-public sealed class UseFileScopedNamespaceCodeFixProvider : CodeFixProvider
+public sealed class UseFileScopedNamespaceCodeFixProvider : CSharp10OrAboveCodeFixProviderBase
 {
-    public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.CSharp10Rules.UseFileScopedNamespaceRule.Id);
+    protected override string DiagnosticId => Rules.CSharp10Rules.UseFileScopedNamespaceRule.Id;
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    protected override string Title => "Use file-scoped namespace";
 
-    public override async Task RegisterCodeFixesAsync(CodeFixContext context)
+    protected override string EquivalenceKey => "UseFileScopedNamespace";
+
+    protected override Task<Document> CreateChangedDocumentAsync(Document document, SyntaxNode root, Diagnostic diagnostic, CancellationToken ct)
     {
-        if (!await IsCSharp10OrAboveAsync(context.Document, context.CancellationToken).ConfigureAwait(false))
-            return;
-
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-        if (root == null)
-            return;
-
-        var diagnostic = context.Diagnostics.First();
         var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 
         var ns = node.FirstAncestorOrSelf<NamespaceDeclarationSyntax>();
         if (ns == null)
-            return;
+        {
+            return Task.FromResult(document);
+        }
 
-        context.RegisterCodeFix(
-            CodeAction.Create(
-                title: "Use file-scoped namespace",
-                createChangedDocument: c => ApplyFixAsync(context.Document, ns, c),
-                equivalenceKey: "UseFileScopedNamespace"),
-            diagnostic);
-    }
-
-    private static async Task<bool> IsCSharp10OrAboveAsync(Document document, CancellationToken ct)
-    {
-        var compilation = await document.Project.GetCompilationAsync(ct).ConfigureAwait(false);
-        return compilation != null && Common.CSharpLanguageVersion.IsCSharp10OrAbove(compilation);
+        return ApplyFixAsync(document, ns, ct);
     }
 
     private static async Task<Document> ApplyFixAsync(Document document, NamespaceDeclarationSyntax ns, CancellationToken ct)

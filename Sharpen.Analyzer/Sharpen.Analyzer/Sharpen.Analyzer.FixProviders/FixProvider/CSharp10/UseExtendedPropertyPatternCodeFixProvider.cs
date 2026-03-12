@@ -13,7 +13,6 @@ using Sharpen.Analyzer.FixProvider.Common;
 namespace Sharpen.Analyzer.FixProvider.CSharp10;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseExtendedPropertyPatternCodeFixProvider))]
-[Shared]
 public sealed class UseExtendedPropertyPatternCodeFixProvider : CSharp10OrAboveSharpenCodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>

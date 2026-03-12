@@ -1,51 +1,35 @@
 using System.Collections.Immutable;
 using System.Composition;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Sharpen.Analyzer.Common;
 using Sharpen.Analyzer.Extensions;
+using Sharpen.Analyzer.FixProvider.Common;
 
 namespace Sharpen.Analyzer.FixProvider.CSharp9;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseCSharp9PatternMatchingCodeFixProvider))]
-[Shared]
-public sealed class UseCSharp9PatternMatchingCodeFixProvider : CodeFixProvider
+public sealed class UseCSharp9PatternMatchingCodeFixProvider : CSharp9OrAboveSharpenCodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(Rules.Rules.UseCSharp9PatternMatchingRule.Id);
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
-
-    public override async Task RegisterCodeFixesAsync(CodeFixContext context)
+    protected override Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
     {
-        if (!await IsCSharp9OrAboveAsync(context.Document, context.CancellationToken).ConfigureAwait(false))
-            return;
-
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-        if (root == null)
-            return;
-
-        var diagnostic = context.Diagnostics.First();
         var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 
-        context.RegisterCodeFix(
-            CodeAction.Create(
-                title: "Use C# 9 pattern matching",
-                createChangedDocument: c => ApplyFixAsync(context.Document, node, c),
-                equivalenceKey: "UseCSharp9PatternMatching"),
-            diagnostic);
-    }
+        RegisterCodeFix(
+            context,
+            diagnostic,
+            title: "Use C# 9 pattern matching",
+            equivalenceKey: "UseCSharp9PatternMatching",
+            createChangedDocument: c => ApplyFixAsync(context.Document, node, c));
 
-    private static async Task<bool> IsCSharp9OrAboveAsync(Document document, CancellationToken ct)
-    {
-        var compilation = await document.Project.GetCompilationAsync(ct).ConfigureAwait(false);
-        return compilation != null && CSharpLanguageVersion.IsCSharp9OrAbove(compilation);
+        return Task.CompletedTask;
     }
 
     private static async Task<Document> ApplyFixAsync(Document document, SyntaxNode node, CancellationToken ct)
