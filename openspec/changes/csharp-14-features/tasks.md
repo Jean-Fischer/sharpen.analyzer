@@ -48,12 +48,12 @@
 
 ## 6. C# 14: Implicit Span/ReadOnlySpan conversions (redundant conversions)
 
-- [ ] 6.1 Add analyzer rule (new `SHARPENxxx`) to detect redundant `AsSpan()` / explicit span conversions
-- [ ] 6.2 Implement safety checker: ensure invoked symbol/overload is unchanged after removing conversion
-- [ ] 6.3 Implement code fix: remove redundant conversion and preserve trivia
-- [ ] 6.4 Add tests: redundant `AsSpan()` removal
-- [ ] 6.5 Add tests: no diagnostic when conversion affects overload resolution
-- [ ] 6.6 Update docs: rule description and safety constraints
+- [x] 6.1 Add analyzer rule (new `SHARPENxxx`) to detect redundant `AsSpan()` / explicit span conversions
+- [x] 6.2 Implement safety checker: ensure invoked symbol/overload is unchanged after removing conversion
+- [x] 6.3 Implement code fix: remove redundant conversion and preserve trivia
+- [x] 6.4 Add tests: redundant `AsSpan()` removal
+- [x] 6.5 Add tests: no diagnostic when conversion affects overload resolution
+- [x] 6.6 Update docs: rule description and safety constraints
 
 ## 7. C# 14: Extension members (extension blocks)
 

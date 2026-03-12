@@ -45,4 +45,14 @@ public static class CSharp14Rules
         isEnabledByDefault: true,
         description: "Remove redundant lambda parameter types when they are only present to allow modifiers."
     );
+
+    public static readonly DiagnosticDescriptor UseImplicitSpanConversionsRule = new DiagnosticDescriptor(
+        id: "SHARPEN069",
+        title: "Remove redundant span conversion",
+        messageFormat: "Remove redundant span conversion",
+        category: Category,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        description: "C# 14 introduces additional implicit conversions to Span<T>/ReadOnlySpan<T>. This rule suggests removing redundant explicit conversions such as AsSpan() when they add no semantic value."
+    );
 }

@@ -112,6 +112,12 @@ public static class FixProviderSafetyMapping
             fixProviderFullName: "Sharpen.Analyzer.UseLambdaParameterModifiersWithoutTypesCodeFixProvider",
             safetyCheckerType: typeof(LambdaParameterModifiersWithoutTypesSafetyChecker));
 
+        // CSharp14: Implicit span conversions
+        AddIfResolved(
+            builder,
+            fixProviderFullName: "Sharpen.Analyzer.UseImplicitSpanConversionsCodeFixProvider",
+            safetyCheckerType: typeof(ImplicitSpanConversionsSafetyChecker));
+
         return builder.ToImmutable();
     }
 

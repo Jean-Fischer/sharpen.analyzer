@@ -116,3 +116,23 @@ Func<int, int> f = (ref x) => x;
 ### Do not fix
 
 - The lambda is not target-typed (e.g. `var f = (ref int x) => x;`).
+
+## SHARPEN069: Remove redundant span conversion
+
+C# 14 introduces additional implicit conversions to `Span<T>` / `ReadOnlySpan<T>`. This rule suggests removing redundant explicit conversions such as `AsSpan()` when they add no semantic value.
+
+### Safe-to-fix
+
+- The `AsSpan()` call is used as an argument to another invocation.
+- Removing the conversion does not change overload resolution (the invoked symbol remains the same).
+
+### Do not fix
+
+- Removing the conversion would select a different overload.
+
+```csharp
+void M(int[] a) { }
+void M(ReadOnlySpan<int> s) { }
+
+M(a.AsSpan()); // do not fix: would change to M(int[])
+```
