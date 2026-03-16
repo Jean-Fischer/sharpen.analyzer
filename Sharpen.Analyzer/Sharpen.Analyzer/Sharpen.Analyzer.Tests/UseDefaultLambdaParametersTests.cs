@@ -71,18 +71,37 @@ class C
     public async Task Does_not_trigger_when_delegate_has_no_default()
     {
         const string code = @"
-using System;
-
-delegate int D(int x);
-
-class C
-{
-    void M()
-    {
-        D f = (int x) => x;
+ using System;
+ 
+ delegate int D(int x);
+ 
+ class C
+ {
+     void M()
+     {
+         D f = (int x) => x;
+     }
+ }
+ ";
+ 
+        await Verifier.VerifyAnalyzerAsync(code);
     }
-}
-";
+
+    [Fact]
+    public async Task Does_not_trigger_for_parameterless_lambda_assigned_to_action()
+    {
+        const string code = @"
+ using System;
+
+ class C
+ {
+     void M()
+     {
+         Action greet = (() => Console.WriteLine(""Hello, World!""));
+         greet();
+     }
+ }
+ ";
 
         await Verifier.VerifyAnalyzerAsync(code);
     }
