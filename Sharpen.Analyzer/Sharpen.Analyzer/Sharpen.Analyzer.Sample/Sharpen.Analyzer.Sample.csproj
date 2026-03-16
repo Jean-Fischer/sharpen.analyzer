@@ -8,6 +8,7 @@
         <!-- This project intentionally contains code that triggers Sharpen analyzers.
              Keep CI/build output clean, but still allow IDE live analysis. -->
         <RunAnalyzersDuringBuild>false</RunAnalyzersDuringBuild>
+        <ImplicitUsings>disable</ImplicitUsings>
     </PropertyGroup>
 
     <ItemGroup>

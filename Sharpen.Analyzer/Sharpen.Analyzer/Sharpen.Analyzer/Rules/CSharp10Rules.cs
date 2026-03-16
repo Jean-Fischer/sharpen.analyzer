@@ -14,15 +14,6 @@ public static class CSharp10Rules
         description: "C# 10 file-scoped namespaces reduce indentation and boilerplate."
     );
 
-    public static readonly DiagnosticDescriptor UseGlobalUsingDirectiveRule = new DiagnosticDescriptor(
-        id: "SHARPEN041",
-        title: "Use global using directive",
-        messageFormat: "Convert this using directive to a global using directive",
-        category: "Sharpen.CSharp10",
-        defaultSeverity: DiagnosticSeverity.Info,
-        isEnabledByDefault: true,
-        description: "C# 10 global using directives reduce repetition across files."
-    );
 
     public static readonly DiagnosticDescriptor UseRecordStructRule = new DiagnosticDescriptor(
         id: "SHARPEN042",

@@ -9,9 +9,6 @@ public static class CSharp10Samples
     // NOTE: This is intentionally block-scoped so the analyzer can suggest file-scoped.
     // (This file itself is file-scoped at the top, so keep the example as a string snippet.)
 
-    // SHARPEN041: Use global using directive
-    // NOTE: Global-using suggestions are project-wide; see other sample files for repeated usings.
-
     // SHARPEN042: Use record struct
     public struct Point
     {
