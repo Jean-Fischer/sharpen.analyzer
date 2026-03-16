@@ -37,12 +37,43 @@ public sealed class UseDefaultLambdaParametersCodeFixProvider : CodeFixProvider
         if (lambda is null)
             return;
 
+        // Avoid registering a no-op fix (e.g. parameterless lambdas like (() => ...)).
+        if (!await CanApplyFixAsync(context.Document, lambda, context.CancellationToken).ConfigureAwait(false))
+            return;
+
         context.RegisterCodeFix(
             CodeAction.Create(
                 title: "Use default lambda parameters",
                 createChangedDocument: ct => UseDefaultLambdaParametersAsync(context.Document, lambda, ct),
                 equivalenceKey: nameof(UseDefaultLambdaParametersCodeFixProvider)),
             diagnostic);
+    }
+
+    private static async Task<bool> CanApplyFixAsync(Document document, LambdaExpressionSyntax lambda, CancellationToken cancellationToken)
+    {
+        var semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+        if (semanticModel is null)
+            return false;
+
+        if (semanticModel.GetTypeInfo(lambda, cancellationToken).ConvertedType is not INamedTypeSymbol delegateType)
+            return false;
+
+        if (delegateType.DelegateInvokeMethod is not IMethodSymbol invoke)
+            return false;
+
+        return lambda switch
+        {
+            SimpleLambdaExpressionSyntax simple =>
+                invoke.Parameters.Length == 1 && AddDefaultValue(simple.Parameter, invoke.Parameters[0]) is not null,
+
+            ParenthesizedLambdaExpressionSyntax parenthesized =>
+                invoke.Parameters.Length == parenthesized.ParameterList.Parameters.Count
+                && parenthesized.ParameterList.Parameters
+                    .Select((p, i) => AddDefaultValue(p, invoke.Parameters[i]))
+                    .Any(p => p is not null),
+
+            _ => false,
+        };
     }
 
     private static async Task<Document> UseDefaultLambdaParametersAsync(Document document, LambdaExpressionSyntax lambda, CancellationToken cancellationToken)

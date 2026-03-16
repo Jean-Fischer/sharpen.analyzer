@@ -58,6 +58,10 @@ public sealed class UseDefaultLambdaParametersAnalyzer : DiagnosticAnalyzer
         if (context.Node is not ParenthesizedLambdaExpressionSyntax lambda)
             return;
 
+        // Parameterless lambdas have no parameters to annotate with defaults.
+        if (lambda.ParameterList.Parameters.Count == 0)
+            return;
+
         // C# 12 default lambda parameters require explicit parameter types.
         foreach (var parameter in lambda.ParameterList.Parameters)
         {
