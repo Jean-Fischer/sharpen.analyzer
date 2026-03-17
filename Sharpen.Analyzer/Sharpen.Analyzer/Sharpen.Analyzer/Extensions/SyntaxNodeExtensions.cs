@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Sharpen.Engine.Extensions;
 
-internal static class SyntaxNodeExtensions
+public static class SyntaxNodeExtensions
 {
     public static bool IsAnyOfKinds(this SyntaxNode syntaxNode, SyntaxKind firstKind, SyntaxKind secondKind)
     {
@@ -145,7 +145,7 @@ internal static class SyntaxNodeExtensions
         return result;
     }
 
-    public static TNode FirstAncestorOrSelfWithinEnclosingNode<TNode>(this SyntaxNode syntaxNode,
+    public static TNode? FirstAncestorOrSelfWithinEnclosingNode<TNode>(this SyntaxNode syntaxNode,
         SyntaxNode enclosingNode, bool includeEnclosingNode = true) where TNode : SyntaxNode
     {
         // TODO-IG: We should assert here that the syntaxNode is really within the enclosingNode.
@@ -154,11 +154,11 @@ internal static class SyntaxNodeExtensions
         var currentNode = syntaxNode;
         while (currentNode != enclosingNode)
         {
-            if (currentNode is TNode) return (TNode)currentNode;
+            if (currentNode is TNode node) return node;
             currentNode = currentNode.Parent;
         }
 
-        if (includeEnclosingNode && enclosingNode is TNode) return (TNode)enclosingNode;
+        if (includeEnclosingNode && enclosingNode is TNode enclosingNodeAsTNode) return enclosingNodeAsTNode;
 
         return null;
     }
@@ -187,6 +187,9 @@ internal static class SyntaxNodeExtensions
     /// </summary>
     public static bool Yields(this SyntaxNode syntaxNode)
     {
+        // A yield statement only makes the *nearest yieldable ancestor* yield.
+        // If the yield is inside a lambda/anonymous method or a local function nested within
+        // the current syntaxNode, it must not be considered as making the current syntaxNode yield.
         return syntaxNode.DescendantNodes()
             .OfType<YieldStatementSyntax>()
             .Any(yieldStatement =>
@@ -197,20 +200,21 @@ internal static class SyntaxNodeExtensions
 
         bool IsNotWithinLambdaOrAnonymousMethodDifferentThanSyntaxNode(YieldStatementSyntax yieldStatement)
         {
-            // Check if there is an anonymous function between the yield statement
-            // and the syntax node that is different than the syntax node itself.
+            // If there is an anonymous function between the yield statement and the syntax node,
+            // then the yield belongs to that anonymous function, not to the syntax node.
             var enclosingAnonymousFunction =
                 yieldStatement.FirstAncestorOrSelfWithinEnclosingNode<AnonymousFunctionExpressionSyntax>(syntaxNode,
-                    false);
+                    includeEnclosingNode: false);
             return enclosingAnonymousFunction == null;
         }
 
         bool IsNotWithinLocalFunctionDifferentThanSyntaxNode(YieldStatementSyntax yieldStatement)
         {
-            // Check if there is a local function between the yield statement
-            // and the syntax node that is different than the syntax node itself.
+            // If there is a local function between the yield statement and the syntax node,
+            // then the yield belongs to that local function, not to the syntax node.
             var localFunction =
-                yieldStatement.FirstAncestorOrSelfWithinEnclosingNode<LocalFunctionStatementSyntax>(syntaxNode, false);
+                yieldStatement.FirstAncestorOrSelfWithinEnclosingNode<LocalFunctionStatementSyntax>(syntaxNode,
+                    includeEnclosingNode: false);
             return localFunction == null;
         }
     }
