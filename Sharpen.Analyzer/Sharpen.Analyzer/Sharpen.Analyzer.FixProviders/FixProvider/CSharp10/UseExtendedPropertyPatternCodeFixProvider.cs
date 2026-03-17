@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -9,6 +8,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
 using Sharpen.Analyzer.FixProvider.Common;
+using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.FixProvider.CSharp10;
 
@@ -16,7 +16,7 @@ namespace Sharpen.Analyzer.FixProvider.CSharp10;
 public sealed class UseExtendedPropertyPatternCodeFixProvider : CSharp10OrAboveSharpenCodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.CSharp10Rules.UseExtendedPropertyPatternRule.Id);
+        ImmutableArray.Create(CSharp10Rules.UseExtendedPropertyPatternRule.Id);
 
     protected override Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
     {
@@ -31,27 +31,26 @@ public sealed class UseExtendedPropertyPatternCodeFixProvider : CSharp10OrAboveS
             RegisterCodeFix(
                 context,
                 diagnostic,
-                title: "Use property pattern",
-                equivalenceKey: "UsePropertyPattern",
-                createChangedDocument: c => ApplyAndPatternFixAsync(context.Document, andExpr, c));
+                "Use property pattern",
+                "UsePropertyPattern",
+                c => ApplyAndPatternFixAsync(context.Document, andExpr, c));
 
             return Task.CompletedTask;
         }
 
         if (node is BinaryExpressionSyntax equalsExpr && equalsExpr.IsKind(SyntaxKind.EqualsExpression))
-        {
             RegisterCodeFix(
                 context,
                 diagnostic,
-                title: "Use nested property pattern",
-                equivalenceKey: "UseNestedPropertyPattern",
-                createChangedDocument: c => ApplyNullConditionalFixAsync(context.Document, equalsExpr, c));
-        }
+                "Use nested property pattern",
+                "UseNestedPropertyPattern",
+                c => ApplyNullConditionalFixAsync(context.Document, equalsExpr, c));
 
         return Task.CompletedTask;
     }
 
-    private static async Task<Document> ApplyAndPatternFixAsync(Document document, BinaryExpressionSyntax andExpr, CancellationToken ct)
+    private static async Task<Document> ApplyAndPatternFixAsync(Document document, BinaryExpressionSyntax andExpr,
+        CancellationToken ct)
     {
         // Rewrite:
         //   x is T t && t.Prop OP value
@@ -84,21 +83,19 @@ public sealed class UseExtendedPropertyPatternCodeFixProvider : CSharp10OrAboveS
                 constant);
 
             if (rightBinary.IsKind(SyntaxKind.NotEqualsExpression))
-            {
                 subpattern = SyntaxFactory.Subpattern(
                     SyntaxFactory.NameColon(SyntaxFactory.IdentifierName(propName)),
                     SyntaxFactory.UnaryPattern(SyntaxFactory.Token(SyntaxKind.NotKeyword), constant));
-            }
         }
 
         var propertyPattern = SyntaxFactory.PropertyPatternClause(
             SyntaxFactory.SeparatedList(new[] { subpattern }));
 
         var recursivePattern = SyntaxFactory.RecursivePattern(
-            type: null,
-            positionalPatternClause: null,
-            propertyPatternClause: propertyPattern,
-            designation: null);
+            null,
+            null,
+            propertyPattern,
+            null);
 
         var newIsPattern = isPattern.WithPattern(recursivePattern);
 
@@ -107,7 +104,8 @@ public sealed class UseExtendedPropertyPatternCodeFixProvider : CSharp10OrAboveS
         return editor.GetChangedDocument();
     }
 
-    private static async Task<Document> ApplyNullConditionalFixAsync(Document document, BinaryExpressionSyntax equalsExpr, CancellationToken ct)
+    private static async Task<Document> ApplyNullConditionalFixAsync(Document document,
+        BinaryExpressionSyntax equalsExpr, CancellationToken ct)
     {
         // Rewrite:
         //   x?.A?.B == c
@@ -139,11 +137,12 @@ public sealed class UseExtendedPropertyPatternCodeFixProvider : CSharp10OrAboveS
         return editor.GetChangedDocument();
     }
 
-    private static bool TryGetNullConditionalChain(ExpressionSyntax expr, out ExpressionSyntax root, out ImmutableArray<string> members)
+    private static bool TryGetNullConditionalChain(ExpressionSyntax expr, out ExpressionSyntax root,
+        out ImmutableArray<string> members)
     {
         var builder = ImmutableArray.CreateBuilder<string>();
 
-        ExpressionSyntax? current = expr;
+        var current = expr;
         while (current is ConditionalAccessExpressionSyntax ca)
         {
             if (ca.WhenNotNull is not MemberBindingExpressionSyntax mb)

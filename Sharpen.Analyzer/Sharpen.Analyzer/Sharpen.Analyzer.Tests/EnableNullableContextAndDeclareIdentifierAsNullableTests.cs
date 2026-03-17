@@ -1,8 +1,9 @@
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Testing;
+using Sharpen.Analyzer.Rules;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
-    Sharpen.Analyzer.Analyzers.CSharp8.EnableNullableContextAndDeclareIdentifierAsNullableAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+    Sharpen.Analyzer.Analyzers.CSharp8.EnableNullableContextAndDeclareIdentifierAsNullableAnalyzer,
+    Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 public sealed class EnableNullableContextAndDeclareIdentifierAsNullableTests
 {
@@ -21,7 +22,7 @@ class C
 }";
 
         // New behavior: diagnostic is reported on the triggering node (assignment), not on the declaration.
-        var expected = Verifier.Diagnostic(Sharpen.Analyzer.Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
+        var expected = Verifier.Diagnostic(Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
             .WithSpan(8, 9, 8, 18);
 
         await Verifier.VerifyAnalyzerAsync(code, expected);

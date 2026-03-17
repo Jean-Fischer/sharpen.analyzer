@@ -17,10 +17,10 @@ public sealed class FieldBackedPropertySafetyChecker : IFixProviderSafetyChecker
         CancellationToken cancellationToken = default)
     {
         if (diagnostic is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "diagnostic-null");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "diagnostic-null");
 
         if (syntaxTree?.Options.Language != LanguageNames.CSharp)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "not-csharp");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "not-csharp");
 
         var root = syntaxTree.GetRoot(cancellationToken);
         var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
@@ -28,38 +28,42 @@ public sealed class FieldBackedPropertySafetyChecker : IFixProviderSafetyChecker
         // Diagnostic is reported on the property identifier.
         var property = node.FirstAncestorOrSelf<PropertyDeclarationSyntax>();
         if (property is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "property-not-found");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "property-not-found");
 
         if (property.AccessorList is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "no-accessor-list");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "no-accessor-list");
 
-        var getAccessor = property.AccessorList.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.GetAccessorDeclaration));
-        var setAccessor = property.AccessorList.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.SetAccessorDeclaration));
+        var getAccessor =
+            property.AccessorList.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.GetAccessorDeclaration));
+        var setAccessor =
+            property.AccessorList.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.SetAccessorDeclaration));
         if (getAccessor is null || setAccessor is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "missing-get-or-set");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "missing-get-or-set");
 
-        if (!FieldBackedPropertyHelper.TryGetBackingFieldFromGetter(semanticModel, getAccessor, cancellationToken, out var backingFieldSymbol) || backingFieldSymbol is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "backing-field-not-found");
+        if (!FieldBackedPropertyHelper.TryGetBackingFieldFromGetter(semanticModel, getAccessor, cancellationToken,
+                out var backingFieldSymbol) || backingFieldSymbol is null)
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "backing-field-not-found");
 
         if (backingFieldSymbol.DeclaredAccessibility != Accessibility.Private)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "field-not-private");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "field-not-private");
 
         if (!IsSimpleSetterAssigningField(semanticModel, setAccessor, backingFieldSymbol, cancellationToken))
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "setter-not-simple");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "setter-not-simple");
 
         // Reject if the field name is used in nameof(...) anywhere in the containing type.
         // (Conservative: we don't try to prove it's unrelated.)
         if (ContainsNameofFieldIdentifier(property, backingFieldSymbol.Name))
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "nameof-usage");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "nameof-usage");
 
         // Reject if the field identifier is used in any attribute argument in the containing type.
         if (ContainsAttributeFieldIdentifier(property, backingFieldSymbol.Name))
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "attribute-usage");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "attribute-usage");
 
         // Ensure the field is referenced only within the property accessors.
         // This is a best-effort check within the current syntax tree; cross-file/partial checks are not possible here.
-        if (!IsFieldReferencedOnlyWithinPropertyAccessors(root, semanticModel, property, backingFieldSymbol, cancellationToken))
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "field-referenced-elsewhere");
+        if (!IsFieldReferencedOnlyWithinPropertyAccessors(root, semanticModel, property, backingFieldSymbol,
+                cancellationToken))
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "field-referenced-elsewhere");
 
         return FixProviderSafetyResult.Safe();
     }
@@ -93,9 +97,7 @@ public sealed class FieldBackedPropertySafetyChecker : IFixProviderSafetyChecker
 
         if (assignedExpression is not AssignmentExpressionSyntax assignment ||
             !assignment.IsKind(SyntaxKind.SimpleAssignmentExpression))
-        {
             return false;
-        }
 
         var leftSymbol = semanticModel.GetSymbolInfo(assignment.Left, ct).Symbol;
         if (!SymbolEqualityComparer.Default.Equals(leftSymbol, backingFieldSymbol))

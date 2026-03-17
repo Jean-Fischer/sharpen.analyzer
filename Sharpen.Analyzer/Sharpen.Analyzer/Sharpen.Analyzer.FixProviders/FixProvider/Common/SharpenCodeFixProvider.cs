@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +10,10 @@ namespace Sharpen.Analyzer.FixProvider.Common;
 
 public abstract class SharpenCodeFixProvider : CodeFixProvider
 {
-    public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public sealed override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
     public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
@@ -26,7 +28,10 @@ public abstract class SharpenCodeFixProvider : CodeFixProvider
         await RegisterCodeFixesAsync(context, root, diagnostic).ConfigureAwait(false);
     }
 
-    protected virtual Task<bool> ShouldRegisterFixesAsync(Document document, CancellationToken ct) => Task.FromResult(true);
+    protected virtual Task<bool> ShouldRegisterFixesAsync(Document document, CancellationToken ct)
+    {
+        return Task.FromResult(true);
+    }
 
     protected abstract Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic);
 
@@ -39,9 +44,9 @@ public abstract class SharpenCodeFixProvider : CodeFixProvider
     {
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: title,
-                createChangedDocument: createChangedDocument,
-                equivalenceKey: equivalenceKey),
+                title,
+                createChangedDocument,
+                equivalenceKey),
             diagnostic);
     }
 }

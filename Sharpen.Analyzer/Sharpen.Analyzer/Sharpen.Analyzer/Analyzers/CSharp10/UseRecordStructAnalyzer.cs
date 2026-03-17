@@ -4,6 +4,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Sharpen.Analyzer.Common;
+using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp10;
 
@@ -11,7 +13,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp10;
 public sealed class UseRecordStructAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.CSharp10Rules.UseRecordStructRule);
+        ImmutableArray.Create(CSharp10Rules.UseRecordStructRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -23,7 +25,7 @@ public sealed class UseRecordStructAnalyzer : DiagnosticAnalyzer
 
     private static void AnalyzeStruct(SyntaxNodeAnalysisContext context)
     {
-        if (!Common.CSharpLanguageVersion.IsCSharp10OrAbove(context.Compilation))
+        if (!CSharpLanguageVersion.IsCSharp10OrAbove(context.Compilation))
             return;
 
         var decl = (StructDeclarationSyntax)context.Node;
@@ -44,16 +46,16 @@ public sealed class UseRecordStructAnalyzer : DiagnosticAnalyzer
             return;
 
         var hasDisallowedMember = decl.Members.Any(m => m is MethodDeclarationSyntax
-                                                        or EventDeclarationSyntax
-                                                        or EventFieldDeclarationSyntax
-                                                        or OperatorDeclarationSyntax
-                                                        or ConversionOperatorDeclarationSyntax
-                                                        or IndexerDeclarationSyntax
-                                                        or DelegateDeclarationSyntax
-                                                        or EnumDeclarationSyntax
-                                                        or ClassDeclarationSyntax
-                                                        or StructDeclarationSyntax
-                                                        or InterfaceDeclarationSyntax);
+            or EventDeclarationSyntax
+            or EventFieldDeclarationSyntax
+            or OperatorDeclarationSyntax
+            or ConversionOperatorDeclarationSyntax
+            or IndexerDeclarationSyntax
+            or DelegateDeclarationSyntax
+            or EnumDeclarationSyntax
+            or ClassDeclarationSyntax
+            or StructDeclarationSyntax
+            or InterfaceDeclarationSyntax);
         if (hasDisallowedMember)
             return;
 
@@ -98,6 +100,6 @@ public sealed class UseRecordStructAnalyzer : DiagnosticAnalyzer
             // No initializer restrictions.
         }
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.CSharp10Rules.UseRecordStructRule, decl.Identifier.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(CSharp10Rules.UseRecordStructRule, decl.Identifier.GetLocation()));
     }
 }

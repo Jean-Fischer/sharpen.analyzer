@@ -4,5 +4,5 @@ public enum FirstPassSafetyOutcome
 {
     MatchFailed = 0,
     Unsafe = 1,
-    Safe = 2,
+    Safe = 2
 }

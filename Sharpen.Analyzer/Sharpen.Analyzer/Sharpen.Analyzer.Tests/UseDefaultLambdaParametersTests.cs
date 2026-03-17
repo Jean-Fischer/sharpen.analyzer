@@ -1,10 +1,10 @@
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Testing;
 using Sharpen.Analyzer.Rules;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp12.UseDefaultLambdaParametersAnalyzer,
-    Sharpen.Analyzer.FixProvider.CSharp12.UseDefaultLambdaParametersCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+    Sharpen.Analyzer.FixProvider.CSharp12.UseDefaultLambdaParametersCodeFixProvider,
+    Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 
@@ -83,7 +83,7 @@ class C
      }
  }
  ";
- 
+
         await Verifier.VerifyAnalyzerAsync(code);
     }
 

@@ -22,16 +22,20 @@ public sealed class ExtensionBlocksSafetyChecker : IFixProviderSafetyChecker
         var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
         var classDeclaration = node.FirstAncestorOrSelf<ClassDeclarationSyntax>() ?? node as ClassDeclarationSyntax;
         if (classDeclaration is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "no-containing-class", "No containing class declaration.");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "no-containing-class",
+                "No containing class declaration.");
 
         if (!classDeclaration.Modifiers.Any(SyntaxKind.StaticKeyword))
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "not-static", "Containing type is not static.");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "not-static",
+                "Containing type is not static.");
 
         if (classDeclaration.Modifiers.Any(SyntaxKind.PartialKeyword))
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "partial-type", "Partial types are not supported.");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "partial-type",
+                "Partial types are not supported.");
 
         if (classDeclaration.DescendantTrivia().Any(t => t.IsDirective))
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "has-directives", "Preprocessor directives are not supported.");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "has-directives",
+                "Preprocessor directives are not supported.");
 
         // Ensure we can find at least 2 extension methods.
         var extensionMethods = classDeclaration.Members
@@ -42,7 +46,8 @@ public sealed class ExtensionBlocksSafetyChecker : IFixProviderSafetyChecker
             .ToList();
 
         if (extensionMethods.Count < 2)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "not-enough-methods", "Not enough extension methods.");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "not-enough-methods",
+                "Not enough extension methods.");
 
         _ = semanticModel;
         return FixProviderSafetyResult.Safe();

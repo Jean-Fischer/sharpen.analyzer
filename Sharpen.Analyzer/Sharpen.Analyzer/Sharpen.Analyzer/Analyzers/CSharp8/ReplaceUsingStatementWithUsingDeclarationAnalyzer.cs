@@ -79,7 +79,8 @@ public sealed class ReplaceUsingStatementWithUsingDeclarationAnalyzer : Diagnost
         }
     }
 
-    private static bool UsingValueDoesNotLeakToFollowingStatements(SyntaxList<StatementSyntax> parentStatements, int index)
+    private static bool UsingValueDoesNotLeakToFollowingStatements(SyntaxList<StatementSyntax> parentStatements,
+        int index)
     {
         // Has to be one of the following forms:
         // 1. Using statement is the last statement in the parent.
@@ -96,12 +97,10 @@ public sealed class ReplaceUsingStatementWithUsingDeclarationAnalyzer : Diagnost
         var nextStatement = parentStatements[index + 1];
 
         // Using statement followed by break/continue.
-        if (nextStatement is BreakStatementSyntax || nextStatement is ContinueStatementSyntax) return true;
+        if (nextStatement is BreakStatementSyntax or ContinueStatementSyntax) return true;
 
         // Using statement followed by `return` (no expression).
-        if (nextStatement is ReturnStatementSyntax returnStatement && returnStatement.Expression == null) return true;
-
-        return false;
+        return nextStatement is ReturnStatementSyntax { Expression: null };
     }
 
     private static bool UsingStatementDoesNotInvolveJumps(
@@ -127,14 +126,11 @@ public sealed class ReplaceUsingStatementWithUsingDeclarationAnalyzer : Diagnost
             ? block.Statements
             : new SyntaxList<StatementSyntax>().Add(innermostUsing.Statement);
 
-        foreach (var statement in innerStatements)
-        {
-            if (IsGotoOrLabeledStatement(statement)) return false;
-        }
-
-        return true;
+        return !innerStatements.Any(IsGotoOrLabeledStatement);
 
         static bool IsGotoOrLabeledStatement(StatementSyntax statement)
-            => statement.Kind() == SyntaxKind.GotoStatement || statement.Kind() == SyntaxKind.LabeledStatement;
+        {
+            return statement.Kind() == SyntaxKind.GotoStatement || statement.Kind() == SyntaxKind.LabeledStatement;
+        }
     }
 }

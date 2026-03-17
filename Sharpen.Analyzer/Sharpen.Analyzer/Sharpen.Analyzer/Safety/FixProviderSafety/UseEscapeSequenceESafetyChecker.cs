@@ -1,6 +1,5 @@
 using System.Threading;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Sharpen.Analyzer.Safety.FixProviderSafety;
@@ -14,16 +13,16 @@ public sealed class UseEscapeSequenceESafetyChecker : IFixProviderSafetyChecker
         CancellationToken cancellationToken = default)
     {
         if (diagnostic is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "diagnostic-null");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "diagnostic-null");
 
         if (syntaxTree?.Options.Language != LanguageNames.CSharp)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "not-csharp");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "not-csharp");
 
         var root = syntaxTree.GetRoot(cancellationToken);
         var literalNode = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 
         if (literalNode is not LiteralExpressionSyntax literal)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "literal-not-found");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "literal-not-found");
 
         var tokenText = literal.Token.Text;
 
@@ -36,7 +35,7 @@ public sealed class UseEscapeSequenceESafetyChecker : IFixProviderSafetyChecker
         if (ContainsUnambiguousX1B(tokenText))
             return FixProviderSafetyResult.Safe();
 
-        return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "no-safe-escape");
+        return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "no-safe-escape");
     }
 
     private static bool ContainsUnambiguousX1B(string tokenText)
@@ -68,8 +67,10 @@ public sealed class UseEscapeSequenceESafetyChecker : IFixProviderSafetyChecker
         return false;
     }
 
-    private static bool IsHexDigit(char c) =>
-        (c >= '0' && c <= '9') ||
-        (c >= 'a' && c <= 'f') ||
-        (c >= 'A' && c <= 'F');
+    private static bool IsHexDigit(char c)
+    {
+        return (c >= '0' && c <= '9') ||
+               (c >= 'a' && c <= 'f') ||
+               (c >= 'A' && c <= 'F');
+    }
 }

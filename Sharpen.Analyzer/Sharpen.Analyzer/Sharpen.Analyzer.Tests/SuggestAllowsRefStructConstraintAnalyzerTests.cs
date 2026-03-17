@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis.CSharp.Testing;
+using System.Threading.Tasks;
 using Sharpen.Analyzer.Rules;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
@@ -8,7 +8,7 @@ using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
 public sealed class SuggestAllowsRefStructConstraintAnalyzerTests
 {
     [Fact]
-    public async System.Threading.Tasks.Task Reports_on_generic_method_using_span_of_T()
+    public async Task Reports_on_generic_method_using_span_of_T()
     {
         var source = @"
 using System;
@@ -28,7 +28,7 @@ public class C
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task Does_not_report_when_no_generic_parameters()
+    public async Task Does_not_report_when_no_generic_parameters()
     {
         var source = @"
 using System;
@@ -45,7 +45,7 @@ public class C
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task Does_not_report_when_constraints_already_present()
+    public async Task Does_not_report_when_constraints_already_present()
     {
         var source = @"
 using System;

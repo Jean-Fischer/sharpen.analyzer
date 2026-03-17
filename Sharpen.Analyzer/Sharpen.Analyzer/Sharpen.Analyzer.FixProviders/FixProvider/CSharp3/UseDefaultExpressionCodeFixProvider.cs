@@ -21,7 +21,10 @@ public sealed class UseDefaultExpressionCodeFixProvider : CodeFixProvider
         Rules.Rules.UseDefaultExpressionInOptionalMethodParametersRule.Id,
         Rules.Rules.UseDefaultExpressionInOptionalConstructorParametersRule.Id);
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
@@ -37,21 +40,24 @@ public sealed class UseDefaultExpressionCodeFixProvider : CodeFixProvider
         var node = root.FindNode(diagnosticSpan, getInnermostNodeForTie: true);
 
         var defaultExpression = node.FirstAncestorOrSelf<DefaultExpressionSyntax>()
-                              ?? node.FirstAncestorOrSelf<ReturnStatementSyntax>()?.DescendantNodes().OfType<DefaultExpressionSyntax>().FirstOrDefault()
-                              ?? node.FirstAncestorOrSelf<ParameterSyntax>()?.DescendantNodes().OfType<DefaultExpressionSyntax>().FirstOrDefault();
+                                ?? node.FirstAncestorOrSelf<ReturnStatementSyntax>()?.DescendantNodes()
+                                    .OfType<DefaultExpressionSyntax>().FirstOrDefault()
+                                ?? node.FirstAncestorOrSelf<ParameterSyntax>()?.DescendantNodes()
+                                    .OfType<DefaultExpressionSyntax>().FirstOrDefault();
 
         if (defaultExpression is null)
             return;
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: "Use default literal",
-                createChangedDocument: ct => UseDefaultLiteralAsync(context.Document, defaultExpression, ct),
-                equivalenceKey: nameof(UseDefaultLiteralAsync)),
+                "Use default literal",
+                ct => UseDefaultLiteralAsync(context.Document, defaultExpression, ct),
+                nameof(UseDefaultLiteralAsync)),
             diagnostic);
     }
 
-    private static async Task<Document> UseDefaultLiteralAsync(Document document, DefaultExpressionSyntax defaultExpression, CancellationToken cancellationToken)
+    private static async Task<Document> UseDefaultLiteralAsync(Document document,
+        DefaultExpressionSyntax defaultExpression, CancellationToken cancellationToken)
     {
         var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
 

@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -24,7 +23,7 @@ public sealed class UseDefaultExpressionInReturnStatementsAnalyzer : DiagnosticA
     {
         var defaultExpression = (DefaultExpressionSyntax)context.Node;
 
-        if (defaultExpression.Parent is not ReturnStatementSyntax returnStatement) return;
+        if (defaultExpression.Parent is not ReturnStatementSyntax) return;
 
         var defaultExpressionType = context.SemanticModel.GetTypeInfo(defaultExpression).Type;
         if (defaultExpressionType is null) return;
@@ -40,7 +39,8 @@ public sealed class UseDefaultExpressionInReturnStatementsAnalyzer : DiagnosticA
             defaultExpressionType.ToDisplayString()));
     }
 
-    private static ITypeSymbol? GetEnclosingDeclarationReturnType(DefaultExpressionSyntax expression, SemanticModel semanticModel)
+    private static ITypeSymbol? GetEnclosingDeclarationReturnType(DefaultExpressionSyntax expression,
+        SemanticModel semanticModel)
     {
         var method = expression.FirstAncestorOrSelf<MethodDeclarationSyntax>();
         if (method != null) return semanticModel.GetDeclaredSymbol(method)?.ReturnType;
@@ -52,8 +52,6 @@ public sealed class UseDefaultExpressionInReturnStatementsAnalyzer : DiagnosticA
         if (conversion != null) return semanticModel.GetDeclaredSymbol(conversion)?.ReturnType;
 
         var property = expression.FirstAncestorOrSelf<BasePropertyDeclarationSyntax>();
-        if (property != null) return (semanticModel.GetDeclaredSymbol(property) as IPropertySymbol)?.Type;
-
-        return null;
+        return property != null ? (semanticModel.GetDeclaredSymbol(property) as IPropertySymbol)?.Type : null;
     }
 }

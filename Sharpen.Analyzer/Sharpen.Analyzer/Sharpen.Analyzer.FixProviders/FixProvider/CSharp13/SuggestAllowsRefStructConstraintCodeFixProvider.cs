@@ -1,6 +1,5 @@
 using System.Collections.Immutable;
 using System.Composition;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -15,7 +14,8 @@ using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.FixProviders.FixProvider.CSharp13;
 
-[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(SuggestAllowsRefStructConstraintCodeFixProvider)), Shared]
+[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(SuggestAllowsRefStructConstraintCodeFixProvider))]
+[Shared]
 public sealed class SuggestAllowsRefStructConstraintCodeFixProvider : CSharp13OrAboveSharpenCodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
@@ -30,26 +30,25 @@ public sealed class SuggestAllowsRefStructConstraintCodeFixProvider : CSharp13Or
         {
             context.RegisterCodeFix(
                 CodeAction.Create(
-                    title: "Add 'allows ref struct' constraint (requires review)",
-                    createChangedDocument: ct => AddAllowsRefStructConstraintAsync(context.Document, method, ct),
-                    equivalenceKey: "AddAllowsRefStructConstraint"),
+                    "Add 'allows ref struct' constraint (requires review)",
+                    ct => AddAllowsRefStructConstraintAsync(context.Document, method, ct),
+                    "AddAllowsRefStructConstraint"),
                 diagnostic);
             return;
         }
 
         var typeDecl = node.FirstAncestorOrSelf<TypeDeclarationSyntax>();
         if (typeDecl is not null)
-        {
             context.RegisterCodeFix(
                 CodeAction.Create(
-                    title: "Add 'allows ref struct' constraint (requires review)",
-                    createChangedDocument: ct => AddAllowsRefStructConstraintAsync(context.Document, typeDecl, ct),
-                    equivalenceKey: "AddAllowsRefStructConstraint"),
+                    "Add 'allows ref struct' constraint (requires review)",
+                    ct => AddAllowsRefStructConstraintAsync(context.Document, typeDecl, ct),
+                    "AddAllowsRefStructConstraint"),
                 diagnostic);
-        }
     }
 
-    private static async Task<Document> AddAllowsRefStructConstraintAsync(Document document, MethodDeclarationSyntax method, CancellationToken ct)
+    private static async Task<Document> AddAllowsRefStructConstraintAsync(Document document,
+        MethodDeclarationSyntax method, CancellationToken ct)
     {
         if (method.TypeParameterList is null || method.TypeParameterList.Parameters.Count == 0)
             return document;
@@ -67,7 +66,8 @@ public sealed class SuggestAllowsRefStructConstraintCodeFixProvider : CSharp13Or
         return editor.GetChangedDocument();
     }
 
-    private static async Task<Document> AddAllowsRefStructConstraintAsync(Document document, TypeDeclarationSyntax typeDecl, CancellationToken ct)
+    private static async Task<Document> AddAllowsRefStructConstraintAsync(Document document,
+        TypeDeclarationSyntax typeDecl, CancellationToken ct)
     {
         if (typeDecl.TypeParameterList is null || typeDecl.TypeParameterList.Parameters.Count == 0)
             return document;

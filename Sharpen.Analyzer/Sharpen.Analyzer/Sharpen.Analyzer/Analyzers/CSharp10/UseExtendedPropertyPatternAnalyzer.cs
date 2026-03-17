@@ -1,9 +1,10 @@
 using System.Collections.Immutable;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Sharpen.Analyzer.Common;
+using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp10;
 
@@ -11,7 +12,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp10;
 public sealed class UseExtendedPropertyPatternAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.CSharp10Rules.UseExtendedPropertyPatternRule);
+        ImmutableArray.Create(CSharp10Rules.UseExtendedPropertyPatternRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -24,7 +25,7 @@ public sealed class UseExtendedPropertyPatternAnalyzer : DiagnosticAnalyzer
 
     private static void AnalyzeAndPattern(SyntaxNodeAnalysisContext context)
     {
-        if (!Common.CSharpLanguageVersion.IsCSharp10OrAbove(context.Compilation))
+        if (!CSharpLanguageVersion.IsCSharp10OrAbove(context.Compilation))
             return;
 
         var andExpr = (BinaryExpressionSyntax)context.Node;
@@ -65,12 +66,13 @@ public sealed class UseExtendedPropertyPatternAnalyzer : DiagnosticAnalyzer
         if (memberAccess.Name is not IdentifierNameSyntax)
             return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.CSharp10Rules.UseExtendedPropertyPatternRule, andExpr.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(CSharp10Rules.UseExtendedPropertyPatternRule,
+            andExpr.GetLocation()));
     }
 
     private static void AnalyzeNullConditionalEquality(SyntaxNodeAnalysisContext context)
     {
-        if (!Common.CSharpLanguageVersion.IsCSharp10OrAbove(context.Compilation))
+        if (!CSharpLanguageVersion.IsCSharp10OrAbove(context.Compilation))
             return;
 
         var equals = (BinaryExpressionSyntax)context.Node;
@@ -90,15 +92,16 @@ public sealed class UseExtendedPropertyPatternAnalyzer : DiagnosticAnalyzer
         if (members.Length < 2)
             return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.CSharp10Rules.UseExtendedPropertyPatternRule, equals.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(CSharp10Rules.UseExtendedPropertyPatternRule, equals.GetLocation()));
     }
 
-    private static bool TryGetNullConditionalChain(ExpressionSyntax expr, out ExpressionSyntax root, out ImmutableArray<string> members)
+    private static bool TryGetNullConditionalChain(ExpressionSyntax expr, out ExpressionSyntax root,
+        out ImmutableArray<string> members)
     {
         // Parse x?.A?.B into root=x and members=["A","B"].
         var builder = ImmutableArray.CreateBuilder<string>();
 
-        ExpressionSyntax? current = expr;
+        var current = expr;
         while (current is ConditionalAccessExpressionSyntax ca)
         {
             // WhenNotNull should be MemberBindingExpressionSyntax for x?.A and for nested.
@@ -113,7 +116,7 @@ public sealed class UseExtendedPropertyPatternAnalyzer : DiagnosticAnalyzer
             current = ca.Expression;
         }
 
-        root = current ?? expr;
+        root = current;
         members = builder.ToImmutable();
         return members.Length > 0;
     }

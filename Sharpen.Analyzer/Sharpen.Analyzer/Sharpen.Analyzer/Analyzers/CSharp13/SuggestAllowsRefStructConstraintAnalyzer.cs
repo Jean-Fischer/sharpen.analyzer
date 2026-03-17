@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -36,10 +37,8 @@ public sealed class SuggestAllowsRefStructConstraintAnalyzer : DiagnosticAnalyze
             return;
 
         if (method.Modifiers.Any(SyntaxKind.PartialKeyword))
-        {
             // Avoid suggesting on partial methods where constraints may be split across parts.
             return;
-        }
 
         // Heuristic: if the method uses any of its type parameters in a byref-like position,
         // it may benefit from allowing ref struct type arguments.
@@ -62,10 +61,8 @@ public sealed class SuggestAllowsRefStructConstraintAnalyzer : DiagnosticAnalyze
             return;
 
         if (typeDecl.Modifiers.Any(SyntaxKind.PartialKeyword))
-        {
             // Avoid suggesting on partial types where constraints may be split across parts.
             return;
-        }
 
         if (!UsesTypeParameterInByRefLikePosition(typeDecl, context.SemanticModel, context.CancellationToken))
             return;
@@ -78,7 +75,7 @@ public sealed class SuggestAllowsRefStructConstraintAnalyzer : DiagnosticAnalyze
     private static bool UsesTypeParameterInByRefLikePosition(
         SyntaxNode node,
         SemanticModel semanticModel,
-        System.Threading.CancellationToken cancellationToken)
+        CancellationToken cancellationToken)
     {
         // Conservative heuristic:
         // - Any ref/out/in parameter of type T
@@ -90,7 +87,7 @@ public sealed class SuggestAllowsRefStructConstraintAnalyzer : DiagnosticAnalyze
 
         foreach (var typeParameter in node.DescendantNodes().OfType<TypeParameterSyntax>())
         {
-            var typeParamSymbol = semanticModel.GetDeclaredSymbol(typeParameter, cancellationToken) as ITypeParameterSymbol;
+            var typeParamSymbol = semanticModel.GetDeclaredSymbol(typeParameter, cancellationToken);
             if (typeParamSymbol is null)
                 continue;
 
@@ -114,7 +111,7 @@ public sealed class SuggestAllowsRefStructConstraintAnalyzer : DiagnosticAnalyze
             }
 
             // return type
-            if (node is MethodDeclarationSyntax method && method.ReturnType is not null)
+            if (node is MethodDeclarationSyntax method)
             {
                 if (method.ReturnType is RefTypeSyntax refType)
                 {
@@ -130,36 +127,24 @@ public sealed class SuggestAllowsRefStructConstraintAnalyzer : DiagnosticAnalyze
             // properties/fields
             foreach (var memberType in node.DescendantNodes().OfType<BasePropertyDeclarationSyntax>())
             {
-                if (memberType is PropertyDeclarationSyntax prop && prop.Type is not null)
-                {
+                if (memberType is PropertyDeclarationSyntax prop)
                     if (IsSpanOfTypeParameter(prop.Type, typeParamSymbol, semanticModel, cancellationToken))
                         return true;
-                }
 
-                if (memberType is IndexerDeclarationSyntax indexer && indexer.Type is not null)
-                {
-                    if (IsSpanOfTypeParameter(indexer.Type, typeParamSymbol, semanticModel, cancellationToken))
-                        return true;
-                }
+                if (memberType is not IndexerDeclarationSyntax indexer || indexer.Type is null) continue;
+                if (IsSpanOfTypeParameter(indexer.Type, typeParamSymbol, semanticModel, cancellationToken))
+                    return true;
             }
 
-            foreach (var field in node.DescendantNodes().OfType<FieldDeclarationSyntax>())
+            if (node.DescendantNodes().OfType<FieldDeclarationSyntax>().Any(field => IsSpanOfTypeParameter(field.Declaration.Type, typeParamSymbol, semanticModel, cancellationToken)))
             {
-                if (field.Declaration?.Type is null)
-                    continue;
-
-                if (IsSpanOfTypeParameter(field.Declaration.Type, typeParamSymbol, semanticModel, cancellationToken))
-                    return true;
+                return true;
             }
 
             // locals
-            foreach (var local in node.DescendantNodes().OfType<VariableDeclarationSyntax>())
+            if (node.DescendantNodes().OfType<VariableDeclarationSyntax>().Any(local => IsSpanOfTypeParameter(local.Type, typeParamSymbol, semanticModel, cancellationToken)))
             {
-                if (local.Type is null)
-                    continue;
-
-                if (IsSpanOfTypeParameter(local.Type, typeParamSymbol, semanticModel, cancellationToken))
-                    return true;
+                return true;
             }
         }
 
@@ -170,10 +155,9 @@ public sealed class SuggestAllowsRefStructConstraintAnalyzer : DiagnosticAnalyze
         TypeSyntax typeSyntax,
         ITypeParameterSymbol typeParameter,
         SemanticModel semanticModel,
-        System.Threading.CancellationToken cancellationToken)
+        CancellationToken cancellationToken)
     {
-        var type = semanticModel.GetTypeInfo(typeSyntax, cancellationToken).Type as INamedTypeSymbol;
-        if (type is null)
+        if (semanticModel.GetTypeInfo(typeSyntax, cancellationToken).Type is not INamedTypeSymbol type)
             return false;
 
         if (type.TypeArguments.Length != 1)
@@ -184,6 +168,6 @@ public sealed class SuggestAllowsRefStructConstraintAnalyzer : DiagnosticAnalyze
 
         // Match Span<T> / ReadOnlySpan<T> by metadata name.
         return type.ContainingNamespace?.ToDisplayString() == "System"
-            && (type.Name == "Span" || type.Name == "ReadOnlySpan");
+               && type.Name is "Span" or "ReadOnlySpan";
     }
 }

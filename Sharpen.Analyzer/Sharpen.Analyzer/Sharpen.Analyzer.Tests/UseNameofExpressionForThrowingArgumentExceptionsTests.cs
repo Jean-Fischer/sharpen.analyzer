@@ -2,7 +2,8 @@ using System.Threading.Tasks;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp6.UseNameofExpressionForThrowingArgumentExceptionsAnalyzer,
-    Sharpen.Analyzer.FixProvider.CSharp6.UseNameofExpressionForThrowingArgumentExceptionsCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+    Sharpen.Analyzer.FixProvider.CSharp6.UseNameofExpressionForThrowingArgumentExceptionsCodeFixProvider,
+    Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 

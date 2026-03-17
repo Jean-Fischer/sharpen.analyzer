@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sharpen.Analyzer.Common;
-using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp6;
 
@@ -27,53 +26,31 @@ public sealed class UseNameofExpressionInDependencyPropertyDeclarationsAnalyzer 
     {
         var invocation = (InvocationExpressionSyntax)context.Node;
 
-        if (invocation.ArgumentList is null || invocation.ArgumentList.Arguments.Count == 0)
-        {
-            return;
-        }
+        if (invocation.ArgumentList.Arguments.Count == 0) return;
 
         // We only care about the first argument (property name).
         var firstArgExpression = invocation.ArgumentList.Arguments[0].Expression;
 
-        if (CSharp6SyntaxHelpers.IsNameofExpression(firstArgExpression))
-        {
-            return;
-        }
+        if (CSharp6SyntaxHelpers.IsNameofExpression(firstArgExpression)) return;
 
-        if (!CSharp6SyntaxHelpers.TryGetStringLiteralValue(firstArgExpression, out var propertyName))
-        {
-            return;
-        }
+        if (!CSharp6SyntaxHelpers.TryGetStringLiteralValue(firstArgExpression, out var propertyName)) return;
 
         // Semantic check: ensure this is DependencyProperty.Register/RegisterAttached.
         var symbolInfo = context.SemanticModel.GetSymbolInfo(invocation, context.CancellationToken);
-        var methodSymbol = symbolInfo.Symbol as IMethodSymbol;
-        if (methodSymbol is null)
-        {
-            return;
-        }
+        if (symbolInfo.Symbol is not IMethodSymbol methodSymbol) return;
 
-        if (!IsDependencyPropertyRegistrationMethod(methodSymbol))
-        {
-            return;
-        }
+        if (!IsDependencyPropertyRegistrationMethod(methodSymbol)) return;
 
         // Symbol check: ensure a matching CLR property exists on the containing type.
         var containingType = context.ContainingSymbol?.ContainingType;
-        if (containingType is null)
-        {
-            return;
-        }
+        if (containingType is null) return;
 
         var hasMatchingProperty = containingType
             .GetMembers()
             .OfType<IPropertySymbol>()
             .Any(p => p.Name == propertyName);
 
-        if (!hasMatchingProperty)
-        {
-            return;
-        }
+        if (!hasMatchingProperty) return;
 
         context.ReportDiagnostic(
             Diagnostic.Create(
@@ -83,16 +60,11 @@ public sealed class UseNameofExpressionInDependencyPropertyDeclarationsAnalyzer 
 
     private static bool IsDependencyPropertyRegistrationMethod(IMethodSymbol methodSymbol)
     {
-        if (methodSymbol.Name is not ("Register" or "RegisterAttached"))
-        {
-            return false;
-        }
+        if (methodSymbol.Name is not ("Register" or "RegisterAttached")) return false;
 
         // Must be DependencyProperty.Register*.
         if (methodSymbol.ContainingType is null || methodSymbol.ContainingType.Name != "DependencyProperty")
-        {
             return false;
-        }
 
         // We don't reference WPF assemblies; just check namespace string.
         var ns = methodSymbol.ContainingType.ContainingNamespace?.ToDisplayString();

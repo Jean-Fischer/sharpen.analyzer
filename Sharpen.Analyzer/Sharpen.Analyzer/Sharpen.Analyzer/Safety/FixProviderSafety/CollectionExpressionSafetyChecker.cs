@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 namespace Sharpen.Analyzer.Safety.FixProviderSafety;
 
 /// <summary>
-/// Safety checker for converting array creation expressions to collection expressions.
+///     Safety checker for converting array creation expressions to collection expressions.
 /// </summary>
 public sealed class CollectionExpressionSafetyChecker : IFixProviderSafetyChecker
 {
@@ -19,7 +19,7 @@ public sealed class CollectionExpressionSafetyChecker : IFixProviderSafetyChecke
         // - ensure semantic model exists
         // - rely on existing FirstPassSafety for deeper checks until this checker is expanded
 
-        var langCheck = SafetyCheckHelpers.UnsafeIfNotCSharp(syntaxTree, reasonId: "not-csharp", message: "SyntaxTree is not C#.");
+        var langCheck = SafetyCheckHelpers.UnsafeIfNotCSharp(syntaxTree, "not-csharp", "SyntaxTree is not C#.");
         if (!langCheck.IsSafe)
             return langCheck;
 

@@ -28,36 +28,39 @@ public sealed class UseExtensionBlocksCodeFixProvider : SharpenCodeFixProvider
         if (classDeclaration is null)
             return;
 
-        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+        var semanticModel =
+            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
         if (semanticModel is null)
             return;
 
         var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            checker: new ExtensionBlocksSafetyChecker(),
-            syntaxTree: root.SyntaxTree,
-            semanticModel: semanticModel,
-            diagnostic: diagnostic,
-            matchSucceeded: true,
-            cancellationToken: context.CancellationToken);
+            new ExtensionBlocksSafetyChecker(),
+            root.SyntaxTree,
+            semanticModel,
+            diagnostic,
+            true,
+            context.CancellationToken);
 
         if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
             return;
 
         RegisterCodeFix(
-            context: context,
-            diagnostic: diagnostic,
-            title: CSharp14Rules.UseExtensionBlocksRule.Title.ToString(),
-            equivalenceKey: nameof(UseExtensionBlocksCodeFixProvider),
-            createChangedDocument: ct => ApplyAsync(context.Document, classDeclaration, ct));
+            context,
+            diagnostic,
+            CSharp14Rules.UseExtensionBlocksRule.Title.ToString(),
+            nameof(UseExtensionBlocksCodeFixProvider),
+            ct => ApplyAsync(context.Document, classDeclaration, ct));
     }
 
-    private static async Task<Document> ApplyAsync(Document document, ClassDeclarationSyntax classDeclaration, CancellationToken ct)
+    private static async Task<Document> ApplyAsync(Document document, ClassDeclarationSyntax classDeclaration,
+        CancellationToken ct)
     {
         var root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
         if (root is null)
             return document;
 
-        var currentClass = root.FindNode(classDeclaration.Span, getInnermostNodeForTie: true).FirstAncestorOrSelf<ClassDeclarationSyntax>();
+        var currentClass = root.FindNode(classDeclaration.Span, getInnermostNodeForTie: true)
+            .FirstAncestorOrSelf<ClassDeclarationSyntax>();
         if (currentClass is null)
             return document;
 
@@ -86,7 +89,8 @@ public sealed class UseExtensionBlocksCodeFixProvider : SharpenCodeFixProvider
 
         // Create: extension <ReceiverType> { ...methods... }
         // NOTE: Roslyn may not have dedicated syntax nodes yet; we use ParseMemberDeclaration.
-        var methodsText = string.Join("\n\n", dominantGroup.Select(m => m.WithLeadingTrivia().WithTrailingTrivia().ToFullString()));
+        var methodsText = string.Join("\n\n",
+            dominantGroup.Select(m => m.WithLeadingTrivia().WithTrailingTrivia().ToFullString()));
         var extensionBlockText = $"extension {receiverTypeSyntax}\n{{\n{methodsText}\n}}";
 
         var parsed = SyntaxFactory.ParseMemberDeclaration(extensionBlockText);
@@ -101,7 +105,8 @@ public sealed class UseExtensionBlocksCodeFixProvider : SharpenCodeFixProvider
 
         // Re-find nodes in the editor's current root to avoid GetCurrentNode() failures.
         var editorRoot = editor.OriginalRoot;
-        var editorClass = editorRoot.FindNode(currentClass.Span, getInnermostNodeForTie: true).FirstAncestorOrSelf<ClassDeclarationSyntax>();
+        var editorClass = editorRoot.FindNode(currentClass.Span, getInnermostNodeForTie: true)
+            .FirstAncestorOrSelf<ClassDeclarationSyntax>();
         if (editorClass is null)
             return document;
 

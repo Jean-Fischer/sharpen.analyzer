@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Sharpen.Analyzer.Rules;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
@@ -7,7 +8,7 @@ using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
 public sealed class SuggestOverloadResolutionPriorityAnalyzerTests
 {
     [Fact]
-    public async System.Threading.Tasks.Task Reports_on_overload_set_with_params_object_array()
+    public async Task Reports_on_overload_set_with_params_object_array()
     {
         var source = @"
 public class C
@@ -24,7 +25,7 @@ public class C
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task Does_not_report_when_no_overloads()
+    public async Task Does_not_report_when_no_overloads()
     {
         var source = @"
 public class C

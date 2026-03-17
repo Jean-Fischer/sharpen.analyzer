@@ -1,7 +1,6 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Testing;
-using Sharpen.Analyzer.Rules;
 using Sharpen.Analyzer.Safety;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
@@ -18,7 +17,7 @@ public sealed class FixProviderSafetyIntegrationTests
     {
         FirstPassSafety.Gate = new FirstPassSafetyGate(new IFirstPassSafetyCheck[]
         {
-            new AlwaysUnsafeCheck(),
+            new AlwaysUnsafeCheck()
         });
 
         try
@@ -52,7 +51,9 @@ public class C
             SyntaxTree? syntaxTree,
             SemanticModel semanticModel,
             Diagnostic? diagnostic,
-            System.Threading.CancellationToken cancellationToken = default)
-            => SafetyResult.Unsafe("test.always-unsafe");
+            CancellationToken cancellationToken = default)
+        {
+            return SafetyResult.Unsafe("test.always-unsafe");
+        }
     }
 }

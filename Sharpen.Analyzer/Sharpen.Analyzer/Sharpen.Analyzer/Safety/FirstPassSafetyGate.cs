@@ -7,14 +7,14 @@ using Microsoft.CodeAnalysis;
 namespace Sharpen.Analyzer.Safety;
 
 /// <summary>
-/// Deterministic, short-circuiting orchestrator for first-pass safety checks.
+///     Deterministic, short-circuiting orchestrator for first-pass safety checks.
 /// </summary>
 public sealed class FirstPassSafetyGate
 {
     private readonly IReadOnlyList<IFirstPassSafetyCheck> _checks;
 
     /// <summary>
-    /// Creates a new gate with checks evaluated in the order provided.
+    ///     Creates a new gate with checks evaluated in the order provided.
     /// </summary>
     public FirstPassSafetyGate(IEnumerable<IFirstPassSafetyCheck> checks)
     {
@@ -26,12 +26,17 @@ public sealed class FirstPassSafetyGate
     }
 
     /// <summary>
-    /// Evaluates all configured checks and returns the first unsafe result.
+    ///     An empty gate that always returns <see cref="SafetyResult.Safe" />.
+    /// </summary>
+    public static FirstPassSafetyGate Empty { get; } = new(Array.Empty<IFirstPassSafetyCheck>());
+
+    /// <summary>
+    ///     Evaluates all configured checks and returns the first unsafe result.
     /// </summary>
     /// <remarks>
-    /// - Checks are evaluated in a deterministic order.
-    /// - Evaluation short-circuits on the first unsafe result.
-    /// - <paramref name="cancellationToken"/> is checked before each check.
+    ///     - Checks are evaluated in a deterministic order.
+    ///     - Evaluation short-circuits on the first unsafe result.
+    ///     - <paramref name="cancellationToken" /> is checked before each check.
     /// </remarks>
     public SafetyResult Evaluate(
         SyntaxTree? syntaxTree,
@@ -52,9 +57,4 @@ public sealed class FirstPassSafetyGate
 
         return SafetyResult.Safe();
     }
-
-    /// <summary>
-    /// An empty gate that always returns <see cref="SafetyResult.Safe"/>.
-    /// </summary>
-    public static FirstPassSafetyGate Empty { get; } = new(Array.Empty<IFirstPassSafetyCheck>());
 }

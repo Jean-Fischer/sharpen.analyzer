@@ -3,15 +3,17 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Sharpen.Engine.SharpenSuggestions.Common.AsyncAwaitAndAsyncStreams;
+using Sharpen.Analyzer.Common;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp5;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-public sealed class ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousAnalyzer : DiagnosticAnalyzer
+public sealed class
+    ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousRule);
+        ImmutableArray.Create(
+            Rules.Rules.ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -32,9 +34,7 @@ public sealed class ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCall
                 semanticModel,
                 EquivalentAsynchronousMethodFinder.CallerAsyncStatus.CallerMustBeAsync,
                 EquivalentAsynchronousMethodFinder.CallerYieldingStatus.Irrelevant))
-        {
             return;
-        }
 
         var diagnostic = Diagnostic.Create(
             Rules.Rules.ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousRule,

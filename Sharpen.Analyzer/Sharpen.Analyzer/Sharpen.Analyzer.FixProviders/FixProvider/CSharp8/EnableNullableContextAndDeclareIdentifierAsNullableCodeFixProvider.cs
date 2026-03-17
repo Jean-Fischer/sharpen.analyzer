@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
@@ -13,13 +12,18 @@ using Microsoft.CodeAnalysis.Editing;
 
 namespace Sharpen.Analyzer.FixProvider.CSharp8;
 
-[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(EnableNullableContextAndDeclareIdentifierAsNullableCodeFixProvider)), Shared]
+[ExportCodeFixProvider(LanguageNames.CSharp,
+    Name = nameof(EnableNullableContextAndDeclareIdentifierAsNullableCodeFixProvider))]
+[Shared]
 public sealed class EnableNullableContextAndDeclareIdentifierAsNullableCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule.Id);
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
@@ -34,7 +38,8 @@ public sealed class EnableNullableContextAndDeclareIdentifierAsNullableCodeFixPr
 
         // The analyzer reports on the triggering node location (assignment/initializer/etc.).
         // We resolve the symbol from that node, then update the symbol's declaration type.
-        var typeSyntax = await TryGetTypeSyntaxToMakeNullableAsync(context.Document, node, context.CancellationToken).ConfigureAwait(false);
+        var typeSyntax = await TryGetTypeSyntaxToMakeNullableAsync(context.Document, node, context.CancellationToken)
+            .ConfigureAwait(false);
         if (typeSyntax is null)
             return;
 
@@ -43,7 +48,8 @@ public sealed class EnableNullableContextAndDeclareIdentifierAsNullableCodeFixPr
             return;
 
         // Do not offer a fix for value types (the analyzer already treats them as "already nullable").
-        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+        var semanticModel =
+            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
         if (semanticModel is null)
             return;
 
@@ -53,9 +59,9 @@ public sealed class EnableNullableContextAndDeclareIdentifierAsNullableCodeFixPr
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: "Make type nullable",
-                createChangedDocument: ct => MakeNullableAsync(context.Document, typeSyntax, ct),
-                equivalenceKey: "MakeTypeNullable"),
+                "Make type nullable",
+                ct => MakeNullableAsync(context.Document, typeSyntax, ct),
+                "MakeTypeNullable"),
             diagnostic);
     }
 
@@ -81,9 +87,12 @@ public sealed class EnableNullableContextAndDeclareIdentifierAsNullableCodeFixPr
         symbol ??= diagnosticNode switch
         {
             AssignmentExpressionSyntax a => semanticModel.GetSymbolInfo(a.Left, cancellationToken).Symbol,
-            BinaryExpressionSyntax b when b.IsKind(SyntaxKind.EqualsExpression) || b.IsKind(SyntaxKind.NotEqualsExpression) =>
-                semanticModel.GetSymbolInfo(b.Left, cancellationToken).Symbol ?? semanticModel.GetSymbolInfo(b.Right, cancellationToken).Symbol,
-            BinaryExpressionSyntax b when b.IsKind(SyntaxKind.CoalesceExpression) => semanticModel.GetSymbolInfo(b.Left, cancellationToken).Symbol,
+            BinaryExpressionSyntax b when b.IsKind(SyntaxKind.EqualsExpression) ||
+                                          b.IsKind(SyntaxKind.NotEqualsExpression) =>
+                semanticModel.GetSymbolInfo(b.Left, cancellationToken).Symbol ??
+                semanticModel.GetSymbolInfo(b.Right, cancellationToken).Symbol,
+            BinaryExpressionSyntax b when b.IsKind(SyntaxKind.CoalesceExpression) => semanticModel
+                .GetSymbolInfo(b.Left, cancellationToken).Symbol,
             ConditionalAccessExpressionSyntax c => semanticModel.GetSymbolInfo(c.Expression, cancellationToken).Symbol,
             _ => null
         };
@@ -154,7 +163,8 @@ public sealed class EnableNullableContextAndDeclareIdentifierAsNullableCodeFixPr
         return TryGetTypeSyntaxFromDeclarationNode(ancestor, out typeSyntax);
     }
 
-    private static async Task<Document> MakeNullableAsync(Document document, TypeSyntax typeSyntax, CancellationToken cancellationToken)
+    private static async Task<Document> MakeNullableAsync(Document document, TypeSyntax typeSyntax,
+        CancellationToken cancellationToken)
     {
         var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
 

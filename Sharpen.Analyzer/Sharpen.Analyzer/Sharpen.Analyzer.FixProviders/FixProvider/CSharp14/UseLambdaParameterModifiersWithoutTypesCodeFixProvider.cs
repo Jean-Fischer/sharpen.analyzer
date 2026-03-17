@@ -27,30 +27,32 @@ public sealed class UseLambdaParameterModifiersWithoutTypesCodeFixProvider : CSh
         if (parameterList is null)
             return;
 
-        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+        var semanticModel =
+            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
         if (semanticModel is null)
             return;
 
         var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            checker: new LambdaParameterModifiersWithoutTypesSafetyChecker(),
-            syntaxTree: root.SyntaxTree,
-            semanticModel: semanticModel,
-            diagnostic: diagnostic,
-            matchSucceeded: true,
-            cancellationToken: context.CancellationToken);
+            new LambdaParameterModifiersWithoutTypesSafetyChecker(),
+            root.SyntaxTree,
+            semanticModel,
+            diagnostic,
+            true,
+            context.CancellationToken);
 
         if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
             return;
 
         RegisterCodeFix(
-            context: context,
-            diagnostic: diagnostic,
-            title: CSharp14Rules.UseLambdaParameterModifiersWithoutTypesRule.Title.ToString(),
-            equivalenceKey: nameof(UseLambdaParameterModifiersWithoutTypesCodeFixProvider),
-            createChangedDocument: ct => ApplyFixAsync(context.Document, parameterList, ct));
+            context,
+            diagnostic,
+            CSharp14Rules.UseLambdaParameterModifiersWithoutTypesRule.Title.ToString(),
+            nameof(UseLambdaParameterModifiersWithoutTypesCodeFixProvider),
+            ct => ApplyFixAsync(context.Document, parameterList, ct));
     }
 
-    private static async Task<Document> ApplyFixAsync(Document document, ParameterListSyntax parameterList, CancellationToken cancellationToken)
+    private static async Task<Document> ApplyFixAsync(Document document, ParameterListSyntax parameterList,
+        CancellationToken cancellationToken)
     {
         var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
 
@@ -58,7 +60,8 @@ public sealed class UseLambdaParameterModifiersWithoutTypesCodeFixProvider : CSh
             .Select(p => p.Type is null ? p : p.WithType(null))
             .ToList();
 
-        var newParameterList = parameterList.WithParameters(new SeparatedSyntaxList<ParameterSyntax>().AddRange(newParameters));
+        var newParameterList =
+            parameterList.WithParameters(new SeparatedSyntaxList<ParameterSyntax>().AddRange(newParameters));
 
         editor.ReplaceNode(parameterList, newParameterList);
         return editor.GetChangedDocument();

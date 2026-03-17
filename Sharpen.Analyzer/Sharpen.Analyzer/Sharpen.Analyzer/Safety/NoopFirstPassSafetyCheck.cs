@@ -10,5 +10,7 @@ public sealed class NoopFirstPassSafetyCheck : IFirstPassSafetyCheck
         SemanticModel semanticModel,
         Diagnostic? diagnostic,
         CancellationToken cancellationToken = default)
-        => SafetyResult.Safe();
+    {
+        return SafetyResult.Safe();
+    }
 }

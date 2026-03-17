@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp6;
 
@@ -25,26 +24,15 @@ public sealed class UseExpressionBodyForLocalFunctionsAnalyzer : DiagnosticAnaly
     {
         var localFunction = (LocalFunctionStatementSyntax)context.Node;
 
-        if (localFunction.ExpressionBody != null)
-        {
-            return;
-        }
+        if (localFunction.ExpressionBody != null) return;
 
-        if (localFunction.Body == null)
-        {
-            return;
-        }
+        if (localFunction.Body == null) return;
 
-        if (localFunction.Body.Statements.Count != 1)
-        {
-            return;
-        }
+        if (localFunction.Body.Statements.Count != 1) return;
 
-        if (!localFunction.Body.Statements[0].IsKind(SyntaxKind.ExpressionStatement))
-        {
-            return;
-        }
+        if (!localFunction.Body.Statements[0].IsKind(SyntaxKind.ExpressionStatement)) return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseExpressionBodyForLocalFunctionsRule, localFunction.Identifier.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseExpressionBodyForLocalFunctionsRule,
+            localFunction.Identifier.GetLocation()));
     }
 }

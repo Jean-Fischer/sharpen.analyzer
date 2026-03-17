@@ -16,8 +16,10 @@ public sealed class FirstPassSafetyRunnerUsageTests
 
         var csFiles = Directory.EnumerateFiles(analyzerProjectRoot, "*.cs", SearchOption.AllDirectories)
             // Exclude build outputs (paths like .../obj/Debug/... and .../bin/Debug/...).
-            .Where(p => !p.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
-            .Where(p => !p.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
+            .Where(p => !p.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}",
+                StringComparison.OrdinalIgnoreCase))
+            .Where(p => !p.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}",
+                StringComparison.OrdinalIgnoreCase))
             .ToArray();
 
         var offenders = new List<string>();
@@ -34,7 +36,8 @@ public sealed class FirstPassSafetyRunnerUsageTests
                 continue;
 
             // Allow the unified runner to reference it (if it still does).
-            if (file.EndsWith(Path.Combine("Safety", "FixProviderSafety", "FixProviderSafetyRunner.cs"), StringComparison.OrdinalIgnoreCase))
+            if (file.EndsWith(Path.Combine("Safety", "FixProviderSafety", "FixProviderSafetyRunner.cs"),
+                    StringComparison.OrdinalIgnoreCase))
                 continue;
 
             offenders.Add(Relativize(repoRoot, file));
@@ -52,13 +55,15 @@ public sealed class FirstPassSafetyRunnerUsageTests
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir is not null)
         {
-            if (File.Exists(Path.Combine(dir.FullName, "Readme.md")) && Directory.Exists(Path.Combine(dir.FullName, "openspec")))
+            if (File.Exists(Path.Combine(dir.FullName, "Readme.md")) &&
+                Directory.Exists(Path.Combine(dir.FullName, "openspec")))
                 return dir.FullName;
 
             dir = dir.Parent;
         }
 
-        throw new InvalidOperationException("Could not locate repository root from test base directory: " + AppContext.BaseDirectory);
+        throw new InvalidOperationException("Could not locate repository root from test base directory: " +
+                                            AppContext.BaseDirectory);
     }
 
     private static string Relativize(string root, string path)

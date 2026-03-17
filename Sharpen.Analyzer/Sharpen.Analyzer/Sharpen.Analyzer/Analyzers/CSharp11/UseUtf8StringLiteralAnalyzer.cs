@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
@@ -7,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sharpen.Analyzer.Common;
+using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp11;
 
@@ -14,7 +14,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp11;
 public sealed class UseUtf8StringLiteralAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.CSharp11Rules.UseUtf8StringLiteralRule);
+        ImmutableArray.Create(CSharp11Rules.UseUtf8StringLiteralRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -38,9 +38,7 @@ public sealed class UseUtf8StringLiteralAnalyzer : DiagnosticAnalyzer
         // new byte[] { ... }
         if (arrayCreation.Type.ElementType is not PredefinedTypeSyntax predefined ||
             !predefined.Keyword.IsKind(SyntaxKind.ByteKeyword))
-        {
             return;
-        }
 
         if (arrayCreation.Initializer == null)
             return;
@@ -54,10 +52,11 @@ public sealed class UseUtf8StringLiteralAnalyzer : DiagnosticAnalyzer
 
         var byteArray = bytes.Select(b => b!.Value).ToArray();
 
-        if (!TryDecodeAscii(byteArray, out _))
+        if (!TryDecodeAscii(byteArray))
             return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.CSharp11Rules.UseUtf8StringLiteralRule, arrayCreation.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(CSharp11Rules.UseUtf8StringLiteralRule,
+            arrayCreation.GetLocation()));
     }
 
     private static void AnalyzeInvocation(SyntaxNodeAnalysisContext context)
@@ -79,58 +78,50 @@ public sealed class UseUtf8StringLiteralAnalyzer : DiagnosticAnalyzer
         if (!constant.HasValue || constant.Value is not string s)
             return;
 
-        var symbol = context.SemanticModel.GetSymbolInfo(memberAccess, context.CancellationToken).Symbol as IMethodSymbol;
-        if (symbol == null)
+        if (context.SemanticModel.GetSymbolInfo(memberAccess, context.CancellationToken).Symbol is not IMethodSymbol symbol)
             return;
 
         if (symbol.ContainingType.ToDisplayString() != "System.Text.Encoding")
             return;
 
         // Ensure receiver is Encoding.UTF8
-        if (memberAccess.Expression is not MemberAccessExpressionSyntax receiver || receiver.Name.Identifier.ValueText != "UTF8")
+        if (memberAccess.Expression is not MemberAccessExpressionSyntax receiver ||
+            receiver.Name.Identifier.ValueText != "UTF8")
             return;
 
         var receiverSymbol = context.SemanticModel.GetSymbolInfo(receiver, context.CancellationToken).Symbol;
-        if (receiverSymbol is not IPropertySymbol prop || prop.ContainingType.ToDisplayString() != "System.Text.Encoding")
+        if (receiverSymbol is not IPropertySymbol prop ||
+            prop.ContainingType.ToDisplayString() != "System.Text.Encoding")
             return;
 
         // Only suggest for ASCII subset to keep it simple.
         var bytes = Encoding.UTF8.GetBytes(s);
-        if (!TryDecodeAscii(bytes, out _))
+        if (!TryDecodeAscii(bytes))
             return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.CSharp11Rules.UseUtf8StringLiteralRule, invocation.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(CSharp11Rules.UseUtf8StringLiteralRule, invocation.GetLocation()));
     }
 
     private static byte? TryGetByteConstant(ExpressionSyntax expr)
     {
-        if (expr is LiteralExpressionSyntax literal)
+        if (expr is not LiteralExpressionSyntax literal) return null;
+        return literal.Token.Value switch
         {
-            if (literal.Token.Value is byte b)
-                return b;
-
-            if (literal.Token.Value is int i && i is >= 0 and <= 255)
-                return (byte)i;
-        }
-
-        return null;
+            byte b => b,
+            int i and >= 0 and <= 255 => (byte)i,
+            _ => null
+        };
     }
 
-    private static bool TryDecodeAscii(byte[] bytes, out string text)
+    private static bool TryDecodeAscii(byte[] bytes)
     {
-        text = string.Empty;
-
         // Require printable ASCII (plus common whitespace).
-        foreach (var b in bytes)
+        if (bytes.Where(b => b != 0x09 && b != 0x0A && b != 0x0D).Any(b => b is < 0x20 or > 0x7E))
         {
-            if (b == 0x09 || b == 0x0A || b == 0x0D)
-                continue;
-
-            if (b < 0x20 || b > 0x7E)
-                return false;
+            return false;
         }
 
-        text = Encoding.ASCII.GetString(bytes);
+        _ = Encoding.ASCII.GetString(bytes);
         return true;
     }
 }

@@ -22,7 +22,7 @@ public class UseExpressionBodyForGetAccessorsInIndexersSample
 
     public int this[int i]
     {
-        get { return _i; }
+        get => _i;
         set { }
     }
 }

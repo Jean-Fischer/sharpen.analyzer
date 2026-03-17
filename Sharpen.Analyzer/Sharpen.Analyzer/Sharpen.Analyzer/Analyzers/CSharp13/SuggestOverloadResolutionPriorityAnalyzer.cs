@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sharpen.Analyzer.Rules;
+using CSharpExtensions = Microsoft.CodeAnalysis.CSharpExtensions;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp13;
 
@@ -48,7 +50,8 @@ public sealed class SuggestOverloadResolutionPriorityAnalyzer : DiagnosticAnalyz
         if (methods.Count < 2)
             return;
 
-        var groups = methods.GroupBy(m => (Name: m.Identifier.ValueText, Arity: m.TypeParameterList?.Parameters.Count ?? 0));
+        var groups = methods.GroupBy(m =>
+            (Name: m.Identifier.ValueText, Arity: m.TypeParameterList?.Parameters.Count ?? 0));
 
         foreach (var group in groups)
         {
@@ -69,17 +72,10 @@ public sealed class SuggestOverloadResolutionPriorityAnalyzer : DiagnosticAnalyz
     private static bool HasCatchAllParamsObjectArrayOverload(
         List<MethodDeclarationSyntax> overloads,
         SemanticModel semanticModel,
-        System.Threading.CancellationToken cancellationToken)
+        CancellationToken cancellationToken)
     {
-        foreach (var method in overloads)
+        foreach (var last in from method in overloads where method.ParameterList.Parameters.Count != 0 select method.ParameterList.Parameters[method.ParameterList.Parameters.Count - 1] into last where last.Modifiers.Any(SyntaxKind.ParamsKeyword) select last)
         {
-            if (method.ParameterList.Parameters.Count == 0)
-                continue;
-
-            var last = method.ParameterList.Parameters[method.ParameterList.Parameters.Count - 1];
-            if (!last.Modifiers.Any(SyntaxKind.ParamsKeyword))
-                continue;
-
             if (last.Type is null)
                 continue;
 

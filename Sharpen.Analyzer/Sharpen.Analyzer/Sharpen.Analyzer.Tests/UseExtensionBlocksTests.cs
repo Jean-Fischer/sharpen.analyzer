@@ -4,10 +4,6 @@ using Sharpen.Analyzer.Rules;
 using Xunit;
 using VerifierAnalyzer = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
     Sharpen.Analyzer.Analyzers.CSharp14.UseExtensionBlocksAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
-using VerifierCodeFix = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
-    Sharpen.Analyzer.Analyzers.CSharp14.UseExtensionBlocksAnalyzer,
-    Sharpen.Analyzer.UseExtensionBlocksCodeFixProvider,
-    Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 

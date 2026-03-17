@@ -20,7 +20,10 @@ public sealed class UseDefaultLambdaParametersCodeFixProvider : CodeFixProvider
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(CSharp12Rules.UseDefaultLambdaParametersRule.Id);
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
@@ -43,13 +46,14 @@ public sealed class UseDefaultLambdaParametersCodeFixProvider : CodeFixProvider
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: "Use default lambda parameters",
-                createChangedDocument: ct => UseDefaultLambdaParametersAsync(context.Document, lambda, ct),
-                equivalenceKey: nameof(UseDefaultLambdaParametersCodeFixProvider)),
+                "Use default lambda parameters",
+                ct => UseDefaultLambdaParametersAsync(context.Document, lambda, ct),
+                nameof(UseDefaultLambdaParametersCodeFixProvider)),
             diagnostic);
     }
 
-    private static async Task<bool> CanApplyFixAsync(Document document, LambdaExpressionSyntax lambda, CancellationToken cancellationToken)
+    private static async Task<bool> CanApplyFixAsync(Document document, LambdaExpressionSyntax lambda,
+        CancellationToken cancellationToken)
     {
         var semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
         if (semanticModel is null)
@@ -72,11 +76,12 @@ public sealed class UseDefaultLambdaParametersCodeFixProvider : CodeFixProvider
                     .Select((p, i) => AddDefaultValue(p, invoke.Parameters[i]))
                     .Any(p => p is not null),
 
-            _ => false,
+            _ => false
         };
     }
 
-    private static async Task<Document> UseDefaultLambdaParametersAsync(Document document, LambdaExpressionSyntax lambda, CancellationToken cancellationToken)
+    private static async Task<Document> UseDefaultLambdaParametersAsync(Document document,
+        LambdaExpressionSyntax lambda, CancellationToken cancellationToken)
     {
         var semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
         if (semanticModel is null)
@@ -115,7 +120,8 @@ public sealed class UseDefaultLambdaParametersCodeFixProvider : CodeFixProvider
                     .Select((p, i) => AddDefaultValue(p, invoke.Parameters[i]) ?? p)
                     .ToArray();
 
-                var updatedList = parenthesized.ParameterList.WithParameters(SyntaxFactory.SeparatedList(updated, parenthesized.ParameterList.Parameters.GetSeparators()));
+                var updatedList = parenthesized.ParameterList.WithParameters(
+                    SyntaxFactory.SeparatedList(updated, parenthesized.ParameterList.Parameters.GetSeparators()));
                 editor.ReplaceNode(parenthesized.ParameterList, updatedList);
                 break;
             }
@@ -147,33 +153,49 @@ public sealed class UseDefaultLambdaParametersCodeFixProvider : CodeFixProvider
             // For non-numeric constants, use generator to avoid formatting issues.
             // We'll replace below if needed.
             if (parameterSymbol.ExplicitDefaultValue is bool b)
-                defaultValueExpression = b ? SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression) : SyntaxFactory.LiteralExpression(SyntaxKind.FalseLiteralExpression);
+                defaultValueExpression =
+                    b
+                        ? SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression)
+                        : SyntaxFactory.LiteralExpression(SyntaxKind.FalseLiteralExpression);
             else if (parameterSymbol.ExplicitDefaultValue is string s)
-                defaultValueExpression = SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(s));
+                defaultValueExpression =
+                    SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(s));
             else if (parameterSymbol.ExplicitDefaultValue is char c)
-                defaultValueExpression = SyntaxFactory.LiteralExpression(SyntaxKind.CharacterLiteralExpression, SyntaxFactory.Literal(c));
+                defaultValueExpression =
+                    SyntaxFactory.LiteralExpression(SyntaxKind.CharacterLiteralExpression, SyntaxFactory.Literal(c));
             else if (parameterSymbol.ExplicitDefaultValue is int i)
-                defaultValueExpression = SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(i));
+                defaultValueExpression =
+                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(i));
             else if (parameterSymbol.ExplicitDefaultValue is long l)
-                defaultValueExpression = SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(l));
+                defaultValueExpression =
+                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(l));
             else if (parameterSymbol.ExplicitDefaultValue is double d)
-                defaultValueExpression = SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(d));
+                defaultValueExpression =
+                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(d));
             else if (parameterSymbol.ExplicitDefaultValue is float f)
-                defaultValueExpression = SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(f));
+                defaultValueExpression =
+                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(f));
             else if (parameterSymbol.ExplicitDefaultValue is decimal m)
-                defaultValueExpression = SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(m));
+                defaultValueExpression =
+                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(m));
             else if (parameterSymbol.ExplicitDefaultValue is byte bt)
-                defaultValueExpression = SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(bt));
+                defaultValueExpression =
+                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(bt));
             else if (parameterSymbol.ExplicitDefaultValue is sbyte sb)
-                defaultValueExpression = SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(sb));
+                defaultValueExpression =
+                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(sb));
             else if (parameterSymbol.ExplicitDefaultValue is short sh)
-                defaultValueExpression = SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(sh));
+                defaultValueExpression =
+                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(sh));
             else if (parameterSymbol.ExplicitDefaultValue is ushort ush)
-                defaultValueExpression = SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(ush));
+                defaultValueExpression =
+                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(ush));
             else if (parameterSymbol.ExplicitDefaultValue is uint ui)
-                defaultValueExpression = SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(ui));
+                defaultValueExpression =
+                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(ui));
             else if (parameterSymbol.ExplicitDefaultValue is ulong ul)
-                defaultValueExpression = SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(ul));
+                defaultValueExpression =
+                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(ul));
             else
                 return null;
         }

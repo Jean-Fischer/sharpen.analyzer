@@ -16,15 +16,10 @@ public static class GeneratedCodeDetection
             return false;
 
         // Common generated file patterns.
-        if (fileName.EndsWith(".g.cs", StringComparison.OrdinalIgnoreCase) ||
-            fileName.EndsWith(".g.i.cs", StringComparison.OrdinalIgnoreCase) ||
-            fileName.EndsWith(".designer.cs", StringComparison.OrdinalIgnoreCase) ||
-            fileName.EndsWith(".generated.cs", StringComparison.OrdinalIgnoreCase) ||
-            fileName.Equals("AssemblyInfo.cs", StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        return false;
+        return fileName.EndsWith(".g.cs", StringComparison.OrdinalIgnoreCase) ||
+               fileName.EndsWith(".g.i.cs", StringComparison.OrdinalIgnoreCase) ||
+               fileName.EndsWith(".designer.cs", StringComparison.OrdinalIgnoreCase) ||
+               fileName.EndsWith(".generated.cs", StringComparison.OrdinalIgnoreCase) ||
+               fileName.Equals("AssemblyInfo.cs", StringComparison.OrdinalIgnoreCase);
     }
 }

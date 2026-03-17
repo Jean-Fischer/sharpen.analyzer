@@ -1,7 +1,8 @@
 using System.Threading.Tasks;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
-    Sharpen.Analyzer.Analyzers.CSharp7.DiscardOutVariablesInMethodInvocationsAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+    Sharpen.Analyzer.Analyzers.CSharp7.DiscardOutVariablesInMethodInvocationsAnalyzer,
+    Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 
@@ -27,7 +28,8 @@ class C
     }
 
     [Fact]
-    public async Task DiscardOutVariablesInMethodInvocationsAnalyzer_DoesNotTriggerWhenOutArgumentIsUsedAfterInvocation()
+    public async Task
+        DiscardOutVariablesInMethodInvocationsAnalyzer_DoesNotTriggerWhenOutArgumentIsUsedAfterInvocation()
     {
         const string text = @"
 class C

@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Testing;
 using Sharpen.Analyzer.Rules;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<

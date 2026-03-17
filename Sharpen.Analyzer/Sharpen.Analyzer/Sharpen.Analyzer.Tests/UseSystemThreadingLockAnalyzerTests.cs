@@ -1,4 +1,4 @@
-using Microsoft.CodeAnalysis.Testing;
+using System.Threading.Tasks;
 using Sharpen.Analyzer.Rules;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
@@ -10,7 +10,7 @@ namespace Sharpen.Analyzer.Tests;
 public sealed class UseSystemThreadingLockAnalyzerTests
 {
     [Fact]
-    public async System.Threading.Tasks.Task Reports_for_private_object_used_only_in_lock()
+    public async Task Reports_for_private_object_used_only_in_lock()
     {
         var code = @"
 class C
@@ -32,7 +32,7 @@ class C
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task Does_not_report_when_field_used_outside_lock()
+    public async Task Does_not_report_when_field_used_outside_lock()
     {
         var code = @"
 class C
@@ -52,7 +52,7 @@ class C
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task Does_not_report_for_non_private_field()
+    public async Task Does_not_report_for_non_private_field()
     {
         var code = @"
 class C

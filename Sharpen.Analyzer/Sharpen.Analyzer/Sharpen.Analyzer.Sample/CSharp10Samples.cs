@@ -5,16 +5,8 @@ namespace Sharpen.Analyzer.Sample;
 
 public static class CSharp10Samples
 {
-    // SHARPEN040: Use file-scoped namespace
-    // NOTE: This is intentionally block-scoped so the analyzer can suggest file-scoped.
-    // (This file itself is file-scoped at the top, so keep the example as a string snippet.)
-
-    // SHARPEN042: Use record struct
-    public struct Point
-    {
-        public int X;
-        public int Y;
-    }
+    // SHARPEN045: Use const interpolated string
+    public const string ConstGreeting = "Hello, " + "World" + "!";
 
     // SHARPEN043: Use extended property pattern
     public static bool IsAdult(Person p)
@@ -27,9 +19,16 @@ public static class CSharp10Samples
     {
         return "Hello, " + name + "!";
     }
+    // SHARPEN040: Use file-scoped namespace
+    // NOTE: This is intentionally block-scoped so the analyzer can suggest file-scoped.
+    // (This file itself is file-scoped at the top, so keep the example as a string snippet.)
 
-    // SHARPEN045: Use const interpolated string
-    public const string ConstGreeting = "Hello, " + "World" + "!";
+    // SHARPEN042: Use record struct
+    public struct Point
+    {
+        public int X;
+        public int Y;
+    }
 
     public sealed class Person
     {

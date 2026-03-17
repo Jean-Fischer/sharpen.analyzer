@@ -35,15 +35,13 @@ public sealed class AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer : Diagno
 
     private static bool IsTaskWaitAllInvocation(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
     {
-        var symbol = semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
-        if (symbol is null) return false;
+        if (semanticModel.GetSymbolInfo(invocation).Symbol is not IMethodSymbol symbol) return false;
 
         if (symbol.Name != "WaitAll") return false;
 
         // Static method on System.Threading.Tasks.Task
-        if (symbol.ContainingType?.ToDisplayString() != "System.Threading.Tasks.Task") return false;
-
-        // Only report in already-async callables (matches original smoke suite behavior).
-        return AsyncModernizationHelpers.IsWithinAsyncCallable(invocation, semanticModel);
+        return symbol.ContainingType?.ToDisplayString() == "System.Threading.Tasks.Task" &&
+               // Only report in already-async callables (matches original smoke suite behavior).
+               AsyncModernizationHelpers.IsWithinAsyncCallable(invocation, semanticModel);
     }
 }

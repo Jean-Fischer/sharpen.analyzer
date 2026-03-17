@@ -1,12 +1,10 @@
 using System.Collections.Immutable;
-using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Sharpen.Analyzer.Common;
 using Sharpen.Analyzer.Extensions;
 using Sharpen.Analyzer.FixProvider.Common;
 
@@ -25,9 +23,9 @@ public sealed class UseCSharp9PatternMatchingCodeFixProvider : CSharp9OrAboveSha
         RegisterCodeFix(
             context,
             diagnostic,
-            title: "Use C# 9 pattern matching",
-            equivalenceKey: "UseCSharp9PatternMatching",
-            createChangedDocument: c => ApplyFixAsync(context.Document, node, c));
+            "Use C# 9 pattern matching",
+            "UseCSharp9PatternMatching",
+            c => ApplyFixAsync(context.Document, node, c));
 
         return Task.CompletedTask;
     }
@@ -78,11 +76,14 @@ public sealed class UseCSharp9PatternMatchingCodeFixProvider : CSharp9OrAboveSha
             && rightOp is SyntaxKind.LessThanOrEqualExpression)
         {
             var expr = leftExpr.WithoutTrivia();
-            var leftPattern = SyntaxFactory.RelationalPattern(SyntaxFactory.Token(SyntaxKind.GreaterThanEqualsToken), leftBound.WithoutTrivia());
-            var rightPattern = SyntaxFactory.RelationalPattern(SyntaxFactory.Token(SyntaxKind.LessThanEqualsToken), rightBound.WithoutTrivia());
+            var leftPattern = SyntaxFactory.RelationalPattern(SyntaxFactory.Token(SyntaxKind.GreaterThanEqualsToken),
+                leftBound.WithoutTrivia());
+            var rightPattern = SyntaxFactory.RelationalPattern(SyntaxFactory.Token(SyntaxKind.LessThanEqualsToken),
+                rightBound.WithoutTrivia());
 
             // Build: x is >= a and <= b
-            var isExpression = SyntaxFactory.ParseExpression($"{expr.WithoutTrivia()} is >= {leftBound.WithoutTrivia()} and <= {rightBound.WithoutTrivia()}");
+            var isExpression = SyntaxFactory.ParseExpression(
+                $"{expr.WithoutTrivia()} is >= {leftBound.WithoutTrivia()} and <= {rightBound.WithoutTrivia()}");
             return isExpression.WithTriviaFrom(binary);
         }
 
@@ -92,12 +93,10 @@ public sealed class UseCSharp9PatternMatchingCodeFixProvider : CSharp9OrAboveSha
             && SyntaxFactory.AreEquivalent(leftExpr2.WalkDownParentheses(), rightExpr2.WalkDownParentheses())
             && leftOp2 is SyntaxKind.LessThanExpression
             && rightOp2 is SyntaxKind.GreaterThanExpression)
-        {
             // NOTE: Relational patterns require a constant on the RHS. In the general case (a/b are variables),
             // rewriting to pattern matching would produce code that doesn't compile (CS0150).
             // So we intentionally do NOT offer a code fix for this form.
             return null;
-        }
 
         return null;
     }
@@ -125,7 +124,8 @@ public sealed class UseCSharp9PatternMatchingCodeFixProvider : CSharp9OrAboveSha
         return SyntaxFactory.IsPatternExpression(expr, pattern).WithTriviaFrom(prefix);
     }
 
-    private static bool TryGetComparison(ExpressionSyntax expression, out ExpressionSyntax left, out SyntaxKind opKind, out ExpressionSyntax right)
+    private static bool TryGetComparison(ExpressionSyntax expression, out ExpressionSyntax left, out SyntaxKind opKind,
+        out ExpressionSyntax right)
     {
         left = null!;
         right = null!;

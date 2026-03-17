@@ -5,20 +5,18 @@ using Microsoft.CodeAnalysis;
 namespace Sharpen.Analyzer.Safety.FixProviderSafety;
 
 /// <summary>
-/// Helper for analyzer/fix-provider paths to consistently distinguish:
-/// - match failed (no candidate)
-/// - match succeeded but unsafe (candidate blocked)
-/// - match succeeded and safe
-///
-/// Unified pipeline stages:
-/// 1) Global <see cref="FirstPassSafety"/> gate
-/// 2) Local per-fix-provider <see cref="IFixProviderSafetyChecker"/>
-///
-/// Short-circuit rules:
-/// - If match failed: return <see cref="FixProviderSafetyOutcome.MatchFailed"/>.
-/// - If global gate is unsafe: return unsafe and do not evaluate local checker.
-/// - If local checker is unsafe: return unsafe.
-/// - Otherwise: safe.
+///     Helper for analyzer/fix-provider paths to consistently distinguish:
+///     - match failed (no candidate)
+///     - match succeeded but unsafe (candidate blocked)
+///     - match succeeded and safe
+///     Unified pipeline stages:
+///     1) Global <see cref="FirstPassSafety" /> gate
+///     2) Local per-fix-provider <see cref="IFixProviderSafetyChecker" />
+///     Short-circuit rules:
+///     - If match failed: return <see cref="FixProviderSafetyOutcome.MatchFailed" />.
+///     - If global gate is unsafe: return unsafe and do not evaluate local checker.
+///     - If local checker is unsafe: return unsafe.
+///     - Otherwise: safe.
 /// </summary>
 public static class FixProviderSafetyRunner
 {
@@ -50,20 +48,18 @@ public static class FixProviderSafetyRunner
             return FixProviderSafetyEvaluation.Unsafe(
                 FixProviderSafetyResult.Unsafe(
                     FixProviderSafetyStage.Global,
-                    reasonId: globalSafety.ReasonId ?? "first-pass-unsafe",
-                    message: globalSafety.Message));
+                    globalSafety.ReasonId ?? "first-pass-unsafe",
+                    globalSafety.Message));
         }
 
         // 2) Local stage
         var localSafety = checker.IsSafe(syntaxTree, semanticModel, diagnostic, cancellationToken);
         if (!localSafety.IsSafe)
-        {
             return FixProviderSafetyEvaluation.Unsafe(
                 FixProviderSafetyResult.Unsafe(
                     FixProviderSafetyStage.Local,
-                    reasonId: localSafety.ReasonId ?? "fix-provider-unsafe",
-                    message: localSafety.Message));
-        }
+                    localSafety.ReasonId ?? "fix-provider-unsafe",
+                    localSafety.Message));
 
         return FixProviderSafetyEvaluation.Safe();
     }
@@ -86,10 +82,10 @@ public static class FixProviderSafetyRunner
         // global policy gate (generated code, feature flags, etc.) so diagnostics and code actions
         // are aligned.
         var globalSafety = FirstPassSafety.Gate.Evaluate(
-            syntaxTree: node.SyntaxTree,
-            semanticModel: semanticModel,
-            diagnostic: diagnostic,
-            cancellationToken: cancellationToken);
+            node.SyntaxTree,
+            semanticModel,
+            diagnostic,
+            cancellationToken);
 
         if (!globalSafety.IsSafe)
         {
@@ -97,8 +93,8 @@ public static class FixProviderSafetyRunner
             return FixProviderSafetyEvaluation.Unsafe(
                 FixProviderSafetyResult.Unsafe(
                     FixProviderSafetyStage.Global,
-                    reasonId: globalSafety.ReasonId ?? "first-pass-unsafe",
-                    message: globalSafety.Message));
+                    globalSafety.ReasonId ?? "first-pass-unsafe",
+                    globalSafety.Message));
         }
 
         // Local stage: analyzer-side checkers currently require a SyntaxTree instance.

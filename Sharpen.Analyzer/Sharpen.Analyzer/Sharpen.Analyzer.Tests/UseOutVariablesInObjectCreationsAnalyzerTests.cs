@@ -1,7 +1,8 @@
 using System.Threading.Tasks;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
-    Sharpen.Analyzer.Analyzers.CSharp7.UseOutVariablesInObjectCreationsAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+    Sharpen.Analyzer.Analyzers.CSharp7.UseOutVariablesInObjectCreationsAnalyzer,
+    Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 

@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sharpen.Analyzer.Common;
-using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp6;
 
@@ -26,32 +25,18 @@ public sealed class UseExpressionBodyForGetOnlyPropertiesAnalyzer : DiagnosticAn
     {
         var property = (PropertyDeclarationSyntax)context.Node;
 
-        if (property.ExpressionBody != null)
-        {
-            return;
-        }
+        if (property.ExpressionBody != null) return;
 
-        if (property.AccessorList == null)
-        {
-            return;
-        }
+        if (property.AccessorList == null) return;
 
-        if (property.AccessorList.Accessors.Count != 1)
-        {
-            return;
-        }
+        if (property.AccessorList.Accessors.Count != 1) return;
 
         var getter = property.AccessorList.Accessors[0];
-        if (!getter.IsKind(SyntaxKind.GetAccessorDeclaration))
-        {
-            return;
-        }
+        if (!getter.IsKind(SyntaxKind.GetAccessorDeclaration)) return;
 
-        if (!CSharp6SyntaxHelpers.TryGetSingleReturnExpressionFromGetter(getter, out _))
-        {
-            return;
-        }
+        if (!CSharp6SyntaxHelpers.TryGetSingleReturnExpressionFromGetter(getter, out _)) return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseExpressionBodyForGetOnlyPropertiesRule, property.Identifier.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseExpressionBodyForGetOnlyPropertiesRule,
+            property.Identifier.GetLocation()));
     }
 }

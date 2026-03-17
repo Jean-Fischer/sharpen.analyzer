@@ -1,5 +1,3 @@
-using System;
-using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,32 +8,32 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
 using Sharpen.Analyzer.FixProvider.Common;
+using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.FixProvider.CSharp10;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseFileScopedNamespaceCodeFixProvider))]
 public sealed class UseFileScopedNamespaceCodeFixProvider : CSharp10OrAboveCodeFixProviderBase
 {
-    protected override string DiagnosticId => Rules.CSharp10Rules.UseFileScopedNamespaceRule.Id;
+    protected override string DiagnosticId => CSharp10Rules.UseFileScopedNamespaceRule.Id;
 
     protected override string Title => "Use file-scoped namespace";
 
     protected override string EquivalenceKey => "UseFileScopedNamespace";
 
-    protected override Task<Document> CreateChangedDocumentAsync(Document document, SyntaxNode root, Diagnostic diagnostic, CancellationToken ct)
+    protected override Task<Document> CreateChangedDocumentAsync(Document document, SyntaxNode root,
+        Diagnostic diagnostic, CancellationToken ct)
     {
         var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 
         var ns = node.FirstAncestorOrSelf<NamespaceDeclarationSyntax>();
-        if (ns == null)
-        {
-            return Task.FromResult(document);
-        }
+        if (ns == null) return Task.FromResult(document);
 
         return ApplyFixAsync(document, ns, ct);
     }
 
-    private static async Task<Document> ApplyFixAsync(Document document, NamespaceDeclarationSyntax ns, CancellationToken ct)
+    private static async Task<Document> ApplyFixAsync(Document document, NamespaceDeclarationSyntax ns,
+        CancellationToken ct)
     {
         // Convert:
         //   namespace X { /*members*/ }
@@ -58,14 +56,14 @@ public sealed class UseFileScopedNamespaceCodeFixProvider : CSharp10OrAboveCodeF
             : ns.Members.ToList();
 
         var fileScoped = SyntaxFactory.FileScopedNamespaceDeclaration(
-                attributeLists: ns.AttributeLists,
-                modifiers: ns.Modifiers,
-                namespaceKeyword: ns.NamespaceKeyword,
-                name: ns.Name,
-                semicolonToken: SyntaxFactory.Token(SyntaxKind.SemicolonToken),
-                externs: default,
-                usings: default,
-                members: SyntaxFactory.List(members))
+                ns.AttributeLists,
+                ns.Modifiers,
+                ns.NamespaceKeyword,
+                ns.Name,
+                SyntaxFactory.Token(SyntaxKind.SemicolonToken),
+                default,
+                default,
+                SyntaxFactory.List(members))
             .WithTriviaFrom(ns)
             .WithAdditionalAnnotations(Formatter.Annotation);
 
@@ -80,5 +78,4 @@ public sealed class UseFileScopedNamespaceCodeFixProvider : CSharp10OrAboveCodeF
         root = root.WithMembers(inserted).WithAdditionalAnnotations(Formatter.Annotation);
         return document.WithSyntaxRoot(root);
     }
-
 }

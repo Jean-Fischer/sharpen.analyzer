@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sharpen.Analyzer.Common;
-using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp6;
 
@@ -26,32 +25,18 @@ public sealed class UseExpressionBodyForGetAccessorsInPropertiesAnalyzer : Diagn
     {
         var accessor = (AccessorDeclarationSyntax)context.Node;
 
-        if (accessor.ExpressionBody != null)
-        {
-            return;
-        }
+        if (accessor.ExpressionBody != null) return;
 
-        if (accessor.Parent is not AccessorListSyntax accessorList)
-        {
-            return;
-        }
+        if (accessor.Parent is not AccessorListSyntax accessorList) return;
 
         // Must have a set accessor as well (otherwise C# 6 get-only property rule applies).
-        if (accessorList.Accessors.Count <= 1)
-        {
-            return;
-        }
+        if (accessorList.Accessors.Count <= 1) return;
 
-        if (accessor.FirstAncestorOrSelf<PropertyDeclarationSyntax>() == null)
-        {
-            return;
-        }
+        if (accessor.FirstAncestorOrSelf<PropertyDeclarationSyntax>() == null) return;
 
-        if (!CSharp6SyntaxHelpers.TryGetSingleReturnExpressionFromGetter(accessor, out _))
-        {
-            return;
-        }
+        if (!CSharp6SyntaxHelpers.TryGetSingleReturnExpressionFromGetter(accessor, out _)) return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseExpressionBodyForGetAccessorsInPropertiesRule, accessor.Keyword.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseExpressionBodyForGetAccessorsInPropertiesRule,
+            accessor.Keyword.GetLocation()));
     }
 }

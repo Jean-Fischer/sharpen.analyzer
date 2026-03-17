@@ -41,8 +41,7 @@ public sealed class AwaitTaskDelayInsteadOfCallingThreadSleepAnalyzer : Diagnost
         if (invocation.Expression is not MemberAccessExpressionSyntax memberAccess) return false;
         if (memberAccess.Name.Identifier.ValueText != "Sleep") return false;
 
-        var symbol = semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
-        if (symbol == null) return false;
+        if (semanticModel.GetSymbolInfo(invocation).Symbol is not IMethodSymbol symbol) return false;
 
         return symbol.ContainingType?.ToDisplayString() == "System.Threading.Thread";
     }

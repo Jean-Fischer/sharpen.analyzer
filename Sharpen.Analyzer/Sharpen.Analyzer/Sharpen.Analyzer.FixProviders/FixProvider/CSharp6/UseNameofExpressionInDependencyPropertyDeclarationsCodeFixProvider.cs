@@ -10,49 +10,46 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Sharpen.Analyzer.Common;
-using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.FixProvider.CSharp6;
 
-[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseNameofExpressionInDependencyPropertyDeclarationsCodeFixProvider)), Shared]
+[ExportCodeFixProvider(LanguageNames.CSharp,
+    Name = nameof(UseNameofExpressionInDependencyPropertyDeclarationsCodeFixProvider))]
+[Shared]
 public sealed class UseNameofExpressionInDependencyPropertyDeclarationsCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(Rules.Rules.UseNameofExpressionInDependencyPropertyDeclarationsRule.Id);
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
         var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-        if (root is null)
-        {
-            return;
-        }
+        if (root is null) return;
 
         var diagnostic = context.Diagnostics.First();
         var diagnosticSpan = diagnostic.Location.SourceSpan;
 
         var stringLiteralExpression = root.FindNode(diagnosticSpan, getInnermostNodeForTie: true) as ExpressionSyntax;
-        if (stringLiteralExpression is null)
-        {
-            return;
-        }
+        if (stringLiteralExpression is null) return;
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: "Use nameof",
-                createChangedDocument: c => UseNameofAsync(context.Document, stringLiteralExpression, c),
-                equivalenceKey: "Use nameof"),
+                "Use nameof",
+                c => UseNameofAsync(context.Document, stringLiteralExpression, c),
+                "Use nameof"),
             diagnostic);
     }
 
-    private static async Task<Document> UseNameofAsync(Document document, ExpressionSyntax stringLiteralExpression, CancellationToken cancellationToken)
+    private static async Task<Document> UseNameofAsync(Document document, ExpressionSyntax stringLiteralExpression,
+        CancellationToken cancellationToken)
     {
         if (!CSharp6SyntaxHelpers.TryGetStringLiteralValue(stringLiteralExpression, out var propertyName))
-        {
             return document;
-        }
 
         var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
 

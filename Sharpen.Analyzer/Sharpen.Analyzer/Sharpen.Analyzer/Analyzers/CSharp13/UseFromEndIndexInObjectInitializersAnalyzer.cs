@@ -45,8 +45,6 @@ public sealed class UseFromEndIndexInObjectInitializersAnalyzer : DiagnosticAnal
                 continue;
 
             var indexExpression = implicitElementAccess.ArgumentList.Arguments[0].Expression;
-            if (indexExpression is null)
-                continue;
 
             if (!IsLengthMinusOne(indexExpression))
                 continue;
@@ -55,7 +53,8 @@ public sealed class UseFromEndIndexInObjectInitializersAnalyzer : DiagnosticAnal
             if (indexExpression is not BinaryExpressionSyntax { Left: MemberAccessExpressionSyntax memberAccess })
                 continue;
 
-            var lengthTargetType = context.SemanticModel.GetTypeInfo(memberAccess.Expression, context.CancellationToken).Type;
+            var lengthTargetType = context.SemanticModel.GetTypeInfo(memberAccess.Expression, context.CancellationToken)
+                .Type;
             if (lengthTargetType is null || lengthTargetType.TypeKind != TypeKind.Array)
                 continue;
 

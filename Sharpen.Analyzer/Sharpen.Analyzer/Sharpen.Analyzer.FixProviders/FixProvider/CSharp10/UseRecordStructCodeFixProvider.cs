@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
 using Sharpen.Analyzer.FixProvider.Common;
+using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.FixProvider.CSharp10;
 
@@ -17,7 +18,7 @@ namespace Sharpen.Analyzer.FixProvider.CSharp10;
 public sealed class UseRecordStructCodeFixProvider : CSharp10OrAboveSharpenCodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.CSharp10Rules.UseRecordStructRule.Id);
+        ImmutableArray.Create(CSharp10Rules.UseRecordStructRule.Id);
 
     protected override async Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
     {
@@ -29,32 +30,33 @@ public sealed class UseRecordStructCodeFixProvider : CSharp10OrAboveSharpenCodeF
         RegisterCodeFix(
             context,
             diagnostic,
-            title: "Use record struct",
-            equivalenceKey: "UseRecordStruct",
-            createChangedDocument: c => ApplyFixAsync(context.Document, decl, c));
+            "Use record struct",
+            "UseRecordStruct",
+            c => ApplyFixAsync(context.Document, decl, c));
     }
 
-    private static async Task<Document> ApplyFixAsync(Document document, StructDeclarationSyntax decl, CancellationToken ct)
+    private static async Task<Document> ApplyFixAsync(Document document, StructDeclarationSyntax decl,
+        CancellationToken ct)
     {
         var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
 
         // Prefer creating a RecordDeclarationSyntax (kind: record struct) so the resulting syntax node kind
         // is RecordStructDeclaration (tests expect that).
         var recordDecl = SyntaxFactory.RecordDeclaration(
-                kind: SyntaxKind.RecordStructDeclaration,
-                attributeLists: decl.AttributeLists,
-                modifiers: decl.Modifiers,
-                keyword: SyntaxFactory.Token(SyntaxKind.RecordKeyword),
-                classOrStructKeyword: SyntaxFactory.Token(SyntaxKind.StructKeyword),
-                identifier: decl.Identifier,
-                typeParameterList: decl.TypeParameterList,
-                parameterList: null,
-                baseList: decl.BaseList,
-                constraintClauses: decl.ConstraintClauses,
-                openBraceToken: decl.OpenBraceToken,
-                members: decl.Members,
-                closeBraceToken: decl.CloseBraceToken,
-                semicolonToken: decl.SemicolonToken)
+                SyntaxKind.RecordStructDeclaration,
+                decl.AttributeLists,
+                decl.Modifiers,
+                SyntaxFactory.Token(SyntaxKind.RecordKeyword),
+                SyntaxFactory.Token(SyntaxKind.StructKeyword),
+                decl.Identifier,
+                decl.TypeParameterList,
+                null,
+                decl.BaseList,
+                decl.ConstraintClauses,
+                decl.OpenBraceToken,
+                decl.Members,
+                decl.CloseBraceToken,
+                decl.SemicolonToken)
             .WithTriviaFrom(decl)
             .WithAdditionalAnnotations(Formatter.Annotation);
 

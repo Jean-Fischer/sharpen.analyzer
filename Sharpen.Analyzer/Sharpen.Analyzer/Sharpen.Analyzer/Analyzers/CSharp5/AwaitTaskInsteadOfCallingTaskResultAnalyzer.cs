@@ -28,9 +28,8 @@ public sealed class AwaitTaskInsteadOfCallingTaskResultAnalyzer : DiagnosticAnal
 
         // Ensure this is Task<T>.Result (not some other Result property)
         var symbol = context.SemanticModel.GetSymbolInfo(memberAccess).Symbol as IPropertySymbol;
-        if (symbol is null) return;
 
-        if (symbol.ContainingType is not INamedTypeSymbol containingType) return;
+        if (symbol?.ContainingType is not { } containingType) return;
         if (!containingType.IsGenericType) return;
 
         // In some contexts Roslyn returns the constructed type (Task<int>) rather than the open generic.

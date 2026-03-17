@@ -1,16 +1,14 @@
 // ReSharper disable UnusedType.Global
 // ReSharper disable UnusedMember.Global
 
+using System;
+
 namespace Sharpen.Analyzer.Sample;
 
 // If you don't see warnings, build the Analyzers Project.
 
 public class Examples
 {
-    public class MyCompanyClass // Try to apply quick fix using the IDE.
-    {
-    }
-
     public void ToStars()
     {
         var spaceship = new Spaceship();
@@ -26,9 +24,14 @@ public class Examples
         }
     }
 
-    private sealed class Disposable : System.IDisposable
+    public class MyCompanyClass // Try to apply quick fix using the IDE.
     {
-        public void Dispose() { }
+    }
+
+    private sealed class Disposable : IDisposable
+    {
+        public void Dispose()
+        {
+        }
     }
 }
-

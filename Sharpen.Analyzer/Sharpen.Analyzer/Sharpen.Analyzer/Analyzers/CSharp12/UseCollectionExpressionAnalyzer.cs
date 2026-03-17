@@ -1,9 +1,9 @@
-using System;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Sharpen.Analyzer.Rules;
 using Sharpen.Analyzer.Safety.FixProviderSafety;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp12;
@@ -12,7 +12,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp12;
 public sealed class UseCollectionExpressionAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.CSharp12Rules.UseCollectionExpressionRule);
+        ImmutableArray.Create(CSharp12Rules.UseCollectionExpressionRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -33,8 +33,6 @@ public sealed class UseCollectionExpressionAnalyzer : DiagnosticAnalyzer
             return;
 
         // Avoid unsafe/unsupported cases (e.g. stackalloc, omitted sizes, etc.)
-        if (arrayCreation.Type == null)
-            return;
 
         // If there is an explicit size, only allow empty size: new T[] { ... }
         // Disallow: new T[3] { ... } (could be rewritten, but keep conservative)
@@ -51,7 +49,8 @@ public sealed class UseCollectionExpressionAnalyzer : DiagnosticAnalyzer
         if (!IsSafeToReport(context, arrayCreation))
             return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.CSharp12Rules.UseCollectionExpressionRule, arrayCreation.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(CSharp12Rules.UseCollectionExpressionRule,
+            arrayCreation.GetLocation()));
     }
 
     private static void AnalyzeImplicitArrayCreation(SyntaxNodeAnalysisContext context)
@@ -60,13 +59,12 @@ public sealed class UseCollectionExpressionAnalyzer : DiagnosticAnalyzer
             return;
 
         // new[] { ... }
-        if (implicitArrayCreation.Initializer == null)
-            return;
 
         if (!IsSafeToReport(context, implicitArrayCreation))
             return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.CSharp12Rules.UseCollectionExpressionRule, implicitArrayCreation.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(CSharp12Rules.UseCollectionExpressionRule,
+            implicitArrayCreation.GetLocation()));
     }
 
     private static bool IsSafeToReport(SyntaxNodeAnalysisContext context, ExpressionSyntax expression)
@@ -75,11 +73,11 @@ public sealed class UseCollectionExpressionAnalyzer : DiagnosticAnalyzer
         // The global safety gate is still applied, but local per-fix-provider checks are evaluated
         // in the code-fix path.
         var evaluation = FixProviderSafetyRunner.Evaluate(
-            semanticModel: context.SemanticModel,
-            fixProviderType: typeof(object),
-            node: expression,
-            diagnostic: null,
-            cancellationToken: context.CancellationToken);
+            context.SemanticModel,
+            typeof(object),
+            expression,
+            null,
+            context.CancellationToken);
 
         return evaluation.Outcome == FixProviderSafetyOutcome.Safe;
     }

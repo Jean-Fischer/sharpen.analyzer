@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 public class Example
@@ -11,7 +12,7 @@ public class Example
         reader.ReadToEnd();
 
         // SHARPEN004: Thread.Sleep -> await Task.Delay
-        System.Threading.Thread.Sleep(10);
+        Thread.Sleep(10);
 
         // SHARPEN005: Task<T>.Result -> await
         var t = Task.FromResult(42);

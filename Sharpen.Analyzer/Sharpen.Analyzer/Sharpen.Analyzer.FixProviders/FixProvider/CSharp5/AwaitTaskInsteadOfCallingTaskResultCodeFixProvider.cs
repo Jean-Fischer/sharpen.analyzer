@@ -19,7 +19,10 @@ public sealed class AwaitTaskInsteadOfCallingTaskResultCodeFixProvider : CodeFix
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(Rules.Rules.AwaitTaskInsteadOfCallingTaskResultRule.Id);
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
@@ -44,16 +47,17 @@ public sealed class AwaitTaskInsteadOfCallingTaskResultCodeFixProvider : CodeFix
         //   task.Result.ToString()
         if (memberAccess.Parent is not (EqualsValueClauseSyntax or ReturnStatementSyntax or ArgumentSyntax)) return;
 
-        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+        var semanticModel =
+            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
         if (semanticModel is null) return;
 
         if (!AsyncModernizationHelpers.IsAwaitLegalAt(memberAccess)) return;
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: "Use await",
-                createChangedDocument: c => ApplyFixAsync(context.Document, memberAccess, semanticModel, c),
-                equivalenceKey: "UseAwait"),
+                "Use await",
+                c => ApplyFixAsync(context.Document, memberAccess, semanticModel, c),
+                "UseAwait"),
             diagnostic);
     }
 

@@ -1,70 +1,70 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <!-- Analyzers should target netstandard2.0 for maximum compatibility with the compiler/IDE hosts. -->
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <LangVersion>latest</LangVersion>
-    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-    <IsRoslynComponent>true</IsRoslynComponent>
-    <RootNamespace>Sharpen.Analyzer</RootNamespace>
-    <AssemblyName>Sharpen.Analyzer</AssemblyName>
+    <PropertyGroup>
+        <!-- Analyzers should target netstandard2.0 for maximum compatibility with the compiler/IDE hosts. -->
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        <IsRoslynComponent>true</IsRoslynComponent>
+        <RootNamespace>Sharpen.Analyzer</RootNamespace>
+        <AssemblyName>Sharpen.Analyzer</AssemblyName>
 
-    <!-- Enable analyzer release tracking (fixes RS2008). -->
-    <EnableAnalyzerReleaseTracking>true</EnableAnalyzerReleaseTracking>
+        <!-- Enable analyzer release tracking (fixes RS2008). -->
+        <EnableAnalyzerReleaseTracking>true</EnableAnalyzerReleaseTracking>
 
-    <!-- NuGet packaging (Roslyn analyzer) -->
-    <IsPackable>true</IsPackable>
-    <PackageId>Sharpen.Analyzer</PackageId>
-    <VersionPrefix>0.1.0</VersionPrefix>
-    <Authors>Jean Fischer</Authors>
-    <Description>Roslyn analyzers + code fixes to help modernize C# codebases.</Description>
-    <PackageTags>roslyn;analyzer;codefix;csharp</PackageTags>
-    <PackageProjectUrl>https://github.com/Jean-Fischer/sharpen.analyzer</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/Jean-Fischer/sharpen.analyzer</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <!-- Do not put the analyzer assembly under lib/. We'll pack it under analyzers/dotnet/cs instead. -->
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-    <NoPackageAnalysis>true</NoPackageAnalysis>
+        <!-- NuGet packaging (Roslyn analyzer) -->
+        <IsPackable>true</IsPackable>
+        <PackageId>Sharpen.Analyzer</PackageId>
+        <VersionPrefix>0.1.0</VersionPrefix>
+        <Authors>Jean Fischer</Authors>
+        <Description>Roslyn analyzers + code fixes to help modernize C# codebases.</Description>
+        <PackageTags>roslyn;analyzer;codefix;csharp</PackageTags>
+        <PackageProjectUrl>https://github.com/Jean-Fischer/sharpen.analyzer</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/Jean-Fischer/sharpen.analyzer</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <!-- Do not put the analyzer assembly under lib/. We'll pack it under analyzers/dotnet/cs instead. -->
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <NoPackageAnalysis>true</NoPackageAnalysis>
 
-    <!--
-      RS1038: "This compiler extension should not be implemented in an assembly containing a reference to Microsoft.CodeAnalysis.Workspaces".
+        <!--
+          RS1038: "This compiler extension should not be implemented in an assembly containing a reference to Microsoft.CodeAnalysis.Workspaces".
+    
+          This project contains analyzers + shared infrastructure and must remain Workspaces-free.
+          Code fixes live in Sharpen.Analyzer.FixProviders (which can reference Workspaces).
+        -->
+    </PropertyGroup>
 
-      This project contains analyzers + shared infrastructure and must remain Workspaces-free.
-      Code fixes live in Sharpen.Analyzer.FixProviders (which can reference Workspaces).
-    -->
-  </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
-  </ItemGroup>
+    <ItemGroup>
+        <!-- Pack the analyzer assembly in the conventional analyzer location. -->
+        <None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <None Update="Readme.md" Pack="true"/>
 
-  <ItemGroup>
-    <!-- Pack the analyzer assembly in the conventional analyzer location. -->
-    <None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <None Update="Readme.md" Pack="true" />
+        <!-- Pack release tracking files. -->
+        <None Include="AnalyzerReleases.Shipped.md" Pack="true" PackagePath="/" Visible="false"/>
+        <None Include="AnalyzerReleases.Unshipped.md" Pack="true" PackagePath="/" Visible="false"/>
+    </ItemGroup>
 
-    <!-- Pack release tracking files. -->
-    <None Include="AnalyzerReleases.Shipped.md" Pack="true" PackagePath="/" Visible="false" />
-    <None Include="AnalyzerReleases.Unshipped.md" Pack="true" PackagePath="/" Visible="false" />
-  </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Update="Resources.resx">
+            <Generator>ResXFileCodeGenerator</Generator>
+            <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+        </EmbeddedResource>
+    </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Update="Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Update="Resources.Designer.cs">
+            <DesignTime>True</DesignTime>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Resources.resx</DependentUpon>
+        </Compile>
+    </ItemGroup>
 </Project>

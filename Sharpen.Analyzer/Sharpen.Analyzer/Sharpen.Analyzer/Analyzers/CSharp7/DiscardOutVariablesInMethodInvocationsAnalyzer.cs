@@ -1,10 +1,10 @@
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sharpen.Analyzer.Common;
-using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp7;
 
@@ -27,29 +27,11 @@ public sealed class DiscardOutVariablesInMethodInvocationsAnalyzer : DiagnosticA
         var invocation = (InvocationExpressionSyntax)context.Node;
 
         var argumentList = invocation.ArgumentList;
-        if (argumentList == null)
+
+        foreach (var argument in from argument in argumentList.Arguments where argument.RefOrOutKeyword.IsKind(SyntaxKind.OutKeyword) where argument.Expression.IsKind(SyntaxKind.IdentifierName) where OutVariableCandidateHelper.IsCandidate(context.SemanticModel, argument, true) select argument)
         {
-            return;
-        }
-
-        foreach (var argument in argumentList.Arguments)
-        {
-            if (!argument.RefOrOutKeyword.IsKind(SyntaxKind.OutKeyword))
-            {
-                continue;
-            }
-
-            if (!argument.Expression.IsKind(SyntaxKind.IdentifierName))
-            {
-                continue;
-            }
-
-            if (!OutVariableCandidateHelper.IsCandidate(context.SemanticModel, argument, outArgumentCanBeDiscarded: true))
-            {
-                continue;
-            }
-
-            context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.DiscardOutVariablesInMethodInvocationsRule, argument.RefOrOutKeyword.GetLocation()));
+            context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.DiscardOutVariablesInMethodInvocationsRule,
+                argument.RefOrOutKeyword.GetLocation()));
         }
     }
 }

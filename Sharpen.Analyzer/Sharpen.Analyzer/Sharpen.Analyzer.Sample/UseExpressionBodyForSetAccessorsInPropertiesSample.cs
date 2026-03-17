@@ -2,19 +2,17 @@ namespace Sharpen.Analyzer.Sample;
 
 public sealed class UseExpressionBodyForSetAccessorsInPropertiesSample
 {
-    private int _p;
-
     public int P
     {
-        get => _p;
+        get;
 
         // SHARPEN056
-        set { _p = value; }
+        set;
     }
 
     public int AlreadyExpressionBodied
     {
-        get => _p;
-        set => _p = value;
+        get => P;
+        set => P = value;
     }
 }

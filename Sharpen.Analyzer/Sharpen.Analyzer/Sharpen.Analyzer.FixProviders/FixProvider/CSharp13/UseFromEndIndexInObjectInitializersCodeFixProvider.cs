@@ -3,15 +3,14 @@ using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
-using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using Sharpen.Analyzer.FixProvider.Common;
 using Sharpen.Analyzer.Rules;
 using Sharpen.Analyzer.Safety.FixProviderSafety;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Sharpen.Analyzer;
 
@@ -36,11 +35,12 @@ public sealed class UseFromEndIndexInObjectInitializersCodeFixProvider : CSharp1
         // so walk up until we reach the full `<expr>.Length - 1` expression.
         while (indexExpression.Parent is ExpressionSyntax parentExpression &&
                indexExpression.Parent is not ArgumentSyntax)
-        {
             indexExpression = parentExpression;
-        }
 
-        if (indexExpression.Parent is not ArgumentSyntax { Parent: BracketedArgumentListSyntax { Parent: ImplicitElementAccessSyntax } })
+        if (indexExpression.Parent is not ArgumentSyntax
+            {
+                Parent: BracketedArgumentListSyntax { Parent: ImplicitElementAccessSyntax }
+            })
             return;
 
         if (!IsLengthMinusOne(indexExpression))
@@ -50,7 +50,8 @@ public sealed class UseFromEndIndexInObjectInitializersCodeFixProvider : CSharp1
         if (indexExpression is not BinaryExpressionSyntax { Left: MemberAccessExpressionSyntax memberAccess })
             return;
 
-        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+        var semanticModel =
+            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
         if (semanticModel is null)
             return;
 
@@ -60,25 +61,26 @@ public sealed class UseFromEndIndexInObjectInitializersCodeFixProvider : CSharp1
 
         // Safety checker already validates the same conditions; keep it as the final gate.
         var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            checker: new UseFromEndIndexInObjectInitializersSafetyChecker(),
-            syntaxTree: root.SyntaxTree,
-            semanticModel: semanticModel,
-            diagnostic: diagnostic,
-            matchSucceeded: true,
-            cancellationToken: context.CancellationToken);
+            new UseFromEndIndexInObjectInitializersSafetyChecker(),
+            root.SyntaxTree,
+            semanticModel,
+            diagnostic,
+            true,
+            context.CancellationToken);
 
         if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
             return;
 
         RegisterCodeFix(
-            context: context,
-            diagnostic: diagnostic,
-            title: "Use from-end index (^) in initializer",
-            equivalenceKey: nameof(UseFromEndIndexInObjectInitializersCodeFixProvider),
-            createChangedDocument: ct => ApplyAsync(context.Document, indexExpression, ct));
+            context,
+            diagnostic,
+            "Use from-end index (^) in initializer",
+            nameof(UseFromEndIndexInObjectInitializersCodeFixProvider),
+            ct => ApplyAsync(context.Document, indexExpression, ct));
     }
 
-    private static async Task<Document> ApplyAsync(Document document, ExpressionSyntax indexExpression, CancellationToken ct)
+    private static async Task<Document> ApplyAsync(Document document, ExpressionSyntax indexExpression,
+        CancellationToken ct)
     {
         var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
 

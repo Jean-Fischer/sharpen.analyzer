@@ -1,6 +1,9 @@
 // ReSharper disable UnusedType.Global
 // ReSharper disable UnusedMember.Global
 
+using System;
+using System.Collections.Generic;
+
 namespace Sharpen.Analyzer.Sample;
 
 public static class CSharp9Samples
@@ -8,25 +11,25 @@ public static class CSharp9Samples
     // SHARPEN035: Use init-only setter
     public sealed class InitOnlySetterSample
     {
-        public string Name { get; private set; } = string.Empty;
-
         public InitOnlySetterSample(string name)
         {
             Name = name;
         }
+
+        public string Name { get; private set; } = string.Empty;
     }
 
     // SHARPEN036: Use record type
     public sealed class RecordTypeSample
     {
-        public int X { get; }
-        public int Y { get; }
-
         public RecordTypeSample(int x, int y)
         {
             X = x;
             Y = y;
         }
+
+        public int X { get; }
+        public int Y { get; }
     }
 
     // SHARPEN037: Use top-level statements
@@ -36,7 +39,7 @@ public static class CSharp9Samples
     {
         public static int Main(string[] args)
         {
-            System.Console.WriteLine(args.Length);
+            Console.WriteLine(args.Length);
             return 0;
         }
     }
@@ -69,16 +72,15 @@ public static class CSharp9Samples
     // SHARPEN039: Use target-typed new
     public sealed class TargetTypedNewSample
     {
-        private readonly System.Collections.Generic.List<int> _numbers = new System.Collections.Generic.List<int>();
+        private readonly List<int> _numbers = new();
 
-        public System.Collections.Generic.List<int> Numbers { get; } = new System.Collections.Generic.List<int>();
+        public List<int> Numbers { get; } = new();
 
-        public System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<int>> Map { get; } =
-            new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<int>>();
+        public Dictionary<string, List<int>> Map { get; } = new();
 
-        public System.Collections.Generic.List<int> Create()
+        public List<int> Create()
         {
-            return new System.Collections.Generic.List<int>();
+            return new List<int>();
         }
     }
 }

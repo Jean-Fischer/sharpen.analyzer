@@ -31,14 +31,14 @@ public sealed class UseSystemThreadingLockAnalyzer : DiagnosticAnalyzer
             return;
 
         // Only consider `object` fields.
-        var fieldType = context.SemanticModel.GetTypeInfo(fieldDeclaration.Declaration.Type, context.CancellationToken).Type;
+        var fieldType = context.SemanticModel.GetTypeInfo(fieldDeclaration.Declaration.Type, context.CancellationToken)
+            .Type;
         if (fieldType is null || fieldType.SpecialType != SpecialType.System_Object)
             return;
 
         foreach (var variable in fieldDeclaration.Declaration.Variables)
         {
-            var fieldSymbol = context.SemanticModel.GetDeclaredSymbol(variable, context.CancellationToken) as IFieldSymbol;
-            if (fieldSymbol is null)
+            if (context.SemanticModel.GetDeclaredSymbol(variable, context.CancellationToken) is not IFieldSymbol fieldSymbol)
                 continue;
 
             // Dedicated sync object: used only as lock target.

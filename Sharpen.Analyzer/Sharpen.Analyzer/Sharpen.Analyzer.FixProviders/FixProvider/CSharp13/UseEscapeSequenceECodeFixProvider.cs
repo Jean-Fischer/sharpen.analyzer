@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Composition;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -22,34 +23,37 @@ public sealed class UseEscapeSequenceECodeFixProvider : CSharp13OrAboveSharpenCo
 
     protected override async Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
     {
-        var literal = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true) as LiteralExpressionSyntax;
+        var literal =
+            root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true) as LiteralExpressionSyntax;
         if (literal is null)
             return;
 
-        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+        var semanticModel =
+            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
         if (semanticModel is null)
             return;
 
         var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            checker: new UseEscapeSequenceESafetyChecker(),
-            syntaxTree: root.SyntaxTree,
-            semanticModel: semanticModel,
-            diagnostic: diagnostic,
-            matchSucceeded: true,
-            cancellationToken: context.CancellationToken);
+            new UseEscapeSequenceESafetyChecker(),
+            root.SyntaxTree,
+            semanticModel,
+            diagnostic,
+            true,
+            context.CancellationToken);
 
         if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
             return;
 
         RegisterCodeFix(
-            context: context,
-            diagnostic: diagnostic,
-            title: "Use \\e escape sequence",
-            equivalenceKey: nameof(UseEscapeSequenceECodeFixProvider),
-            createChangedDocument: ct => ApplyAsync(context.Document, literal, ct));
+            context,
+            diagnostic,
+            "Use \\e escape sequence",
+            nameof(UseEscapeSequenceECodeFixProvider),
+            ct => ApplyAsync(context.Document, literal, ct));
     }
 
-    private static async Task<Document> ApplyAsync(Document document, LiteralExpressionSyntax literal, CancellationToken ct)
+    private static async Task<Document> ApplyAsync(Document document, LiteralExpressionSyntax literal,
+        CancellationToken ct)
     {
         var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
 
@@ -72,7 +76,7 @@ public sealed class UseEscapeSequenceECodeFixProvider : CSharp13OrAboveSharpenCo
     {
         // Scan and replace occurrences of \x1b / \x1B where the next char is not a hex digit.
         // We build a new string to avoid overlapping replacements.
-        var builder = new System.Text.StringBuilder(tokenText.Length);
+        var builder = new StringBuilder(tokenText.Length);
 
         for (var i = 0; i < tokenText.Length; i++)
         {
@@ -97,8 +101,10 @@ public sealed class UseEscapeSequenceECodeFixProvider : CSharp13OrAboveSharpenCo
         return builder.ToString();
     }
 
-    private static bool IsHexDigit(char c) =>
-        (c >= '0' && c <= '9') ||
-        (c >= 'a' && c <= 'f') ||
-        (c >= 'A' && c <= 'F');
+    private static bool IsHexDigit(char c)
+    {
+        return (c >= '0' && c <= '9') ||
+               (c >= 'a' && c <= 'f') ||
+               (c >= 'A' && c <= 'F');
+    }
 }

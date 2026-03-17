@@ -11,13 +11,16 @@ public static partial class FixProviderSafetyMappingValidation
             throw new ArgumentNullException(nameof(value));
     }
 
-    private static void EnsureMapped(IReadOnlyDictionary<Type, Type> mapping, string fixProviderFullName, string? preferredAssemblyName = null)
+    private static void EnsureMapped(IReadOnlyDictionary<Type, Type> mapping, string fixProviderFullName,
+        string? preferredAssemblyName = null)
     {
         var fixProviderType = FixProviderSafetyTypeResolution.ResolveType(fixProviderFullName, preferredAssemblyName);
         if (fixProviderType is null)
-            throw new InvalidOperationException($"Fix provider type could not be resolved (assembly not loaded?): {fixProviderFullName}");
+            throw new InvalidOperationException(
+                $"Fix provider type could not be resolved (assembly not loaded?): {fixProviderFullName}");
 
         if (!mapping.ContainsKey(fixProviderType))
-            throw new InvalidOperationException($"Missing safety checker mapping for fix provider: {fixProviderType.FullName}");
+            throw new InvalidOperationException(
+                $"Missing safety checker mapping for fix provider: {fixProviderType.FullName}");
     }
 }

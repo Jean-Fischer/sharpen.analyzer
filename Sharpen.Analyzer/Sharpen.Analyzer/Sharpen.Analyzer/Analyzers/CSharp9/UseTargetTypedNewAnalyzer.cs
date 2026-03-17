@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -38,81 +37,80 @@ public sealed class UseTargetTypedNewAnalyzer : DiagnosticAnalyzer
             return;
 
         // Don't touch arrays/implicit object creation (already target-typed) etc.
-        if (objectCreation.Type == null)
-            return;
 
         // 6.1 explicit-type local/field/property initializers
         if (objectCreation.Parent is EqualsValueClauseSyntax equalsValue)
         {
             var createdType = context.SemanticModel.GetTypeInfo(objectCreation, context.CancellationToken).Type;
 
-            if (equalsValue.Parent is VariableDeclaratorSyntax variableDeclarator
-                && variableDeclarator.Parent is VariableDeclarationSyntax variableDeclaration
-                && variableDeclaration.Type is not IdentifierNameSyntax { Identifier.ValueText: "var" })
+            switch (equalsValue.Parent)
             {
-                // Explicit local declaration: T x = new T(...)
-                // Only safe when the declared type is exactly the created type.
-                // (e.g. don't suggest for: ICollection<object> x = new List<object>();)
-                var declaredType = context.SemanticModel.GetTypeInfo(variableDeclaration.Type, context.CancellationToken).Type;
-                if (declaredType != null && createdType != null && SymbolEqualityComparer.Default.Equals(declaredType, createdType))
+                case VariableDeclaratorSyntax { Parent: VariableDeclarationSyntax { Type: not IdentifierNameSyntax { Identifier.ValueText: "var" } } variableDeclaration }:
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule, objectCreation.GetLocation()));
+                    // Explicit local declaration: T x = new T(...)
+                    // Only safe when the declared type is exactly the created type.
+                    // (e.g. don't suggest for: ICollection<object> x = new List<object>();)
+                    var declaredType = context.SemanticModel
+                        .GetTypeInfo(variableDeclaration.Type, context.CancellationToken).Type;
+                    if (declaredType != null && createdType != null &&
+                        SymbolEqualityComparer.Default.Equals(declaredType, createdType))
+                        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule,
+                            objectCreation.GetLocation()));
+
+                    return;
                 }
-
-                return;
-            }
-
-            if (equalsValue.Parent is PropertyDeclarationSyntax propertyDeclaration)
-            {
-                // Property initializer: T P {get;} = new T(...)
-                var declaredType = context.SemanticModel.GetTypeInfo(propertyDeclaration.Type, context.CancellationToken).Type;
-                if (declaredType != null && createdType != null && SymbolEqualityComparer.Default.Equals(declaredType, createdType))
+                case PropertyDeclarationSyntax propertyDeclaration:
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule, objectCreation.GetLocation()));
+                    // Property initializer: T P {get;} = new T(...)
+                    var declaredType = context.SemanticModel
+                        .GetTypeInfo(propertyDeclaration.Type, context.CancellationToken).Type;
+                    if (declaredType != null && createdType != null &&
+                        SymbolEqualityComparer.Default.Equals(declaredType, createdType))
+                        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule,
+                            objectCreation.GetLocation()));
+
+                    return;
                 }
-
-                return;
-            }
-
-            if (equalsValue.Parent is FieldDeclarationSyntax fieldDeclaration)
-            {
-                // Field initializer: T f = new T(...)
-                var declaredType = context.SemanticModel.GetTypeInfo(fieldDeclaration.Declaration.Type, context.CancellationToken).Type;
-                if (declaredType != null && createdType != null && SymbolEqualityComparer.Default.Equals(declaredType, createdType))
+                case FieldDeclarationSyntax fieldDeclaration:
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule, objectCreation.GetLocation()));
-                }
+                    // Field initializer: T f = new T(...)
+                    var declaredType = context.SemanticModel
+                        .GetTypeInfo(fieldDeclaration.Declaration.Type, context.CancellationToken).Type;
+                    if (declaredType != null && createdType != null &&
+                        SymbolEqualityComparer.Default.Equals(declaredType, createdType))
+                        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule,
+                            objectCreation.GetLocation()));
 
-                return;
+                    return;
+                }
             }
         }
 
         // 6.2 assignments/returns where target type is unambiguous
-        if (objectCreation.Parent is AssignmentExpressionSyntax assignment && assignment.IsKind(SyntaxKind.SimpleAssignmentExpression))
+        if (objectCreation.Parent is AssignmentExpressionSyntax assignment &&
+            assignment.IsKind(SyntaxKind.SimpleAssignmentExpression))
         {
             var leftType = context.SemanticModel.GetTypeInfo(assignment.Left, context.CancellationToken).Type;
             var rightType = context.SemanticModel.GetTypeInfo(objectCreation, context.CancellationToken).Type;
 
             if (leftType != null && rightType != null && SymbolEqualityComparer.Default.Equals(leftType, rightType))
             {
-                context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule, objectCreation.GetLocation()));
+                context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule,
+                    objectCreation.GetLocation()));
                 return;
             }
         }
 
-        if (objectCreation.Parent is ReturnStatementSyntax returnStatement)
+        if (objectCreation.Parent is not ReturnStatementSyntax returnStatement) return;
         {
             var symbol = context.SemanticModel.GetEnclosingSymbol(returnStatement.SpanStart, context.CancellationToken);
-            if (symbol is IMethodSymbol method)
-            {
-                var returnType = method.ReturnType;
-                var createdType = context.SemanticModel.GetTypeInfo(objectCreation, context.CancellationToken).Type;
+            if (symbol is not IMethodSymbol method) return;
+            var returnType = method.ReturnType;
+            var createdType = context.SemanticModel.GetTypeInfo(objectCreation, context.CancellationToken).Type;
 
-                if (createdType != null && SymbolEqualityComparer.Default.Equals(returnType, createdType))
-                {
-                    context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule, objectCreation.GetLocation()));
-                }
-            }
+            if (createdType != null && SymbolEqualityComparer.Default.Equals(returnType, createdType))
+                context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule,
+                    objectCreation.GetLocation()));
         }
     }
 }

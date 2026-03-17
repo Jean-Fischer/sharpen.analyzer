@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Sharpen.Analyzer.FixProvider.Common;
@@ -26,36 +25,39 @@ public sealed class UseImplicitSpanConversionsCodeFixProvider : CSharp13OrAboveS
         if (node is not InvocationExpressionSyntax asSpanInvocation)
             return;
 
-        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+        var semanticModel =
+            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
         if (semanticModel is null)
             return;
 
         var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            checker: new ImplicitSpanConversionsSafetyChecker(),
-            syntaxTree: root.SyntaxTree,
-            semanticModel: semanticModel,
-            diagnostic: diagnostic,
-            matchSucceeded: true,
-            cancellationToken: context.CancellationToken);
+            new ImplicitSpanConversionsSafetyChecker(),
+            root.SyntaxTree,
+            semanticModel,
+            diagnostic,
+            true,
+            context.CancellationToken);
 
         if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
             return;
 
         RegisterCodeFix(
-            context: context,
-            diagnostic: diagnostic,
-            title: CSharp14Rules.UseImplicitSpanConversionsRule.Title.ToString(),
-            equivalenceKey: nameof(UseImplicitSpanConversionsCodeFixProvider),
-            createChangedDocument: ct => ApplyAsync(context.Document, asSpanInvocation, ct));
+            context,
+            diagnostic,
+            CSharp14Rules.UseImplicitSpanConversionsRule.Title.ToString(),
+            nameof(UseImplicitSpanConversionsCodeFixProvider),
+            ct => ApplyAsync(context.Document, asSpanInvocation, ct));
     }
 
-    private static async Task<Document> ApplyAsync(Document document, InvocationExpressionSyntax asSpanInvocation, CancellationToken ct)
+    private static async Task<Document> ApplyAsync(Document document, InvocationExpressionSyntax asSpanInvocation,
+        CancellationToken ct)
     {
         var root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
         if (root is null)
             return document;
 
-        var currentInvocation = root.FindNode(asSpanInvocation.Span, getInnermostNodeForTie: true) as InvocationExpressionSyntax;
+        var currentInvocation =
+            root.FindNode(asSpanInvocation.Span, getInnermostNodeForTie: true) as InvocationExpressionSyntax;
         if (currentInvocation is null)
             return document;
 

@@ -1,7 +1,4 @@
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Testing;
-using Sharpen.Analyzer.Tests.Infrastructure;
 using Xunit;
 using Verifier = Sharpen.Analyzer.Tests.Infrastructure.CSharp13CodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp14.UseUnboundGenericTypeInNameofAnalyzer,

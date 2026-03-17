@@ -12,14 +12,14 @@ public static class AsyncModernizationHelpers
         var localFunction = node.FirstAncestorOrSelf<LocalFunctionStatementSyntax>();
         if (localFunction != null)
         {
-            var symbol = semanticModel.GetDeclaredSymbol(localFunction) as IMethodSymbol;
+            var symbol = semanticModel.GetDeclaredSymbol(localFunction);
             return symbol?.IsAsync == true;
         }
 
         var method = node.FirstAncestorOrSelf<MethodDeclarationSyntax>();
         if (method != null)
         {
-            var symbol = semanticModel.GetDeclaredSymbol(method) as IMethodSymbol;
+            var symbol = semanticModel.GetDeclaredSymbol(method);
             return symbol?.IsAsync == true;
         }
 
@@ -33,13 +33,12 @@ public static class AsyncModernizationHelpers
 
         // Anonymous delegates
         var anonymousMethod = node.FirstAncestorOrSelf<AnonymousMethodExpressionSyntax>();
-        if (anonymousMethod != null)
+        if (anonymousMethod == null) return false;
         {
             var symbol = semanticModel.GetSymbolInfo(anonymousMethod).Symbol as IMethodSymbol;
             return symbol?.IsAsync == true;
         }
 
-        return false;
     }
 
     public static bool CanMakeContainingCallableAsync(SyntaxNode node, SemanticModel semanticModel)
@@ -52,7 +51,7 @@ public static class AsyncModernizationHelpers
         var localFunction = node.FirstAncestorOrSelf<LocalFunctionStatementSyntax>();
         if (localFunction != null)
         {
-            var symbol = semanticModel.GetDeclaredSymbol(localFunction) as IMethodSymbol;
+            var symbol = semanticModel.GetDeclaredSymbol(localFunction);
             if (symbol == null) return false;
 
             // Only allow local functions that already return Task/Task<T>/ValueTask/ValueTask<T>.
@@ -63,9 +62,9 @@ public static class AsyncModernizationHelpers
         }
 
         var method = node.FirstAncestorOrSelf<MethodDeclarationSyntax>();
-        if (method != null)
+        if (method == null) return false;
         {
-            var symbol = semanticModel.GetDeclaredSymbol(method) as IMethodSymbol;
+            var symbol = semanticModel.GetDeclaredSymbol(method);
             if (symbol == null) return false;
 
             // Only allow methods that already return Task/Task<T>/ValueTask/ValueTask<T>.
@@ -77,32 +76,24 @@ public static class AsyncModernizationHelpers
             if (symbol.ExplicitInterfaceImplementations.Length > 0) return false;
             if (symbol.ContainingType?.AllInterfaces.Any(i =>
                     i.GetMembers(symbol.Name).OfType<IMethodSymbol>().Any(m =>
-                        SymbolEqualityComparer.Default.Equals(symbol.ContainingType.FindImplementationForInterfaceMember(m), symbol))) == true)
-            {
+                        SymbolEqualityComparer.Default.Equals(
+                            symbol.ContainingType.FindImplementationForInterfaceMember(m), symbol))) == true)
                 return false;
-            }
 
             return !symbol.IsAsync;
         }
 
         // Lambdas/anonymous delegates: we can insert await only if they are already async.
         // (We don't support adding the async modifier to them in this change.)
-        return false;
     }
 
     private static bool ReturnsKnownAwaitable(IMethodSymbol method)
     {
-        if (method.ReturnType == null) return false;
-
         var returnType = method.ReturnType;
-        if (returnType is INamedTypeSymbol named && named.IsGenericType)
-        {
-            returnType = named.ConstructedFrom;
-        }
+        if (returnType is INamedTypeSymbol { IsGenericType: true } named) returnType = named.ConstructedFrom;
 
         var fullName = returnType.ToDisplayString();
-        return fullName == "System.Threading.Tasks.Task" ||
-               fullName == "System.Threading.Tasks.ValueTask";
+        return fullName is "System.Threading.Tasks.Task" or "System.Threading.Tasks.ValueTask";
     }
 
     public static bool IsAwaitLegalAt(SyntaxNode node)
@@ -111,9 +102,7 @@ public static class AsyncModernizationHelpers
         // (We can expand later.)
         if (node.FirstAncestorOrSelf<LockStatementSyntax>() != null) return false;
         if (node.FirstAncestorOrSelf<CatchClauseSyntax>() != null) return false;
-        if (node.FirstAncestorOrSelf<FinallyClauseSyntax>() != null) return false;
-
-        return true;
+        return node.FirstAncestorOrSelf<FinallyClauseSyntax>() == null;
     }
 
     public static SyntaxNode MakeContainingCallableAsync(SyntaxNode root, SyntaxNode node, SemanticModel semanticModel)
@@ -126,12 +115,13 @@ public static class AsyncModernizationHelpers
         {
             if (localFunction.Modifiers.Any(m => m.IsKind(SyntaxKind.AsyncKeyword))) return root;
 
-            var newLocalFunction = localFunction.WithModifiers(localFunction.Modifiers.Add(SyntaxFactory.Token(SyntaxKind.AsyncKeyword)));
+            var newLocalFunction =
+                localFunction.WithModifiers(localFunction.Modifiers.Add(SyntaxFactory.Token(SyntaxKind.AsyncKeyword)));
             return root.ReplaceNode(localFunction, newLocalFunction);
         }
 
         var method = node.FirstAncestorOrSelf<MethodDeclarationSyntax>();
-        if (method != null)
+        if (method == null) return root;
         {
             if (method.Modifiers.Any(m => m.IsKind(SyntaxKind.AsyncKeyword))) return root;
 
@@ -139,6 +129,5 @@ public static class AsyncModernizationHelpers
             return root.ReplaceNode(method, newMethod);
         }
 
-        return root;
     }
 }

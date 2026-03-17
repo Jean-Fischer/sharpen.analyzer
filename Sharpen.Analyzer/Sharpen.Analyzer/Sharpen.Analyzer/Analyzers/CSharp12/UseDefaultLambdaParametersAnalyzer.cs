@@ -1,8 +1,10 @@
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp12;
 
@@ -10,7 +12,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp12;
 public sealed class UseDefaultLambdaParametersAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.CSharp12Rules.UseDefaultLambdaParametersRule);
+        ImmutableArray.Create(CSharp12Rules.UseDefaultLambdaParametersRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -34,7 +36,7 @@ public sealed class UseDefaultLambdaParametersAnalyzer : DiagnosticAnalyzer
         if (context.SemanticModel.GetTypeInfo(lambda).ConvertedType is not INamedTypeSymbol delegateType)
             return;
 
-        if (delegateType.DelegateInvokeMethod is not IMethodSymbol invoke)
+        if (delegateType.DelegateInvokeMethod is not { } invoke)
             return;
 
         if (invoke.Parameters.Length != 1)
@@ -50,7 +52,8 @@ public sealed class UseDefaultLambdaParametersAnalyzer : DiagnosticAnalyzer
         if (lambda.Parameter.Default is not null)
             return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.CSharp12Rules.UseDefaultLambdaParametersRule, lambda.Parameter.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(CSharp12Rules.UseDefaultLambdaParametersRule,
+            lambda.Parameter.GetLocation()));
     }
 
     private static void AnalyzeParenthesizedLambda(SyntaxNodeAnalysisContext context)
@@ -63,16 +66,15 @@ public sealed class UseDefaultLambdaParametersAnalyzer : DiagnosticAnalyzer
             return;
 
         // C# 12 default lambda parameters require explicit parameter types.
-        foreach (var parameter in lambda.ParameterList.Parameters)
+        if (lambda.ParameterList.Parameters.Any(parameter => parameter.Type is null))
         {
-            if (parameter.Type is null)
-                return;
+            return;
         }
 
         if (context.SemanticModel.GetTypeInfo(lambda).ConvertedType is not INamedTypeSymbol delegateType)
             return;
 
-        if (delegateType.DelegateInvokeMethod is not IMethodSymbol invoke)
+        if (delegateType.DelegateInvokeMethod is not { } invoke)
             return;
 
         if (invoke.Parameters.Length != lambda.ParameterList.Parameters.Count)
@@ -92,7 +94,8 @@ public sealed class UseDefaultLambdaParametersAnalyzer : DiagnosticAnalyzer
                 return;
         }
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.CSharp12Rules.UseDefaultLambdaParametersRule, lambda.ParameterList.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(CSharp12Rules.UseDefaultLambdaParametersRule,
+            lambda.ParameterList.GetLocation()));
     }
 
     private static bool IsSupportedDefaultValue(IParameterSymbol parameter)

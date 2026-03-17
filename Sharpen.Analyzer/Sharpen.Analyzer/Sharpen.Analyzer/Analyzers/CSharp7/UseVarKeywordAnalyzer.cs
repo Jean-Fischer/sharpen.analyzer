@@ -32,7 +32,7 @@ public class UseVarKeywordAnalyzer : DiagnosticAnalyzer
             return;
 
         var variable = declaration.Variables[0];
-        if (variable.Initializer?.Value?.IsKind(SyntaxKind.ObjectCreationExpression) != true)
+        if (variable.Initializer?.Value.IsKind(SyntaxKind.ObjectCreationExpression) != true)
             return;
 
         var semanticModel = context.SemanticModel;
@@ -40,11 +40,12 @@ public class UseVarKeywordAnalyzer : DiagnosticAnalyzer
         var objectCreation = (ObjectCreationExpressionSyntax)variable.Initializer.Value;
         var rightSideType = semanticModel.GetTypeInfo(objectCreation).Type;
 
-        if (leftSideType == null || rightSideType == null || leftSideType is IErrorTypeSymbol || rightSideType is IErrorTypeSymbol)
+        if (leftSideType == null || rightSideType == null || leftSideType is IErrorTypeSymbol ||
+            rightSideType is IErrorTypeSymbol)
             return;
-        
 
-        if (!leftSideType.Equals(rightSideType))
+
+        if (!SymbolEqualityComparer.Default.Equals(leftSideType, rightSideType))
             return;
 
         var diagnostic = Diagnostic.Create(

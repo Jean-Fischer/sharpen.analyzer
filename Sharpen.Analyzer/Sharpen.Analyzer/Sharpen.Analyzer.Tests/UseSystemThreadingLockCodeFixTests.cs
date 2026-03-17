@@ -1,5 +1,5 @@
+using System.Threading.Tasks;
 using Sharpen.Analyzer.Rules;
-using Sharpen.Analyzer.Tests.Infrastructure;
 using Xunit;
 using Verifier = Sharpen.Analyzer.Tests.Infrastructure.CSharp13CodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp13.UseSystemThreadingLockAnalyzer,
@@ -10,7 +10,7 @@ namespace Sharpen.Analyzer.Tests;
 public sealed class UseSystemThreadingLockCodeFixTests
 {
     [Fact]
-    public async System.Threading.Tasks.Task Fix_changes_field_type_to_SystemThreadingLock()
+    public async Task Fix_changes_field_type_to_SystemThreadingLock()
     {
         var before = @"
 class C
@@ -45,7 +45,7 @@ class C
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task Fix_not_offered_when_Monitor_is_used()
+    public async Task Fix_not_offered_when_Monitor_is_used()
     {
         var code = @"
 using System.Threading;
