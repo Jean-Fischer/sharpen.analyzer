@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp12;
 
@@ -11,7 +13,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp12;
 public sealed class UseInlineArrayAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.CSharp12Rules.UseInlineArrayRule);
+        ImmutableArray.Create(CSharp12Rules.UseInlineArrayRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -28,7 +30,7 @@ public sealed class UseInlineArrayAnalyzer : DiagnosticAnalyzer
 
         // If already has InlineArray attribute, don't report.
         if (@struct.AttributeLists.SelectMany(a => a.Attributes)
-            .Any(a => a.Name.ToString().EndsWith("InlineArray", System.StringComparison.Ordinal)))
+            .Any(a => a.Name.ToString().EndsWith("InlineArray", StringComparison.Ordinal)))
             return;
 
         // Must be a plain struct with only fields.
@@ -63,7 +65,8 @@ public sealed class UseInlineArrayAnalyzer : DiagnosticAnalyzer
             if (names[0] != "_element0")
                 return;
 
-            context.ReportDiagnostic(Diagnostic.Create(Rules.CSharp12Rules.UseInlineArrayRule, @struct.Identifier.GetLocation(), 1));
+            context.ReportDiagnostic(Diagnostic.Create(CSharp12Rules.UseInlineArrayRule,
+                @struct.Identifier.GetLocation(), 1));
             return;
         }
 
@@ -77,6 +80,7 @@ public sealed class UseInlineArrayAnalyzer : DiagnosticAnalyzer
                 return;
         }
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.CSharp12Rules.UseInlineArrayRule, @struct.Identifier.GetLocation(), names.Length));
+        context.ReportDiagnostic(Diagnostic.Create(CSharp12Rules.UseInlineArrayRule, @struct.Identifier.GetLocation(),
+            names.Length));
     }
 }

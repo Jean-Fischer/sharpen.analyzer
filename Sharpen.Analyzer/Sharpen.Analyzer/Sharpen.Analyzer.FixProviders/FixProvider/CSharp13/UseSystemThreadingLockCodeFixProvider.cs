@@ -27,30 +27,32 @@ public sealed class UseSystemThreadingLockCodeFixProvider : CSharp13OrAboveSharp
         if (variable is null)
             return;
 
-        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+        var semanticModel =
+            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
         if (semanticModel is null)
             return;
 
         var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            checker: new UseSystemThreadingLockSafetyChecker(),
-            syntaxTree: root.SyntaxTree,
-            semanticModel: semanticModel,
-            diagnostic: diagnostic,
-            matchSucceeded: true,
-            cancellationToken: context.CancellationToken);
+            new UseSystemThreadingLockSafetyChecker(),
+            root.SyntaxTree,
+            semanticModel,
+            diagnostic,
+            true,
+            context.CancellationToken);
 
         if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
             return;
 
         RegisterCodeFix(
-            context: context,
-            diagnostic: diagnostic,
-            title: "Use System.Threading.Lock",
-            equivalenceKey: nameof(UseSystemThreadingLockCodeFixProvider),
-            createChangedDocument: ct => ApplyAsync(context.Document, variable, ct));
+            context,
+            diagnostic,
+            "Use System.Threading.Lock",
+            nameof(UseSystemThreadingLockCodeFixProvider),
+            ct => ApplyAsync(context.Document, variable, ct));
     }
 
-    private static async Task<Document> ApplyAsync(Document document, VariableDeclaratorSyntax variable, CancellationToken ct)
+    private static async Task<Document> ApplyAsync(Document document, VariableDeclaratorSyntax variable,
+        CancellationToken ct)
     {
         var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
 

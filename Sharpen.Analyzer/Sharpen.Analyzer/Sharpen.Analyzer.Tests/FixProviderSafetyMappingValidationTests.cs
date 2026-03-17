@@ -51,7 +51,7 @@ public sealed class FixProviderSafetyMappingValidationTests
         var entries = new (Type fixProviderType, Type checkerType)[]
         {
             (typeof(object), typeof(CollectionExpressionSafetyChecker)),
-            (typeof(object), typeof(StringInterpolationSafetyChecker)),
+            (typeof(object), typeof(StringInterpolationSafetyChecker))
         };
 
         var ex = Assert.Throws<InvalidOperationException>(() => ToDictionaryWithDuplicateCheck(entries));

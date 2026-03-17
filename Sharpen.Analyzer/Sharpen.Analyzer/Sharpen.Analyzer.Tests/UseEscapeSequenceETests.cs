@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
     Sharpen.Analyzer.Analyzers.CSharp13.UseEscapeSequenceEAnalyzer,
@@ -28,6 +27,4 @@ class C
                 .WithSpan(6, 17, 6, 30)
                 .WithSeverity(DiagnosticSeverity.Info));
     }
-
-
 }

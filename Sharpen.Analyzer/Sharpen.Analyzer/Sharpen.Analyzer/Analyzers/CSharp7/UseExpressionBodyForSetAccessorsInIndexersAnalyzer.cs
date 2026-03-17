@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp7;
 
@@ -25,31 +24,17 @@ public sealed class UseExpressionBodyForSetAccessorsInIndexersAnalyzer : Diagnos
     {
         var accessor = (AccessorDeclarationSyntax)context.Node;
 
-        if (accessor.ExpressionBody != null)
-        {
-            return;
-        }
+        if (accessor.ExpressionBody != null) return;
 
-        if (accessor.FirstAncestorOrSelf<IndexerDeclarationSyntax>() == null)
-        {
-            return;
-        }
+        if (accessor.FirstAncestorOrSelf<IndexerDeclarationSyntax>() == null) return;
 
-        if (accessor.Body == null)
-        {
-            return;
-        }
+        if (accessor.Body == null) return;
 
-        if (accessor.Body.Statements.Count != 1)
-        {
-            return;
-        }
+        if (accessor.Body.Statements.Count != 1) return;
 
-        if (accessor.Body.Statements[0] is not ExpressionStatementSyntax)
-        {
-            return;
-        }
+        if (accessor.Body.Statements[0] is not ExpressionStatementSyntax) return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseExpressionBodyForSetAccessorsInIndexersRule, accessor.Keyword.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseExpressionBodyForSetAccessorsInIndexersRule,
+            accessor.Keyword.GetLocation()));
     }
 }

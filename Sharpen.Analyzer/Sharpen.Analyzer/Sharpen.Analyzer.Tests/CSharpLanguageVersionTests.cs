@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Sharpen.Analyzer.Common;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Sharpen.Analyzer.Tests;
 
@@ -47,6 +48,6 @@ public class CSharpLanguageVersionTests
             .AddDocument("Test.cs", "public class C { }");
 
         return await document.Project.GetCompilationAsync()
-               ?? throw new Xunit.Sdk.XunitException("Failed to create compilation");
+               ?? throw new XunitException("Failed to create compilation");
     }
 }

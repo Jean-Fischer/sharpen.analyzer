@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
-    Sharpen.Analyzer.Analyzers.CSharp8.ReplaceUsingStatementWithUsingDeclarationAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+    Sharpen.Analyzer.Analyzers.CSharp8.ReplaceUsingStatementWithUsingDeclarationAnalyzer,
+    Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 public class ReplaceUsingStatementWithUsingDeclarationTests
 {
@@ -133,7 +133,7 @@ public class Example
         var expected = new[]
         {
             Verifier.Diagnostic().WithSpan(8, 9, 8, 14),
-            Verifier.Diagnostic().WithSpan(8, 9, 8, 14),
+            Verifier.Diagnostic().WithSpan(8, 9, 8, 14)
         };
 
         await Verifier.VerifyAnalyzerAsync(test, expected);

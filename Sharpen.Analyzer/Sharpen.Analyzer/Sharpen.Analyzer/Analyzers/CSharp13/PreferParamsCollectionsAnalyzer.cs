@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp13;
 
@@ -10,7 +11,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp13;
 public sealed class PreferParamsCollectionsAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.CSharp13Rules.PreferParamsCollectionsRule);
+        ImmutableArray.Create(CSharp13Rules.PreferParamsCollectionsRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -65,7 +66,7 @@ public sealed class PreferParamsCollectionsAnalyzer : DiagnosticAnalyzer
                 continue;
 
             context.ReportDiagnostic(Diagnostic.Create(
-                Rules.CSharp13Rules.PreferParamsCollectionsRule,
+                CSharp13Rules.PreferParamsCollectionsRule,
                 parameter.GetLocation()));
         }
     }

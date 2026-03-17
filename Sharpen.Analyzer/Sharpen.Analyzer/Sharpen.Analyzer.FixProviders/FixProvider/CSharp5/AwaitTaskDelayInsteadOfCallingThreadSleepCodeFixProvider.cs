@@ -14,11 +14,16 @@ public sealed class AwaitTaskDelayInsteadOfCallingThreadSleepCodeFixProvider : C
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(Rules.Rules.AwaitTaskDelayInsteadOfCallingThreadSleepRule.Id);
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
-    public override Task RegisterCodeFixesAsync(CodeFixContext context) =>
-        ThreadSleepToTaskDelayCodeFixHelper.RegisterAsync(
+    public override Task RegisterCodeFixesAsync(CodeFixContext context)
+    {
+        return ThreadSleepToTaskDelayCodeFixHelper.RegisterAsync(
             context,
-            title: "Use await Task.Delay",
-            equivalenceKey: "UseAwaitTaskDelay");
+            "Use await Task.Delay",
+            "UseAwaitTaskDelay");
+    }
 }

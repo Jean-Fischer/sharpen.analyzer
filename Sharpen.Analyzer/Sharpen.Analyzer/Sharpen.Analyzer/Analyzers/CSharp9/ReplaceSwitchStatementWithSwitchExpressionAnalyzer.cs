@@ -44,13 +44,11 @@ public sealed class ReplaceSwitchStatementWithSwitchExpressionAnalyzer : Diagnos
         }
 
         if (AllSwitchSectionsAreReturnStatements(switchStatement.Sections))
-        {
             context.ReportDiagnostic(Diagnostic.Create(
                 isSurelyExhaustive
                     ? Rules.Rules.ReplaceSwitchStatementContainingOnlyReturnsWithSwitchExpressionRule
                     : Rules.Rules.ConsiderReplacingSwitchStatementContainingOnlyReturnsWithSwitchExpressionRule,
                 switchStatement.SwitchKeyword.GetLocation()));
-        }
     }
 
     private static bool AllSwitchSectionsAreAssignmentsToTheSameIdentifier(
@@ -60,7 +58,6 @@ public sealed class ReplaceSwitchStatementWithSwitchExpressionAnalyzer : Diagnos
         ISymbol? previousIdentifierSymbol = null;
 
         foreach (var switchSection in switchSections)
-        {
             switch (switchSection.Statements.Count)
             {
                 // We have only one statement which then must be exception throwing.
@@ -82,7 +79,8 @@ public sealed class ReplaceSwitchStatementWithSwitchExpressionAnalyzer : Diagnos
                     var currentIdentifierSymbol = semanticModel.GetSymbolInfo(assignment.Left).Symbol;
                     if (currentIdentifierSymbol == null) return false;
 
-                    if (previousIdentifierSymbol != null && !previousIdentifierSymbol.Equals(currentIdentifierSymbol)) return false;
+                    if (previousIdentifierSymbol != null && !previousIdentifierSymbol.Equals(currentIdentifierSymbol))
+                        return false;
 
                     previousIdentifierSymbol = currentIdentifierSymbol;
                     break;
@@ -90,7 +88,6 @@ public sealed class ReplaceSwitchStatementWithSwitchExpressionAnalyzer : Diagnos
                 default:
                     return false;
             }
-        }
 
         return true;
     }

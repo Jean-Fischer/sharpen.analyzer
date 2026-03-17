@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Sharpen.Analyzer.Common;
+using Sharpen.Analyzer.Rules;
 using Sharpen.Analyzer.Safety.FixProviderSafety;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp10;
@@ -15,8 +18,8 @@ public sealed class UseInterpolatedStringAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(
-            Rules.CSharp10Rules.UseInterpolatedStringRule,
-            Rules.CSharp10Rules.UseConstInterpolatedStringRule);
+            CSharp10Rules.UseInterpolatedStringRule,
+            CSharp10Rules.UseConstInterpolatedStringRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -29,7 +32,7 @@ public sealed class UseInterpolatedStringAnalyzer : DiagnosticAnalyzer
 
     private static void AnalyzeInvocation(SyntaxNodeAnalysisContext context)
     {
-        if (!Common.CSharpLanguageVersion.IsCSharp10OrAbove(context.Compilation))
+        if (!CSharpLanguageVersion.IsCSharp10OrAbove(context.Compilation))
             return;
 
         var invocation = (InvocationExpressionSyntax)context.Node;
@@ -38,7 +41,8 @@ public sealed class UseInterpolatedStringAnalyzer : DiagnosticAnalyzer
         if (invocation.Expression is not MemberAccessExpressionSyntax memberAccess)
             return;
 
-        var symbol = context.SemanticModel.GetSymbolInfo(memberAccess, context.CancellationToken).Symbol as IMethodSymbol;
+        var symbol =
+            context.SemanticModel.GetSymbolInfo(memberAccess, context.CancellationToken).Symbol as IMethodSymbol;
         if (symbol == null)
             return;
 
@@ -51,7 +55,8 @@ public sealed class UseInterpolatedStringAnalyzer : DiagnosticAnalyzer
         if (invocation.ArgumentList.Arguments.Count < 1)
             return;
 
-        if (invocation.ArgumentList.Arguments[0].Expression is not LiteralExpressionSyntax literal || !literal.IsKind(SyntaxKind.StringLiteralExpression))
+        if (invocation.ArgumentList.Arguments[0].Expression is not LiteralExpressionSyntax literal ||
+            !literal.IsKind(SyntaxKind.StringLiteralExpression))
             return;
 
         // Basic placeholder detection: {0}, {1:000}, etc.
@@ -64,7 +69,7 @@ public sealed class UseInterpolatedStringAnalyzer : DiagnosticAnalyzer
 
     private static void AnalyzeAddExpression(SyntaxNodeAnalysisContext context)
     {
-        if (!Common.CSharpLanguageVersion.IsCSharp10OrAbove(context.Compilation))
+        if (!CSharpLanguageVersion.IsCSharp10OrAbove(context.Compilation))
             return;
 
         var add = (BinaryExpressionSyntax)context.Node;
@@ -88,11 +93,12 @@ public sealed class UseInterpolatedStringAnalyzer : DiagnosticAnalyzer
         // If this expression is assigned to a const string, also report the const-specific diagnostic.
         if (IsConstStringAssignment(expr, context.SemanticModel, context.CancellationToken))
         {
-            context.ReportDiagnostic(Diagnostic.Create(Rules.CSharp10Rules.UseConstInterpolatedStringRule, expr.GetLocation()));
+            context.ReportDiagnostic(
+                Diagnostic.Create(CSharp10Rules.UseConstInterpolatedStringRule, expr.GetLocation()));
             return;
         }
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.CSharp10Rules.UseInterpolatedStringRule, expr.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(CSharp10Rules.UseInterpolatedStringRule, expr.GetLocation()));
     }
 
     private static bool IsSafeToReport(SyntaxNodeAnalysisContext context, ExpressionSyntax expression)
@@ -101,16 +107,16 @@ public sealed class UseInterpolatedStringAnalyzer : DiagnosticAnalyzer
         // The global safety gate is still applied, but local per-fix-provider checks are evaluated
         // in the code-fix path.
         var evaluation = FixProviderSafetyRunner.Evaluate(
-            semanticModel: context.SemanticModel,
-            fixProviderType: typeof(object),
-            node: expression,
-            diagnostic: null,
-            cancellationToken: context.CancellationToken);
+            context.SemanticModel,
+            typeof(object),
+            expression,
+            null,
+            context.CancellationToken);
 
         return evaluation.Outcome == FixProviderSafetyOutcome.Safe;
     }
 
-    private static bool IsConstStringAssignment(ExpressionSyntax expr, SemanticModel model, System.Threading.CancellationToken ct)
+    private static bool IsConstStringAssignment(ExpressionSyntax expr, SemanticModel model, CancellationToken ct)
     {
         // const string S = <expr>;
         if (expr.Parent is not EqualsValueClauseSyntax equalsValue)
@@ -146,7 +152,7 @@ public sealed class UseInterpolatedStringAnalyzer : DiagnosticAnalyzer
     }
 
 
-    private static bool IsStringConcatenation(BinaryExpressionSyntax add, SemanticModel model, System.Threading.CancellationToken ct)
+    private static bool IsStringConcatenation(BinaryExpressionSyntax add, SemanticModel model, CancellationToken ct)
     {
         // Ensure the overall type is string.
         var type = model.GetTypeInfo(add, ct).ConvertedType;
@@ -154,7 +160,8 @@ public sealed class UseInterpolatedStringAnalyzer : DiagnosticAnalyzer
             return false;
 
         // Require at least one string literal in the chain.
-        return FlattenAdd(add).Any(e => e is LiteralExpressionSyntax lit && lit.IsKind(SyntaxKind.StringLiteralExpression));
+        return FlattenAdd(add)
+            .Any(e => e is LiteralExpressionSyntax lit && lit.IsKind(SyntaxKind.StringLiteralExpression));
     }
 
     private static IEnumerable<ExpressionSyntax> FlattenAdd(ExpressionSyntax expr)

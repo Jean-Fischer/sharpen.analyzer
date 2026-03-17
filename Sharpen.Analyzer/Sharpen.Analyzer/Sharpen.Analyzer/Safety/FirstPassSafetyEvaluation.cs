@@ -12,9 +12,18 @@ public readonly struct FirstPassSafetyEvaluation
         SafetyResult = safetyResult;
     }
 
-    public static FirstPassSafetyEvaluation MatchFailed() => new(FirstPassSafetyOutcome.MatchFailed, safetyResult: null);
+    public static FirstPassSafetyEvaluation MatchFailed()
+    {
+        return new FirstPassSafetyEvaluation(FirstPassSafetyOutcome.MatchFailed, null);
+    }
 
-    public static FirstPassSafetyEvaluation Safe() => new(FirstPassSafetyOutcome.Safe, safetyResult: null);
+    public static FirstPassSafetyEvaluation Safe()
+    {
+        return new FirstPassSafetyEvaluation(FirstPassSafetyOutcome.Safe, null);
+    }
 
-    public static FirstPassSafetyEvaluation Unsafe(SafetyResult safetyResult) => new(FirstPassSafetyOutcome.Unsafe, safetyResult);
+    public static FirstPassSafetyEvaluation Unsafe(SafetyResult safetyResult)
+    {
+        return new FirstPassSafetyEvaluation(FirstPassSafetyOutcome.Unsafe, safetyResult);
+    }
 }

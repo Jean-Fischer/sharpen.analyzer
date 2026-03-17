@@ -6,11 +6,11 @@ namespace Sharpen.Analyzer.Safety.FixProviderSafety;
 public static partial class FixProviderSafetyMappingValidation
 {
     /// <summary>
-    /// Validates mapping completeness for the spec-required initial set.
+    ///     Validates mapping completeness for the spec-required initial set.
     /// </summary>
     /// <remarks>
-    /// This is intentionally scoped to the initial set described in the spec.
-    /// It does not attempt to cover all fix providers in the assembly.
+    ///     This is intentionally scoped to the initial set described in the spec.
+    ///     It does not attempt to cover all fix providers in the assembly.
     /// </remarks>
     public static void ValidateInitialSetCompleteness(IReadOnlyDictionary<Type, Type> mapping)
     {
@@ -31,11 +31,11 @@ public static partial class FixProviderSafetyMappingValidation
     }
 
     /// <summary>
-    /// Validates that a raw mapping list does not contain duplicate fix provider types.
+    ///     Validates that a raw mapping list does not contain duplicate fix provider types.
     /// </summary>
     /// <remarks>
-    /// A dictionary cannot contain duplicate keys by construction, so this validation is only
-    /// meaningful for list-based inputs.
+    ///     A dictionary cannot contain duplicate keys by construction, so this validation is only
+    ///     meaningful for list-based inputs.
     /// </remarks>
     public static void ValidateNoDuplicateFixProviderTypes(IEnumerable<KeyValuePair<Type, Type>> mapping)
     {
@@ -43,10 +43,8 @@ public static partial class FixProviderSafetyMappingValidation
 
         var seen = new HashSet<Type>();
         foreach (var entry in mapping)
-        {
             if (!seen.Add(entry.Key))
                 throw new InvalidOperationException($"Duplicate fix provider type in mapping: {entry.Key.FullName}");
-        }
     }
 
     public static void ValidateAllKnownFixProvidersAreMapped(IReadOnlyDictionary<Type, Type> mapping)

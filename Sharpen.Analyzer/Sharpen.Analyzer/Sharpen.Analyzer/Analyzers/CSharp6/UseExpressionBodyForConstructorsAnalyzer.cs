@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp6;
 
@@ -25,26 +24,15 @@ public sealed class UseExpressionBodyForConstructorsAnalyzer : DiagnosticAnalyze
     {
         var ctor = (ConstructorDeclarationSyntax)context.Node;
 
-        if (ctor.ExpressionBody != null)
-        {
-            return;
-        }
+        if (ctor.ExpressionBody != null) return;
 
-        if (ctor.Body == null)
-        {
-            return;
-        }
+        if (ctor.Body == null) return;
 
-        if (ctor.Body.Statements.Count != 1)
-        {
-            return;
-        }
+        if (ctor.Body.Statements.Count != 1) return;
 
-        if (!ctor.Body.Statements[0].IsKind(SyntaxKind.ExpressionStatement))
-        {
-            return;
-        }
+        if (!ctor.Body.Statements[0].IsKind(SyntaxKind.ExpressionStatement)) return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseExpressionBodyForConstructorsRule, ctor.Identifier.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseExpressionBodyForConstructorsRule,
+            ctor.Identifier.GetLocation()));
     }
 }

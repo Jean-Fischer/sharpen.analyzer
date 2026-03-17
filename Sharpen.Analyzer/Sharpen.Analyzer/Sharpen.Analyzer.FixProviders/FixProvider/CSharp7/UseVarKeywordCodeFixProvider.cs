@@ -26,9 +26,9 @@ public sealed class UseVarKeywordCodeFixProvider : SharpenCodeFixProvider
         RegisterCodeFix(
             context,
             diagnostic,
-            title: "Use 'var'",
-            equivalenceKey: "UseVarKeyword",
-            createChangedDocument: c => UseVarKeywordAsync(context.Document, typeNode, c));
+            "Use 'var'",
+            "UseVarKeyword",
+            c => UseVarKeywordAsync(context.Document, typeNode, c));
 
         return Task.CompletedTask;
     }

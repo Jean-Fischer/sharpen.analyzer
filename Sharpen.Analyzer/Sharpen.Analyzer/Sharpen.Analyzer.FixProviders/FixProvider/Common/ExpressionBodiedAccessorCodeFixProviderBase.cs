@@ -13,25 +13,26 @@ namespace Sharpen.Analyzer.FixProvider.Common;
 [Shared]
 public abstract class ExpressionBodiedAccessorCodeFixProviderBase : CodeFixProvider
 {
-    public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
-
     protected abstract string DiagnosticId { get; }
 
     protected abstract string Title { get; }
 
     protected abstract string EquivalenceKey { get; }
 
-    protected abstract Task<Document> CreateChangedDocumentAsync(Document document, AccessorDeclarationSyntax accessor, CancellationToken ct);
-
     public sealed override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(DiagnosticId);
+
+    public sealed override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
+
+    protected abstract Task<Document> CreateChangedDocumentAsync(Document document, AccessorDeclarationSyntax accessor,
+        CancellationToken ct);
 
     public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
         var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-        if (root == null)
-        {
-            return;
-        }
+        if (root == null) return;
 
         var diagnostic = context.Diagnostics[0];
         var diagnosticSpan = diagnostic.Location.SourceSpan;
@@ -42,16 +43,13 @@ public abstract class ExpressionBodiedAccessorCodeFixProviderBase : CodeFixProvi
             .OfType<AccessorDeclarationSyntax>()
             .FirstOrDefault();
 
-        if (accessor == null)
-        {
-            return;
-        }
+        if (accessor == null) return;
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: Title,
-                createChangedDocument: ct => CreateChangedDocumentAsync(context.Document, accessor, ct),
-                equivalenceKey: EquivalenceKey),
+                Title,
+                ct => CreateChangedDocumentAsync(context.Document, accessor, ct),
+                EquivalenceKey),
             diagnostic);
     }
 }

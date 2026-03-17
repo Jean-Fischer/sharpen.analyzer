@@ -72,10 +72,8 @@ public sealed class UseRecordTypeAnalyzer : DiagnosticAnalyzer
             return false;
 
         foreach (var accessor in property.AccessorList.Accessors)
-        {
             if (accessor.Body != null || accessor.ExpressionBody != null)
                 return false;
-        }
 
         return true;
     }

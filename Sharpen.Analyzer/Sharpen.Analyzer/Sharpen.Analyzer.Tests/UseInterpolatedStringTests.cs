@@ -1,11 +1,10 @@
-using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp10.UseInterpolatedStringAnalyzer,
-    Sharpen.Analyzer.FixProvider.CSharp10.UseInterpolatedStringCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+    Sharpen.Analyzer.FixProvider.CSharp10.UseInterpolatedStringCodeFixProvider,
+    Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 
@@ -35,11 +34,7 @@ class C
 ";
 
         await Verifier.VerifyAnalyzerAsync(
-            source,
-            new[]
-            {
-                Verifier.Diagnostic("SHARPEN044").WithSpan(6, 16, 6, 50).WithSeverity(DiagnosticSeverity.Info)
-            });
+            source, Verifier.Diagnostic("SHARPEN044").WithSpan(6, 16, 6, 50).WithSeverity(DiagnosticSeverity.Info));
     }
 
     [Fact]

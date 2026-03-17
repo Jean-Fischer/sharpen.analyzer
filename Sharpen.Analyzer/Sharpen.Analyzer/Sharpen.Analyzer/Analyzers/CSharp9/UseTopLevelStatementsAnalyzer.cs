@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Sharpen.Analyzer.Common;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp9;
 
@@ -25,7 +24,8 @@ public sealed class UseTopLevelStatementsAnalyzer : DiagnosticAnalyzer
     private static void AnalyzeSyntaxTree(SyntaxTreeAnalysisContext context)
     {
         // SyntaxTreeAnalysisContext doesn't expose Compilation; use parse options for language version gating.
-        if (context.Tree.Options is not CSharpParseOptions parseOptions || parseOptions.LanguageVersion < LanguageVersion.CSharp9)
+        if (context.Tree.Options is not CSharpParseOptions parseOptions ||
+            parseOptions.LanguageVersion < LanguageVersion.CSharp9)
             return;
 
         var root = context.Tree.GetRoot(context.CancellationToken) as CompilationUnitSyntax;
@@ -76,23 +76,20 @@ public sealed class UseTopLevelStatementsAnalyzer : DiagnosticAnalyzer
 
         if (mainMethod.Body.DescendantNodes().OfType<LocalDeclarationStatementSyntax>().Any(d =>
                 d.Declaration.Variables.Any(v => v.Initializer?.Value is AnonymousObjectCreationExpressionSyntax)))
-        {
             // Not strictly required, but keep conservative around anonymous types.
             return;
-        }
 
         // Avoid typeof(Program) usage anywhere in the file.
         if (root.DescendantNodes().OfType<TypeOfExpressionSyntax>()
             .Any(t => t.Type is IdentifierNameSyntax id && id.Identifier.ValueText == "Program"))
-        {
             return;
-        }
 
         // Avoid references to Program identifier (very conservative): if any IdentifierName "Program" exists.
         // This will also catch typeof(Program) but we already checked; keep it simple.
         if (root.DescendantNodes().OfType<IdentifierNameSyntax>().Any(i => i.Identifier.ValueText == "Program"))
             return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTopLevelStatementsRule, programClass.Identifier.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTopLevelStatementsRule,
+            programClass.Identifier.GetLocation()));
     }
 }

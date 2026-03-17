@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp10;
 
@@ -11,7 +12,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp10;
 public sealed class UseFileScopedNamespaceAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.CSharp10Rules.UseFileScopedNamespaceRule);
+        ImmutableArray.Create(CSharp10Rules.UseFileScopedNamespaceRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -24,7 +25,8 @@ public sealed class UseFileScopedNamespaceAnalyzer : DiagnosticAnalyzer
     private static void AnalyzeTree(SyntaxTreeAnalysisContext context)
     {
         // SyntaxTreeAnalysisContext doesn't expose Compilation; use parse options for language version gating.
-        if (context.Tree.Options is not CSharpParseOptions parseOptions || parseOptions.LanguageVersion < LanguageVersion.CSharp10)
+        if (context.Tree.Options is not CSharpParseOptions parseOptions ||
+            parseOptions.LanguageVersion < LanguageVersion.CSharp10)
             return;
 
         var root = context.Tree.GetRoot(context.CancellationToken);
@@ -49,6 +51,6 @@ public sealed class UseFileScopedNamespaceAnalyzer : DiagnosticAnalyzer
         if (ns is FileScopedNamespaceDeclarationSyntax)
             return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.CSharp10Rules.UseFileScopedNamespaceRule, ns.Name.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(CSharp10Rules.UseFileScopedNamespaceRule, ns.Name.GetLocation()));
     }
 }

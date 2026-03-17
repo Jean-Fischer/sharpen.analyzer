@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
@@ -12,20 +11,26 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Sharpen.Analyzer.Common;
+using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.FixProvider.CSharp11;
 
-[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseUtf8StringLiteralCodeFixProvider)), Shared]
+[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseUtf8StringLiteralCodeFixProvider))]
+[Shared]
 public sealed class UseUtf8StringLiteralCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.CSharp11Rules.UseUtf8StringLiteralRule.Id);
+        ImmutableArray.Create(CSharp11Rules.UseUtf8StringLiteralRule.Id);
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var compilation = await context.Document.Project.GetCompilationAsync(context.CancellationToken).ConfigureAwait(false);
+        var compilation = await context.Document.Project.GetCompilationAsync(context.CancellationToken)
+            .ConfigureAwait(false);
         if (compilation == null || !CSharpLanguageVersion.IsCSharp11OrAbove(compilation))
             return;
 
@@ -33,7 +38,8 @@ public sealed class UseUtf8StringLiteralCodeFixProvider : CodeFixProvider
         if (root == null)
             return;
 
-        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+        var semanticModel =
+            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
         if (semanticModel == null)
             return;
 
@@ -63,14 +69,15 @@ public sealed class UseUtf8StringLiteralCodeFixProvider : CodeFixProvider
 
             context.RegisterCodeFix(
                 CodeAction.Create(
-                    title: "Replace with UTF-8 string literal",
-                    createChangedDocument: ct => ReplaceAsync(context.Document, expr, text, ct),
-                    equivalenceKey: nameof(UseUtf8StringLiteralCodeFixProvider)),
+                    "Replace with UTF-8 string literal",
+                    ct => ReplaceAsync(context.Document, expr, text, ct),
+                    nameof(UseUtf8StringLiteralCodeFixProvider)),
                 diagnostic);
         }
     }
 
-    private static async Task<Document> ReplaceAsync(Document document, ExpressionSyntax expr, string text, CancellationToken ct)
+    private static async Task<Document> ReplaceAsync(Document document, ExpressionSyntax expr, string text,
+        CancellationToken ct)
     {
         var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
 
@@ -103,7 +110,8 @@ public sealed class UseUtf8StringLiteralCodeFixProvider : CodeFixProvider
         return named.TypeArguments[0].SpecialType == SpecialType.System_Byte;
     }
 
-    private static bool TryGetAsciiText(SemanticModel semanticModel, ExpressionSyntax expr, CancellationToken ct, out string text)
+    private static bool TryGetAsciiText(SemanticModel semanticModel, ExpressionSyntax expr, CancellationToken ct,
+        out string text)
     {
         text = string.Empty;
 
@@ -115,7 +123,7 @@ public sealed class UseUtf8StringLiteralCodeFixProvider : CodeFixProvider
             var bytes = arrayCreation.Initializer.Expressions
                 .Select(e => semanticModel.GetConstantValue(e, ct))
                 .Select(v => v.HasValue ? v.Value : null)
-                .Select(v => v is byte b ? (byte?)b : v is int i && i is >= 0 and <= 255 ? (byte?)i : null)
+                .Select(v => v is byte b ? b : v is int i && i is >= 0 and <= 255 ? (byte?)i : null)
                 .ToArray();
 
             if (bytes.Any(b => b == null))

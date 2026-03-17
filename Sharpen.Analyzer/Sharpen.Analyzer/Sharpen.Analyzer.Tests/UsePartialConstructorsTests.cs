@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
     Sharpen.Analyzer.Analyzers.CSharp14.UsePartialConstructorsAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;

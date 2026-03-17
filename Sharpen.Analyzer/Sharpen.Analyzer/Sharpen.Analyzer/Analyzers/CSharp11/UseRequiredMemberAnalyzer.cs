@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sharpen.Analyzer.Common;
+using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp11;
 
@@ -12,7 +13,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp11;
 public sealed class UseRequiredMemberAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.CSharp11Rules.UseRequiredMemberRule);
+        ImmutableArray.Create(CSharp11Rules.UseRequiredMemberRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -38,7 +39,8 @@ public sealed class UseRequiredMemberAnalyzer : DiagnosticAnalyzer
 
         // Must have a setter or init.
         var accessors = property.AccessorList.Accessors;
-        if (!accessors.Any(a => a.IsKind(SyntaxKind.SetAccessorDeclaration) || a.IsKind(SyntaxKind.InitAccessorDeclaration)))
+        if (!accessors.Any(a =>
+                a.IsKind(SyntaxKind.SetAccessorDeclaration) || a.IsKind(SyntaxKind.InitAccessorDeclaration)))
             return;
 
         // Must not have an initializer.
@@ -85,6 +87,7 @@ public sealed class UseRequiredMemberAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.CSharp11Rules.UseRequiredMemberRule, property.Identifier.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(CSharp11Rules.UseRequiredMemberRule,
+            property.Identifier.GetLocation()));
     }
 }

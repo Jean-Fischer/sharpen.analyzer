@@ -16,21 +16,19 @@ internal static class FixProviderSafetyTypeResolution
                     continue;
             }
 
-            var t = asm.GetType(fullName, throwOnError: false, ignoreCase: false);
+            var t = asm.GetType(fullName, false, false);
             if (t is not null)
                 return t;
         }
 
         if (preferredAssemblyName is not null)
-        {
             // Fallback: scan all already-loaded assemblies.
             foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
             {
-                var t = asm.GetType(fullName, throwOnError: false, ignoreCase: false);
+                var t = asm.GetType(fullName, false, false);
                 if (t is not null)
                     return t;
             }
-        }
 
         // If the fix provider assembly isn't loaded yet, try to force-load it in a safe way.
         //
@@ -45,6 +43,6 @@ internal static class FixProviderSafetyTypeResolution
             ? fullName
             : $"{fullName}, {preferredAssemblyName}";
 
-        return Type.GetType(assemblyQualifiedName, throwOnError: false, ignoreCase: false);
+        return Type.GetType(assemblyQualifiedName, false, false);
     }
 }

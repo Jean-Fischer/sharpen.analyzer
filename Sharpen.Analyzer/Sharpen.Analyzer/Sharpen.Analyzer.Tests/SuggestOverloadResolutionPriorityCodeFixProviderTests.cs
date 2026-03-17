@@ -1,5 +1,10 @@
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Testing;
+using Microsoft.CodeAnalysis.Testing;
+using Sharpen.Analyzer.Analyzers.CSharp13;
+using Sharpen.Analyzer.FixProviders.FixProvider.CSharp13;
 using Sharpen.Analyzer.Rules;
-using Sharpen.Analyzer.Tests.Infrastructure;
 using Xunit;
 using Verifier = Sharpen.Analyzer.Tests.Infrastructure.CSharp13CodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp13.SuggestOverloadResolutionPriorityAnalyzer,
@@ -8,7 +13,7 @@ using Verifier = Sharpen.Analyzer.Tests.Infrastructure.CSharp13CodeFixVerifier<
 public sealed class SuggestOverloadResolutionPriorityCodeFixProviderTests
 {
     [Fact]
-    public async System.Threading.Tasks.Task Adds_attribute_to_method()
+    public async Task Adds_attribute_to_method()
     {
         var source = @"
 public class C
@@ -30,13 +35,13 @@ public class C
         var expected = Verifier.Diagnostic(CSharp13Rules.SuggestOverloadResolutionPriorityRule)
             .WithLocation(4, 17);
 
-        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<
-            Sharpen.Analyzer.Analyzers.CSharp13.SuggestOverloadResolutionPriorityAnalyzer,
-            Sharpen.Analyzer.FixProviders.FixProvider.CSharp13.SuggestOverloadResolutionPriorityCodeFixProvider,
-            Microsoft.CodeAnalysis.Testing.DefaultVerifier>
+        var test = new CSharpCodeFixTest<
+            SuggestOverloadResolutionPriorityAnalyzer,
+            SuggestOverloadResolutionPriorityCodeFixProvider,
+            DefaultVerifier>
         {
-            ReferenceAssemblies = Microsoft.CodeAnalysis.Testing.ReferenceAssemblies.Net.Net90,
-            NumberOfFixAllIterations = 1,
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+            NumberOfFixAllIterations = 1
         };
 
         test.TestState.Sources.Add(source);
@@ -46,8 +51,8 @@ public class C
         test.SolutionTransforms.Add((solution, projectId) =>
         {
             var project = solution.GetProject(projectId)!;
-            var parseOptions = (Microsoft.CodeAnalysis.CSharp.CSharpParseOptions)project.ParseOptions!;
-            project = project.WithParseOptions(parseOptions.WithLanguageVersion(Microsoft.CodeAnalysis.CSharp.LanguageVersion.Preview));
+            var parseOptions = (CSharpParseOptions)project.ParseOptions!;
+            project = project.WithParseOptions(parseOptions.WithLanguageVersion(LanguageVersion.Preview));
             return project.Solution;
         });
 

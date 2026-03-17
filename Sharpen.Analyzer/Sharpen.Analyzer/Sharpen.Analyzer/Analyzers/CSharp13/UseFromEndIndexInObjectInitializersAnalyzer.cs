@@ -55,7 +55,8 @@ public sealed class UseFromEndIndexInObjectInitializersAnalyzer : DiagnosticAnal
             if (indexExpression is not BinaryExpressionSyntax { Left: MemberAccessExpressionSyntax memberAccess })
                 continue;
 
-            var lengthTargetType = context.SemanticModel.GetTypeInfo(memberAccess.Expression, context.CancellationToken).Type;
+            var lengthTargetType = context.SemanticModel.GetTypeInfo(memberAccess.Expression, context.CancellationToken)
+                .Type;
             if (lengthTargetType is null || lengthTargetType.TypeKind != TypeKind.Array)
                 continue;
 

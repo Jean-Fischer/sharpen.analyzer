@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -48,7 +49,8 @@ public sealed class SuggestOverloadResolutionPriorityAnalyzer : DiagnosticAnalyz
         if (methods.Count < 2)
             return;
 
-        var groups = methods.GroupBy(m => (Name: m.Identifier.ValueText, Arity: m.TypeParameterList?.Parameters.Count ?? 0));
+        var groups = methods.GroupBy(m =>
+            (Name: m.Identifier.ValueText, Arity: m.TypeParameterList?.Parameters.Count ?? 0));
 
         foreach (var group in groups)
         {
@@ -69,7 +71,7 @@ public sealed class SuggestOverloadResolutionPriorityAnalyzer : DiagnosticAnalyz
     private static bool HasCatchAllParamsObjectArrayOverload(
         List<MethodDeclarationSyntax> overloads,
         SemanticModel semanticModel,
-        System.Threading.CancellationToken cancellationToken)
+        CancellationToken cancellationToken)
     {
         foreach (var method in overloads)
         {

@@ -1,15 +1,17 @@
+using System;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 
 namespace Sharpen.Analyzer.Safety;
 
 /// <summary>
-/// Helper for fix providers to consistently distinguish:
-/// - match failed (no candidate)
-/// - match succeeded but unsafe (candidate blocked)
-/// - match succeeded and safe
+///     Helper for fix providers to consistently distinguish:
+///     - match failed (no candidate)
+///     - match succeeded but unsafe (candidate blocked)
+///     - match succeeded and safe
 /// </summary>
-[System.Obsolete("Use FixProviderSafetyRunner (global + local pipeline). This runner will be removed once all call sites are migrated.")]
+[Obsolete(
+    "Use FixProviderSafetyRunner (global + local pipeline). This runner will be removed once all call sites are migrated.")]
 public static class FirstPassSafetyRunner
 {
     public static FirstPassSafetyEvaluation EvaluateOrMatchFailed(

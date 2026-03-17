@@ -8,19 +8,22 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Editing;
 using Sharpen.Analyzer.Rules;
 using Sharpen.Analyzer.Safety.FixProviderSafety;
 
 namespace Sharpen.Analyzer;
 
-[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(PartialPropertiesIndexersRefactoringCodeFixProvider)), Shared]
+[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(PartialPropertiesIndexersRefactoringCodeFixProvider))]
+[Shared]
 public sealed class PartialPropertiesIndexersRefactoringCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(CSharp13Rules.PartialPropertiesIndexersRefactoringRule.Id);
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
@@ -41,21 +44,21 @@ public sealed class PartialPropertiesIndexersRefactoringCodeFixProvider : CodeFi
 
         // Safety gate.
         var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            checker: new PartialPropertiesIndexersRefactoringSafetyChecker(),
-            syntaxTree: root.SyntaxTree,
-            semanticModel: semanticModel,
-            diagnostic: diagnostic,
-            matchSucceeded: true,
-            cancellationToken: cancellationToken);
+            new PartialPropertiesIndexersRefactoringSafetyChecker(),
+            root.SyntaxTree,
+            semanticModel,
+            diagnostic,
+            true,
+            cancellationToken);
 
         if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
             return;
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: "Refactor to partial property/indexer",
-                createChangedDocument: ct => RefactorAsync(document, root, diagnostic, ct),
-                equivalenceKey: nameof(PartialPropertiesIndexersRefactoringCodeFixProvider)),
+                "Refactor to partial property/indexer",
+                ct => RefactorAsync(document, root, diagnostic, ct),
+                nameof(PartialPropertiesIndexersRefactoringCodeFixProvider)),
             diagnostic);
     }
 
@@ -87,15 +90,11 @@ public sealed class PartialPropertiesIndexersRefactoringCodeFixProvider : CodeFi
         var modifiers = member.Modifiers;
         var insertIndex = 0;
         for (var i = 0; i < modifiers.Count; i++)
-        {
             if (modifiers[i].IsKind(SyntaxKind.PublicKeyword)
                 || modifiers[i].IsKind(SyntaxKind.PrivateKeyword)
                 || modifiers[i].IsKind(SyntaxKind.InternalKeyword)
                 || modifiers[i].IsKind(SyntaxKind.ProtectedKeyword))
-            {
                 insertIndex = i + 1;
-            }
-        }
 
         modifiers = modifiers.Insert(insertIndex, SyntaxFactory.Token(SyntaxKind.PartialKeyword));
         return member.WithModifiers(modifiers);
@@ -118,12 +117,10 @@ public sealed class PartialPropertiesIndexersRefactoringCodeFixProvider : CodeFi
 
         // Ensure the implementing part is a full declaration (not a semicolon-only property).
         if (implementing is PropertyDeclarationSyntax prop)
-        {
             implementing = prop
                 .WithInitializer(null)
                 .WithSemicolonToken(default)
                 .WithExpressionBody(null);
-        }
 
         return implementing;
     }

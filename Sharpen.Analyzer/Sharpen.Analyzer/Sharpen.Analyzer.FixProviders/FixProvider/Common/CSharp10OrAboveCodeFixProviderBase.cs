@@ -18,16 +18,18 @@ public abstract class CSharp10OrAboveCodeFixProviderBase : CSharp10OrAboveSharpe
 
     protected abstract string EquivalenceKey { get; }
 
-    protected abstract Task<Document> CreateChangedDocumentAsync(Document document, SyntaxNode root, Diagnostic diagnostic, CancellationToken ct);
+    protected abstract Task<Document> CreateChangedDocumentAsync(Document document, SyntaxNode root,
+        Diagnostic diagnostic, CancellationToken ct);
 
-    protected sealed override Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
+    protected sealed override Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root,
+        Diagnostic diagnostic)
     {
         RegisterCodeFix(
             context,
             diagnostic,
-            title: Title,
-            equivalenceKey: EquivalenceKey,
-            createChangedDocument: ct => CreateChangedDocumentAsync(context.Document, root, diagnostic, ct));
+            Title,
+            EquivalenceKey,
+            ct => CreateChangedDocumentAsync(context.Document, root, diagnostic, ct));
 
         return Task.CompletedTask;
     }

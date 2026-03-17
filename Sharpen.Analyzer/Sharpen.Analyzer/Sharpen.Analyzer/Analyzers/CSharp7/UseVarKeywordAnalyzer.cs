@@ -40,9 +40,10 @@ public class UseVarKeywordAnalyzer : DiagnosticAnalyzer
         var objectCreation = (ObjectCreationExpressionSyntax)variable.Initializer.Value;
         var rightSideType = semanticModel.GetTypeInfo(objectCreation).Type;
 
-        if (leftSideType == null || rightSideType == null || leftSideType is IErrorTypeSymbol || rightSideType is IErrorTypeSymbol)
+        if (leftSideType == null || rightSideType == null || leftSideType is IErrorTypeSymbol ||
+            rightSideType is IErrorTypeSymbol)
             return;
-        
+
 
         if (!leftSideType.Equals(rightSideType))
             return;

@@ -1,4 +1,3 @@
-using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -9,7 +8,8 @@ using Sharpen.Analyzer.FixProvider.Common;
 namespace Sharpen.Analyzer.FixProvider.CSharp7;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseExpressionBodyForSetAccessorsInIndexersCodeFixProvider))]
-public sealed class UseExpressionBodyForSetAccessorsInIndexersCodeFixProvider : ExpressionBodiedAccessorCodeFixProviderBase
+public sealed class
+    UseExpressionBodyForSetAccessorsInIndexersCodeFixProvider : ExpressionBodiedAccessorCodeFixProviderBase
 {
     protected override string DiagnosticId => Rules.Rules.UseExpressionBodyForSetAccessorsInIndexersRule.Id;
 
@@ -17,6 +17,10 @@ public sealed class UseExpressionBodyForSetAccessorsInIndexersCodeFixProvider : 
 
     protected override string EquivalenceKey => "UseExpressionBodyForSetAccessorsInIndexers";
 
-    protected override Task<Document> CreateChangedDocumentAsync(Document document, AccessorDeclarationSyntax accessor, CancellationToken ct) =>
-        ExpressionBodiedAccessorCodeFixHelper.UseExpressionBodyForSetAccessorAsync<IndexerDeclarationSyntax>(document, accessor, ct);
+    protected override Task<Document> CreateChangedDocumentAsync(Document document, AccessorDeclarationSyntax accessor,
+        CancellationToken ct)
+    {
+        return ExpressionBodiedAccessorCodeFixHelper.UseExpressionBodyForSetAccessorAsync<IndexerDeclarationSyntax>(
+            document, accessor, ct);
+    }
 }

@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 namespace Sharpen.Analyzer.Safety.FixProviderSafety;
 
 /// <summary>
-/// Placeholder safety checker for a future null-check modernization fix provider.
+///     Placeholder safety checker for a future null-check modernization fix provider.
 /// </summary>
 public sealed class NullCheckSafetyChecker : IFixProviderSafetyChecker
 {
@@ -13,8 +13,10 @@ public sealed class NullCheckSafetyChecker : IFixProviderSafetyChecker
         SemanticModel semanticModel,
         Diagnostic diagnostic,
         CancellationToken cancellationToken = default)
-        => FixProviderSafetyResult.Unsafe(
+    {
+        return FixProviderSafetyResult.Unsafe(
             FixProviderSafetyStage.Local,
-            reasonId: "null-check-not-implemented",
-            message: "Null-check safety checker placeholder: corresponding fix provider not implemented yet.");
+            "null-check-not-implemented",
+            "Null-check safety checker placeholder: corresponding fix provider not implemented yet.");
+    }
 }

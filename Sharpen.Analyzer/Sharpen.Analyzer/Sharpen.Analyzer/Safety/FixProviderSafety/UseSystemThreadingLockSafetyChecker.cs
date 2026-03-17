@@ -15,10 +15,10 @@ public sealed class UseSystemThreadingLockSafetyChecker : IFixProviderSafetyChec
         CancellationToken cancellationToken = default)
     {
         if (diagnostic is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "diagnostic-null");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "diagnostic-null");
 
         if (syntaxTree?.Options.Language != LanguageNames.CSharp)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "not-csharp");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "not-csharp");
 
         var root = syntaxTree.GetRoot(cancellationToken);
         var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
@@ -26,24 +26,24 @@ public sealed class UseSystemThreadingLockSafetyChecker : IFixProviderSafetyChec
         // Diagnostic is reported on the field variable identifier.
         var variable = node.FirstAncestorOrSelf<VariableDeclaratorSyntax>();
         if (variable is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "field-variable-not-found");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "field-variable-not-found");
 
         var fieldSymbol = semanticModel.GetDeclaredSymbol(variable, cancellationToken) as IFieldSymbol;
         if (fieldSymbol is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "field-symbol-not-found");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "field-symbol-not-found");
 
         // Ensure System.Threading.Lock is available.
         var lockType = semanticModel.Compilation.GetTypeByMetadataName("System.Threading.Lock");
         if (lockType is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "lock-type-missing");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "lock-type-missing");
 
         // Ensure no Monitor.* usage in the file (conservative).
         if (ContainsMonitorUsage(root, semanticModel, cancellationToken))
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "monitor-usage-present");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "monitor-usage-present");
 
         // Ensure the field is used only as lock target.
         if (!IsUsedOnlyInLockStatements(root, semanticModel, fieldSymbol, cancellationToken))
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "field-not-dedicated-lock");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "field-not-dedicated-lock");
 
         return FixProviderSafetyResult.Safe();
     }

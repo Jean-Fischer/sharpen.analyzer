@@ -39,16 +39,17 @@ internal static class TaskWaitToWhenCodeFixHelper
         // For Task.WaitAll/WaitAny we support any args; for instance Wait() we only support parameterless.
         if (whenMethodName is null && invocation.ArgumentList.Arguments.Count != 0) return;
 
-        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+        var semanticModel =
+            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
         if (semanticModel is null) return;
 
         if (!AsyncModernizationHelpers.IsAwaitLegalAt(invocation)) return;
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: title,
-                createChangedDocument: c => ApplyFixAsync(context.Document, invocation, semanticModel, whenMethodName, c),
-                equivalenceKey: equivalenceKey),
+                title,
+                c => ApplyFixAsync(context.Document, invocation, semanticModel, whenMethodName, c),
+                equivalenceKey),
             diagnostic);
     }
 

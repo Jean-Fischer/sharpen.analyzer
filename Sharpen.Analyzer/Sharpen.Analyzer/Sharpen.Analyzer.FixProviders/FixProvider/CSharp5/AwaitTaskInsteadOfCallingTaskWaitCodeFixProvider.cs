@@ -14,13 +14,18 @@ public sealed class AwaitTaskInsteadOfCallingTaskWaitCodeFixProvider : CodeFixPr
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(Rules.Rules.AwaitTaskInsteadOfCallingTaskWaitRule.Id);
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
-    public override Task RegisterCodeFixesAsync(CodeFixContext context) =>
-        TaskWaitToWhenCodeFixHelper.RegisterAsync(
+    public override Task RegisterCodeFixesAsync(CodeFixContext context)
+    {
+        return TaskWaitToWhenCodeFixHelper.RegisterAsync(
             context,
-            title: "Use await",
-            equivalenceKey: "UseAwait",
-            whenMethodName: null,
-            fixableDiagnosticIds: () => FixableDiagnosticIds);
+            "Use await",
+            "UseAwait",
+            null,
+            () => FixableDiagnosticIds);
+    }
 }

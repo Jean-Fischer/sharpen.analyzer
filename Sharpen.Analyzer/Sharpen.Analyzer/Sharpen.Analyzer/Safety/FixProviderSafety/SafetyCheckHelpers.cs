@@ -14,11 +14,19 @@ internal static class SafetyCheckHelpers
         return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId, message);
     }
 
-    public static FixProviderSafetyResult Safe() => FixProviderSafetyResult.Safe();
+    public static FixProviderSafetyResult Safe()
+    {
+        return FixProviderSafetyResult.Safe();
+    }
 
     public static FixProviderSafetyResult UnsafeIfNull(object? value, string reasonId, string? message = null)
-        => value is null ? Unsafe(reasonId, message) : Safe();
+    {
+        return value is null ? Unsafe(reasonId, message) : Safe();
+    }
 
-    public static FixProviderSafetyResult UnsafeIfNotCSharp(SyntaxTree? syntaxTree, string reasonId, string? message = null)
-        => syntaxTree?.Options.Language != LanguageNames.CSharp ? Unsafe(reasonId, message) : Safe();
+    public static FixProviderSafetyResult UnsafeIfNotCSharp(SyntaxTree? syntaxTree, string reasonId,
+        string? message = null)
+    {
+        return syntaxTree?.Options.Language != LanguageNames.CSharp ? Unsafe(reasonId, message) : Safe();
+    }
 }

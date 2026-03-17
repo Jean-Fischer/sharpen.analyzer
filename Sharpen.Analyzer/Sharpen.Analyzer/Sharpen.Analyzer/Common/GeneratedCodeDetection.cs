@@ -21,9 +21,7 @@ public static class GeneratedCodeDetection
             fileName.EndsWith(".designer.cs", StringComparison.OrdinalIgnoreCase) ||
             fileName.EndsWith(".generated.cs", StringComparison.OrdinalIgnoreCase) ||
             fileName.Equals("AssemblyInfo.cs", StringComparison.OrdinalIgnoreCase))
-        {
             return true;
-        }
 
         return false;
     }

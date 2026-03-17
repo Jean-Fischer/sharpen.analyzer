@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sharpen.Analyzer.Common;
-using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp7;
 
@@ -27,29 +26,18 @@ public sealed class UseOutVariablesInMethodInvocationsAnalyzer : DiagnosticAnaly
         var invocation = (InvocationExpressionSyntax)context.Node;
 
         var argumentList = invocation.ArgumentList;
-        if (argumentList == null)
-        {
-            return;
-        }
+        if (argumentList == null) return;
 
         foreach (var argument in argumentList.Arguments)
         {
-            if (!argument.RefOrOutKeyword.IsKind(SyntaxKind.OutKeyword))
-            {
-                continue;
-            }
+            if (!argument.RefOrOutKeyword.IsKind(SyntaxKind.OutKeyword)) continue;
 
-            if (!argument.Expression.IsKind(SyntaxKind.IdentifierName))
-            {
-                continue;
-            }
+            if (!argument.Expression.IsKind(SyntaxKind.IdentifierName)) continue;
 
-            if (!OutVariableCandidateHelper.IsCandidate(context.SemanticModel, argument, outArgumentCanBeDiscarded: false))
-            {
-                continue;
-            }
+            if (!OutVariableCandidateHelper.IsCandidate(context.SemanticModel, argument, false)) continue;
 
-            context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseOutVariablesInMethodInvocationsRule, argument.RefOrOutKeyword.GetLocation()));
+            context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseOutVariablesInMethodInvocationsRule,
+                argument.RefOrOutKeyword.GetLocation()));
         }
     }
 }

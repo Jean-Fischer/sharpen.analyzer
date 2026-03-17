@@ -15,7 +15,13 @@ public readonly struct SafetyResult
         Message = message;
     }
 
-    public static SafetyResult Safe() => new(true);
+    public static SafetyResult Safe()
+    {
+        return new SafetyResult(true);
+    }
 
-    public static SafetyResult Unsafe(string reasonId, string? message = null) => new(false, reasonId, message);
+    public static SafetyResult Unsafe(string reasonId, string? message = null)
+    {
+        return new SafetyResult(false, reasonId, message);
+    }
 }

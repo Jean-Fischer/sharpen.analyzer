@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -21,7 +20,8 @@ public sealed class UseCSharp9PatternMatchingAnalyzer : DiagnosticAnalyzer
 
         context.RegisterSyntaxNodeAction(AnalyzeBinaryExpression, SyntaxKind.NotEqualsExpression);
         context.RegisterSyntaxNodeAction(AnalyzePrefixUnaryExpression, SyntaxKind.LogicalNotExpression);
-        context.RegisterSyntaxNodeAction(AnalyzeLogicalBinaryExpression, SyntaxKind.LogicalAndExpression, SyntaxKind.LogicalOrExpression);
+        context.RegisterSyntaxNodeAction(AnalyzeLogicalBinaryExpression, SyntaxKind.LogicalAndExpression,
+            SyntaxKind.LogicalOrExpression);
     }
 
     private static bool IsCSharp9OrAbove(SyntaxNodeAnalysisContext context)
@@ -53,11 +53,13 @@ public sealed class UseCSharp9PatternMatchingAnalyzer : DiagnosticAnalyzer
         if (lambda == null)
             return false;
 
-        var convertedType = context.SemanticModel.GetTypeInfo(lambda, context.CancellationToken).ConvertedType as INamedTypeSymbol;
+        var convertedType =
+            context.SemanticModel.GetTypeInfo(lambda, context.CancellationToken).ConvertedType as INamedTypeSymbol;
         if (convertedType == null)
             return false;
 
-        return convertedType.Name == "Expression" && convertedType.ContainingNamespace?.ToDisplayString() == "System.Linq.Expressions";
+        return convertedType.Name == "Expression" &&
+               convertedType.ContainingNamespace?.ToDisplayString() == "System.Linq.Expressions";
     }
 
     private static void AnalyzeBinaryExpression(SyntaxNodeAnalysisContext context)
@@ -75,9 +77,8 @@ public sealed class UseCSharp9PatternMatchingAnalyzer : DiagnosticAnalyzer
         if (binary.IsKind(SyntaxKind.NotEqualsExpression)
             && binary.Right.IsKind(SyntaxKind.NullLiteralExpression)
             && IsSideEffectFree(binary.Left))
-        {
-            context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseCSharp9PatternMatchingRule, binary.GetLocation()));
-        }
+            context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseCSharp9PatternMatchingRule,
+                binary.GetLocation()));
     }
 
     private static void AnalyzePrefixUnaryExpression(SyntaxNodeAnalysisContext context)
@@ -98,9 +99,8 @@ public sealed class UseCSharp9PatternMatchingAnalyzer : DiagnosticAnalyzer
             if (inner is BinaryExpressionSyntax isExpr
                 && isExpr.IsKind(SyntaxKind.IsExpression)
                 && IsSideEffectFree(isExpr.Left))
-            {
-                context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseCSharp9PatternMatchingRule, prefix.GetLocation()));
-            }
+                context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseCSharp9PatternMatchingRule,
+                    prefix.GetLocation()));
         }
     }
 
@@ -126,9 +126,8 @@ public sealed class UseCSharp9PatternMatchingAnalyzer : DiagnosticAnalyzer
                 && SyntaxFactory.AreEquivalent(leftExpr.WalkDownParentheses(), rightExpr.WalkDownParentheses())
                 && leftOp is SyntaxKind.GreaterThanOrEqualExpression
                 && rightOp is SyntaxKind.LessThanOrEqualExpression)
-            {
-                context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseCSharp9PatternMatchingRule, binary.GetLocation()));
-            }
+                context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseCSharp9PatternMatchingRule,
+                    binary.GetLocation()));
         }
         else if (binary.IsKind(SyntaxKind.LogicalOrExpression))
         {
@@ -141,13 +140,13 @@ public sealed class UseCSharp9PatternMatchingAnalyzer : DiagnosticAnalyzer
                 // Relational patterns require a constant on the RHS. If bounds are not constants, we can't offer a safe fix.
                 && leftBound.WalkDownParentheses() is LiteralExpressionSyntax
                 && rightBound.WalkDownParentheses() is LiteralExpressionSyntax)
-            {
-                context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseCSharp9PatternMatchingRule, binary.GetLocation()));
-            }
+                context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseCSharp9PatternMatchingRule,
+                    binary.GetLocation()));
         }
     }
 
-    private static bool TryGetComparison(ExpressionSyntax expression, out ExpressionSyntax left, out SyntaxKind opKind, out ExpressionSyntax right)
+    private static bool TryGetComparison(ExpressionSyntax expression, out ExpressionSyntax left, out SyntaxKind opKind,
+        out ExpressionSyntax right)
     {
         left = null!;
         right = null!;

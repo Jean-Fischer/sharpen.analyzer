@@ -1,4 +1,3 @@
-using System;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -18,12 +17,12 @@ public sealed class FixProviderSafetyRunnerTests
         var diagnostic = CreateDiagnostic("TEST0001");
 
         var evaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            checker: new AlwaysSafeChecker(),
-            syntaxTree: document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!,
-            semanticModel: semanticModel,
-            diagnostic: diagnostic,
-            matchSucceeded: false,
-            cancellationToken: CancellationToken.None);
+            new AlwaysSafeChecker(),
+            document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!,
+            semanticModel,
+            diagnostic,
+            false,
+            CancellationToken.None);
 
         Assert.Equal(FixProviderSafetyOutcome.MatchFailed, evaluation.Outcome);
         Assert.Null(evaluation.SafetyResult);
@@ -35,7 +34,7 @@ public sealed class FixProviderSafetyRunnerTests
         var (document, semanticModel) = CreateCSharpDocumentAndSemanticModel("class C { void M() { } }");
         var diagnostic = CreateDiagnostic("TEST0002");
 
-        var localChecker = new CountingChecker(isSafe: true);
+        var localChecker = new CountingChecker(true);
 
         var originalGate = FirstPassSafety.Gate;
         try
@@ -43,16 +42,16 @@ public sealed class FixProviderSafetyRunnerTests
             // Force global stage to be unsafe.
             FirstPassSafety.Gate = new FirstPassSafetyGate(new IFirstPassSafetyCheck[]
             {
-                new AlwaysUnsafeFirstPassCheck(),
+                new AlwaysUnsafeFirstPassCheck()
             });
 
             var evaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-                checker: localChecker,
-                syntaxTree: document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!,
-                semanticModel: semanticModel,
-                diagnostic: diagnostic,
-                matchSucceeded: true,
-                cancellationToken: CancellationToken.None);
+                localChecker,
+                document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!,
+                semanticModel,
+                diagnostic,
+                true,
+                CancellationToken.None);
 
             Assert.Equal(FixProviderSafetyOutcome.Unsafe, evaluation.Outcome);
             Assert.NotNull(evaluation.SafetyResult);
@@ -78,12 +77,12 @@ public sealed class FixProviderSafetyRunnerTests
             FirstPassSafety.Gate = FirstPassSafetyGate.Empty;
 
             var evaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-                checker: new AlwaysUnsafeChecker(),
-                syntaxTree: document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!,
-                semanticModel: semanticModel,
-                diagnostic: diagnostic,
-                matchSucceeded: true,
-                cancellationToken: CancellationToken.None);
+                new AlwaysUnsafeChecker(),
+                document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!,
+                semanticModel,
+                diagnostic,
+                true,
+                CancellationToken.None);
 
             Assert.Equal(FixProviderSafetyOutcome.Unsafe, evaluation.Outcome);
             Assert.NotNull(evaluation.SafetyResult);
@@ -108,12 +107,12 @@ public sealed class FixProviderSafetyRunnerTests
             FirstPassSafety.Gate = FirstPassSafetyGate.Empty;
 
             var evaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-                checker: new AlwaysSafeChecker(),
-                syntaxTree: document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!,
-                semanticModel: semanticModel,
-                diagnostic: diagnostic,
-                matchSucceeded: true,
-                cancellationToken: CancellationToken.None);
+                new AlwaysSafeChecker(),
+                document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!,
+                semanticModel,
+                diagnostic,
+                true,
+                CancellationToken.None);
 
             Assert.Equal(FixProviderSafetyOutcome.Safe, evaluation.Outcome);
             Assert.Null(evaluation.SafetyResult);
@@ -124,10 +123,12 @@ public sealed class FixProviderSafetyRunnerTests
         }
     }
 
-    private static Diagnostic CreateDiagnostic(string id) =>
-        Diagnostic.Create(
-            descriptor: new DiagnosticDescriptor(id, "t", "m", "c", DiagnosticSeverity.Info, isEnabledByDefault: true),
-            location: Location.None);
+    private static Diagnostic CreateDiagnostic(string id)
+    {
+        return Diagnostic.Create(
+            new DiagnosticDescriptor(id, "t", "m", "c", DiagnosticSeverity.Info, true),
+            Location.None);
+    }
 
     private static (Document document, SemanticModel semanticModel) CreateCSharpDocumentAndSemanticModel(string source)
     {
@@ -144,36 +145,49 @@ public sealed class FixProviderSafetyRunnerTests
 
     private sealed class AlwaysSafeChecker : IFixProviderSafetyChecker
     {
-        public FixProviderSafetyResult IsSafe(SyntaxTree syntaxTree, SemanticModel semanticModel, Diagnostic diagnostic, CancellationToken cancellationToken) =>
-            FixProviderSafetyResult.Safe();
+        public FixProviderSafetyResult IsSafe(SyntaxTree syntaxTree, SemanticModel semanticModel, Diagnostic diagnostic,
+            CancellationToken cancellationToken)
+        {
+            return FixProviderSafetyResult.Safe();
+        }
     }
 
     private sealed class AlwaysUnsafeChecker : IFixProviderSafetyChecker
     {
-        public FixProviderSafetyResult IsSafe(SyntaxTree syntaxTree, SemanticModel semanticModel, Diagnostic diagnostic, CancellationToken cancellationToken) =>
-            FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "local-unsafe");
+        public FixProviderSafetyResult IsSafe(SyntaxTree syntaxTree, SemanticModel semanticModel, Diagnostic diagnostic,
+            CancellationToken cancellationToken)
+        {
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "local-unsafe");
+        }
     }
 
     private sealed class CountingChecker : IFixProviderSafetyChecker
     {
         private readonly bool _isSafe;
 
+        public CountingChecker(bool isSafe)
+        {
+            _isSafe = isSafe;
+        }
+
         public int CallCount { get; private set; }
 
-        public CountingChecker(bool isSafe) => _isSafe = isSafe;
-
-        public FixProviderSafetyResult IsSafe(SyntaxTree syntaxTree, SemanticModel semanticModel, Diagnostic diagnostic, CancellationToken cancellationToken)
+        public FixProviderSafetyResult IsSafe(SyntaxTree syntaxTree, SemanticModel semanticModel, Diagnostic diagnostic,
+            CancellationToken cancellationToken)
         {
             CallCount++;
             return _isSafe
                 ? FixProviderSafetyResult.Safe()
-                : FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "local-unsafe");
+                : FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "local-unsafe");
         }
     }
 
     private sealed class AlwaysUnsafeFirstPassCheck : IFirstPassSafetyCheck
     {
-        public SafetyResult IsSafe(SyntaxTree? syntaxTree, SemanticModel semanticModel, Diagnostic? diagnostic, CancellationToken cancellationToken = default) =>
-            SafetyResult.Unsafe(reasonId: "global-unsafe", message: "forced");
+        public SafetyResult IsSafe(SyntaxTree? syntaxTree, SemanticModel semanticModel, Diagnostic? diagnostic,
+            CancellationToken cancellationToken = default)
+        {
+            return SafetyResult.Unsafe("global-unsafe", "forced");
+        }
     }
 }

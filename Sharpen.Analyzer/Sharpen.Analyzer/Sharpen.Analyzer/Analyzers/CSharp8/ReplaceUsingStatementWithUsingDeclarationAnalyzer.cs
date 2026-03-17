@@ -79,7 +79,8 @@ public sealed class ReplaceUsingStatementWithUsingDeclarationAnalyzer : Diagnost
         }
     }
 
-    private static bool UsingValueDoesNotLeakToFollowingStatements(SyntaxList<StatementSyntax> parentStatements, int index)
+    private static bool UsingValueDoesNotLeakToFollowingStatements(SyntaxList<StatementSyntax> parentStatements,
+        int index)
     {
         // Has to be one of the following forms:
         // 1. Using statement is the last statement in the parent.
@@ -128,13 +129,14 @@ public sealed class ReplaceUsingStatementWithUsingDeclarationAnalyzer : Diagnost
             : new SyntaxList<StatementSyntax>().Add(innermostUsing.Statement);
 
         foreach (var statement in innerStatements)
-        {
-            if (IsGotoOrLabeledStatement(statement)) return false;
-        }
+            if (IsGotoOrLabeledStatement(statement))
+                return false;
 
         return true;
 
         static bool IsGotoOrLabeledStatement(StatementSyntax statement)
-            => statement.Kind() == SyntaxKind.GotoStatement || statement.Kind() == SyntaxKind.LabeledStatement;
+        {
+            return statement.Kind() == SyntaxKind.GotoStatement || statement.Kind() == SyntaxKind.LabeledStatement;
+        }
     }
 }

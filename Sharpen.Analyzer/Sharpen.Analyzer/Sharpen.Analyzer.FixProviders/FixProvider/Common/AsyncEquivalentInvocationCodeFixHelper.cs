@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -13,18 +14,20 @@ namespace Sharpen.Analyzer.FixProvider.Common;
 
 internal static class AsyncEquivalentInvocationCodeFixHelper
 {
-    internal static Task RegisterAsyncEquivalentFixAsync(CodeFixContext context) =>
-        RegisterAsyncEquivalentFixAsync(
+    internal static Task RegisterAsyncEquivalentFixAsync(CodeFixContext context)
+    {
+        return RegisterAsyncEquivalentFixAsync(
             context,
-            title: "Use async equivalent",
-            equivalenceKey: "UseAsyncEquivalent",
-            fixableDiagnosticIds: static () => ImmutableArray<string>.Empty);
+            "Use async equivalent",
+            "UseAsyncEquivalent",
+            static () => ImmutableArray<string>.Empty);
+    }
 
     internal static async Task RegisterAsyncEquivalentFixAsync(
         CodeFixContext context,
         string title,
         string equivalenceKey,
-        System.Func<ImmutableArray<string>> fixableDiagnosticIds)
+        Func<ImmutableArray<string>> fixableDiagnosticIds)
     {
         // NOTE: fixableDiagnosticIds is passed only to keep call sites minimal and consistent.
         // It is not used here, but it helps ensure providers remain thin wrappers.
@@ -41,9 +44,9 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: title,
-                createChangedDocument: c => ApplyAsyncEquivalentAsync(context.Document, invocation, c),
-                equivalenceKey: equivalenceKey),
+                title,
+                c => ApplyAsyncEquivalentAsync(context.Document, invocation, c),
+                equivalenceKey),
             diagnostic);
     }
 
@@ -73,18 +76,15 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
         return document.WithSyntaxRoot(newRoot);
     }
 
-    private static InvocationExpressionSyntax? RewriteInvocation(InvocationExpressionSyntax invocation, string asyncMethodName)
+    private static InvocationExpressionSyntax? RewriteInvocation(InvocationExpressionSyntax invocation,
+        string asyncMethodName)
     {
         if (invocation.Expression is MemberAccessExpressionSyntax memberAccess)
-        {
             return invocation.WithExpression(
                 memberAccess.WithName(SyntaxFactory.IdentifierName(asyncMethodName)));
-        }
 
         if (invocation.Expression is IdentifierNameSyntax)
-        {
             return invocation.WithExpression(SyntaxFactory.IdentifierName(asyncMethodName));
-        }
 
         // Unknown invocation shape (e.g., conditional access). Skip.
         return null;
@@ -101,50 +101,36 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
             .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
 
         // Avoid double-await.
-        if (originalInvocation.Parent is AwaitExpressionSyntax)
-        {
-            return rewrittenInvocation;
-        }
+        if (originalInvocation.Parent is AwaitExpressionSyntax) return rewrittenInvocation;
 
         // Only add await when inside an async method/local function.
-        if (!IsWithinAsyncCallable(originalInvocation, semanticModel))
-        {
-            return rewrittenInvocation;
-        }
+        if (!IsWithinAsyncCallable(originalInvocation, semanticModel)) return rewrittenInvocation;
 
         // Expression statement: `X();` -> `await XAsync();`
         if (originalInvocation.Parent is ExpressionStatementSyntax)
-        {
             return SyntaxFactory.AwaitExpression(rewrittenInvocation)
                 .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
                 .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
-        }
 
         // Assignment RHS: `x = X();` -> `x = await XAsync();`
         if (originalInvocation.Parent is AssignmentExpressionSyntax assignment &&
             assignment.Right == originalInvocation)
-        {
             return SyntaxFactory.AwaitExpression(rewrittenInvocation)
                 .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
                 .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
-        }
 
         // Variable initializer: `var x = X();` -> `var x = await XAsync();`
         if (originalInvocation.Parent is EqualsValueClauseSyntax equalsValue &&
             equalsValue.Value == originalInvocation)
-        {
             return SyntaxFactory.AwaitExpression(rewrittenInvocation)
                 .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
                 .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
-        }
 
         // Return statement: `return X();` -> `return await XAsync();`
         if (originalInvocation.Parent is ReturnStatementSyntax)
-        {
             return SyntaxFactory.AwaitExpression(rewrittenInvocation)
                 .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
                 .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
-        }
 
         // Guardrails: unknown context, don't add await.
         return rewrittenInvocation;
@@ -155,14 +141,14 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
         var localFunction = invocation.FirstAncestorOrSelf<LocalFunctionStatementSyntax>();
         if (localFunction != null)
         {
-            var symbol = semanticModel.GetDeclaredSymbol(localFunction) as IMethodSymbol;
+            var symbol = semanticModel.GetDeclaredSymbol(localFunction);
             return symbol?.IsAsync == true;
         }
 
         var method = invocation.FirstAncestorOrSelf<MethodDeclarationSyntax>();
         if (method != null)
         {
-            var symbol = semanticModel.GetDeclaredSymbol(method) as IMethodSymbol;
+            var symbol = semanticModel.GetDeclaredSymbol(method);
             return symbol?.IsAsync == true;
         }
 

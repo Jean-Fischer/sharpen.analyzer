@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 namespace Sharpen.Analyzer.Safety.FixProviderSafety;
 
 /// <summary>
-/// Placeholder safety checker for a future switch-expression modernization fix provider.
+///     Placeholder safety checker for a future switch-expression modernization fix provider.
 /// </summary>
 public sealed class SwitchExpressionSafetyChecker : IFixProviderSafetyChecker
 {
@@ -13,8 +13,10 @@ public sealed class SwitchExpressionSafetyChecker : IFixProviderSafetyChecker
         SemanticModel semanticModel,
         Diagnostic diagnostic,
         CancellationToken cancellationToken = default)
-        => FixProviderSafetyResult.Unsafe(
+    {
+        return FixProviderSafetyResult.Unsafe(
             FixProviderSafetyStage.Local,
-            reasonId: "switch-expression-not-implemented",
-            message: "Switch-expression safety checker placeholder: corresponding fix provider not implemented yet.");
+            "switch-expression-not-implemented",
+            "Switch-expression safety checker placeholder: corresponding fix provider not implemented yet.");
+    }
 }

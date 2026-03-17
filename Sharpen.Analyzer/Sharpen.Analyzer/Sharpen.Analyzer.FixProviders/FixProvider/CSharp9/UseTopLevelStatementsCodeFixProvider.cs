@@ -19,7 +19,10 @@ public sealed class UseTopLevelStatementsCodeFixProvider : CodeFixProvider
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(Rules.Rules.UseTopLevelStatementsRule.Id);
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
@@ -37,9 +40,9 @@ public sealed class UseTopLevelStatementsCodeFixProvider : CodeFixProvider
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: "Use top-level statements",
-                createChangedDocument: c => ConvertAsync(context.Document, programClass, c),
-                equivalenceKey: "UseTopLevelStatements"),
+                "Use top-level statements",
+                c => ConvertAsync(context.Document, programClass, c),
+                "UseTopLevelStatements"),
             diagnostic);
     }
 
@@ -49,14 +52,16 @@ public sealed class UseTopLevelStatementsCodeFixProvider : CodeFixProvider
         return compilation != null && CSharpLanguageVersion.IsCSharp9OrAbove(compilation);
     }
 
-    private static async Task<Document> ConvertAsync(Document document, ClassDeclarationSyntax programClass, CancellationToken ct)
+    private static async Task<Document> ConvertAsync(Document document, ClassDeclarationSyntax programClass,
+        CancellationToken ct)
     {
         var root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
         if (root is not CompilationUnitSyntax compilationUnit)
             return document;
 
         // Find Main method.
-        var mainMethod = programClass.Members.OfType<MethodDeclarationSyntax>().FirstOrDefault(m => m.Identifier.ValueText == "Main");
+        var mainMethod = programClass.Members.OfType<MethodDeclarationSyntax>()
+            .FirstOrDefault(m => m.Identifier.ValueText == "Main");
         if (mainMethod?.Body == null)
             return document;
 
@@ -77,7 +82,8 @@ public sealed class UseTopLevelStatementsCodeFixProvider : CodeFixProvider
         if (statements.Count > 0)
         {
             var firstGlobal = globalStatements[0];
-            var withTrivia = firstGlobal.WithLeadingTrivia(programClass.GetLeadingTrivia().AddRange(firstGlobal.GetLeadingTrivia()));
+            var withTrivia =
+                firstGlobal.WithLeadingTrivia(programClass.GetLeadingTrivia().AddRange(firstGlobal.GetLeadingTrivia()));
             newCompilationUnit = newCompilationUnit.ReplaceNode(firstGlobal, withTrivia);
         }
 

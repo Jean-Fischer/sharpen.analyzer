@@ -6,18 +6,17 @@ using System.Linq;
 namespace Sharpen.Analyzer.Safety.FixProviderSafety;
 
 /// <summary>
-/// Canonical mapping between fix providers and their dedicated safety checkers.
+///     Canonical mapping between fix providers and their dedicated safety checkers.
 /// </summary>
 public static class FixProviderSafetyMapping
 {
     /// <summary>
-    /// Returns the canonical mapping table.
+    ///     Returns the canonical mapping table.
     /// </summary>
     /// <remarks>
-    /// This mapping must not introduce a compile-time dependency from the analyzer assembly to the fix-provider assembly.
-    ///
-    /// We therefore resolve fix provider types by name at runtime, scanning already-loaded assemblies only.
-    /// (No <c>Assembly.Load</c> calls; analyzer assemblies are subject to RS1035.)
+    ///     This mapping must not introduce a compile-time dependency from the analyzer assembly to the fix-provider assembly.
+    ///     We therefore resolve fix provider types by name at runtime, scanning already-loaded assemblies only.
+    ///     (No <c>Assembly.Load</c> calls; analyzer assemblies are subject to RS1035.)
     /// </remarks>
     public static ImmutableArray<(Type FixProviderType, Type SafetyCheckerType)> Entries { get; } =
         CreateEntries();
@@ -44,7 +43,8 @@ public static class FixProviderSafetyMapping
 
         var dict = ToDictionary();
         if (!dict.TryGetValue(fixProviderType, out var checkerType))
-            throw new InvalidOperationException($"No safety checker mapping found for fix provider: {fixProviderType.FullName}");
+            throw new InvalidOperationException(
+                $"No safety checker mapping found for fix provider: {fixProviderType.FullName}");
 
         return checkerType;
     }
@@ -56,67 +56,67 @@ public static class FixProviderSafetyMapping
         // CSharp12: UseCollectionExpression
         AddIfResolved(
             builder,
-            fixProviderFullName: "Sharpen.Analyzer.UseCollectionExpressionCodeFixProvider",
-            safetyCheckerType: typeof(CollectionExpressionSafetyChecker));
+            "Sharpen.Analyzer.UseCollectionExpressionCodeFixProvider",
+            typeof(CollectionExpressionSafetyChecker));
 
         // CSharp13: PreferParamsCollections
         AddIfResolved(
             builder,
-            fixProviderFullName: "Sharpen.Analyzer.PreferParamsCollectionsCodeFixProvider",
-            safetyCheckerType: typeof(PreferParamsCollectionsSafetyChecker));
+            "Sharpen.Analyzer.PreferParamsCollectionsCodeFixProvider",
+            typeof(PreferParamsCollectionsSafetyChecker));
 
         // CSharp13: UseFromEndIndexInObjectInitializers
         AddIfResolved(
             builder,
-            fixProviderFullName: "Sharpen.Analyzer.UseFromEndIndexInObjectInitializersCodeFixProvider",
-            safetyCheckerType: typeof(UseFromEndIndexInObjectInitializersSafetyChecker));
+            "Sharpen.Analyzer.UseFromEndIndexInObjectInitializersCodeFixProvider",
+            typeof(UseFromEndIndexInObjectInitializersSafetyChecker));
 
         // CSharp13: UseEscapeSequenceE
         AddIfResolved(
             builder,
-            fixProviderFullName: "Sharpen.Analyzer.UseEscapeSequenceECodeFixProvider",
-            safetyCheckerType: typeof(UseEscapeSequenceESafetyChecker));
+            "Sharpen.Analyzer.UseEscapeSequenceECodeFixProvider",
+            typeof(UseEscapeSequenceESafetyChecker));
 
         // CSharp13: UseSystemThreadingLock
         AddIfResolved(
             builder,
-            fixProviderFullName: "Sharpen.Analyzer.UseSystemThreadingLockCodeFixProvider",
-            safetyCheckerType: typeof(UseSystemThreadingLockSafetyChecker));
+            "Sharpen.Analyzer.UseSystemThreadingLockCodeFixProvider",
+            typeof(UseSystemThreadingLockSafetyChecker));
 
         AddIfResolved(
             builder,
-            fixProviderFullName: "Sharpen.Analyzer.PartialPropertiesIndexersRefactoringCodeFixProvider",
-            safetyCheckerType: typeof(PartialPropertiesIndexersRefactoringSafetyChecker));
+            "Sharpen.Analyzer.PartialPropertiesIndexersRefactoringCodeFixProvider",
+            typeof(PartialPropertiesIndexersRefactoringSafetyChecker));
 
         // CSharp14: Field-backed properties
         AddIfResolved(
             builder,
-            fixProviderFullName: "Sharpen.Analyzer.UseFieldKeywordInPropertiesCodeFixProvider",
-            safetyCheckerType: typeof(FieldBackedPropertySafetyChecker));
+            "Sharpen.Analyzer.UseFieldKeywordInPropertiesCodeFixProvider",
+            typeof(FieldBackedPropertySafetyChecker));
 
         // CSharp14: Null-conditional assignment
         AddIfResolved(
             builder,
-            fixProviderFullName: "Sharpen.Analyzer.UseNullConditionalAssignmentCodeFixProvider",
-            safetyCheckerType: typeof(NullConditionalAssignmentSafetyChecker));
+            "Sharpen.Analyzer.UseNullConditionalAssignmentCodeFixProvider",
+            typeof(NullConditionalAssignmentSafetyChecker));
 
         // CSharp14: nameof with unbound generic types
         AddIfResolved(
             builder,
-            fixProviderFullName: "Sharpen.Analyzer.UseUnboundGenericTypeInNameofCodeFixProvider",
-            safetyCheckerType: typeof(UnboundGenericTypeInNameofSafetyChecker));
+            "Sharpen.Analyzer.UseUnboundGenericTypeInNameofCodeFixProvider",
+            typeof(UnboundGenericTypeInNameofSafetyChecker));
 
         // CSharp14: Lambda parameter modifiers without types
         AddIfResolved(
             builder,
-            fixProviderFullName: "Sharpen.Analyzer.UseLambdaParameterModifiersWithoutTypesCodeFixProvider",
-            safetyCheckerType: typeof(LambdaParameterModifiersWithoutTypesSafetyChecker));
+            "Sharpen.Analyzer.UseLambdaParameterModifiersWithoutTypesCodeFixProvider",
+            typeof(LambdaParameterModifiersWithoutTypesSafetyChecker));
 
         // CSharp14: Implicit span conversions
         AddIfResolved(
             builder,
-            fixProviderFullName: "Sharpen.Analyzer.UseImplicitSpanConversionsCodeFixProvider",
-            safetyCheckerType: typeof(ImplicitSpanConversionsSafetyChecker));
+            "Sharpen.Analyzer.UseImplicitSpanConversionsCodeFixProvider",
+            typeof(ImplicitSpanConversionsSafetyChecker));
 
         return builder.ToImmutable();
     }
@@ -144,7 +144,8 @@ public static class FixProviderSafetyMapping
 
         if (duplicates.Length > 0)
         {
-            var msg = "Duplicate fix provider mapping entries: " + string.Join(", ", duplicates.Select(t => t.FullName));
+            var msg = "Duplicate fix provider mapping entries: " +
+                      string.Join(", ", duplicates.Select(t => t.FullName));
             throw new InvalidOperationException(msg);
         }
     }

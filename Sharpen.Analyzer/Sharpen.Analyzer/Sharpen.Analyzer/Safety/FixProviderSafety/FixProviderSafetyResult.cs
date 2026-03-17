@@ -1,9 +1,8 @@
 namespace Sharpen.Analyzer.Safety.FixProviderSafety;
 
 /// <summary>
-/// Result of a fix-provider safety evaluation.
-///
-/// This is intentionally similar to <see cref="SafetyResult"/>, but scoped to the fix-provider safety layer.
+///     Result of a fix-provider safety evaluation.
+///     This is intentionally similar to <see cref="SafetyResult" />, but scoped to the fix-provider safety layer.
 /// </summary>
 public readonly struct FixProviderSafetyResult
 {
@@ -14,7 +13,7 @@ public readonly struct FixProviderSafetyResult
     public string? Message { get; }
 
     /// <summary>
-    /// Indicates which stage of the unified safety pipeline produced this result.
+    ///     Indicates which stage of the unified safety pipeline produced this result.
     /// </summary>
     public FixProviderSafetyStage Stage { get; }
 
@@ -30,10 +29,16 @@ public readonly struct FixProviderSafetyResult
         Message = message;
     }
 
-    public static FixProviderSafetyResult Safe() => new(true, FixProviderSafetyStage.None);
+    public static FixProviderSafetyResult Safe()
+    {
+        return new FixProviderSafetyResult(true, FixProviderSafetyStage.None);
+    }
 
     public static FixProviderSafetyResult Unsafe(
         FixProviderSafetyStage stage,
         string reasonId,
-        string? message = null) => new(false, stage, reasonId, message);
+        string? message = null)
+    {
+        return new FixProviderSafetyResult(false, stage, reasonId, message);
+    }
 }

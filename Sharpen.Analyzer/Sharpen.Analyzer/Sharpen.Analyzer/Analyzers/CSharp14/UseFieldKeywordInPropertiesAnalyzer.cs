@@ -27,31 +27,23 @@ public sealed class UseFieldKeywordInPropertiesAnalyzer : DiagnosticAnalyzer
         var property = (PropertyDeclarationSyntax)context.Node;
 
         // Only consider properties with explicit accessors.
-        if (property.AccessorList is null)
-        {
-            return;
-        }
+        if (property.AccessorList is null) return;
 
-        var getAccessor = property.AccessorList.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.GetAccessorDeclaration));
-        var setAccessor = property.AccessorList.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.SetAccessorDeclaration));
+        var getAccessor =
+            property.AccessorList.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.GetAccessorDeclaration));
+        var setAccessor =
+            property.AccessorList.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.SetAccessorDeclaration));
 
-        if (getAccessor is null || setAccessor is null)
-        {
-            return;
-        }
+        if (getAccessor is null || setAccessor is null) return;
 
-        if (!TryGetBackingFieldFromGetter(context, getAccessor, out var backingFieldSymbol) || backingFieldSymbol is null)
-        {
-            return;
-        }
+        if (!TryGetBackingFieldFromGetter(context, getAccessor, out var backingFieldSymbol) ||
+            backingFieldSymbol is null) return;
 
-        if (!IsSimpleSetterAssigningField(context, setAccessor, backingFieldSymbol))
-        {
-            return;
-        }
+        if (!IsSimpleSetterAssigningField(context, setAccessor, backingFieldSymbol)) return;
 
         // Analyzer is intentionally conservative; safety checker will enforce cross-member constraints.
-        context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseFieldKeywordInPropertiesRule, property.Identifier.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseFieldKeywordInPropertiesRule,
+            property.Identifier.GetLocation()));
     }
 
     private static bool TryGetBackingFieldFromGetter(
@@ -70,29 +62,17 @@ public sealed class UseFieldKeywordInPropertiesAnalyzer : DiagnosticAnalyzer
         else if (getAccessor.Body is not null)
         {
             var statements = getAccessor.Body.Statements;
-            if (statements.Count != 1)
-            {
-                return false;
-            }
+            if (statements.Count != 1) return false;
 
-            if (statements[0] is not ReturnStatementSyntax returnStatement)
-            {
-                return false;
-            }
+            if (statements[0] is not ReturnStatementSyntax returnStatement) return false;
 
             returnedExpression = returnStatement.Expression;
         }
 
-        if (returnedExpression is null)
-        {
-            return false;
-        }
+        if (returnedExpression is null) return false;
 
         var symbol = context.SemanticModel.GetSymbolInfo(returnedExpression, context.CancellationToken).Symbol;
-        if (symbol is not IFieldSymbol fieldSymbol)
-        {
-            return false;
-        }
+        if (symbol is not IFieldSymbol fieldSymbol) return false;
 
         backingFieldSymbol = fieldSymbol;
         return true;
@@ -112,35 +92,21 @@ public sealed class UseFieldKeywordInPropertiesAnalyzer : DiagnosticAnalyzer
         else if (setAccessor.Body is not null)
         {
             var statements = setAccessor.Body.Statements;
-            if (statements.Count != 1)
-            {
-                return false;
-            }
+            if (statements.Count != 1) return false;
 
-            if (statements[0] is not ExpressionStatementSyntax expressionStatement)
-            {
-                return false;
-            }
+            if (statements[0] is not ExpressionStatementSyntax expressionStatement) return false;
 
             assignedExpression = expressionStatement.Expression;
         }
 
-        if (assignedExpression is null)
-        {
-            return false;
-        }
+        if (assignedExpression is null) return false;
 
         if (assignedExpression is not AssignmentExpressionSyntax assignment ||
             !assignment.IsKind(SyntaxKind.SimpleAssignmentExpression))
-        {
             return false;
-        }
 
         var leftSymbol = context.SemanticModel.GetSymbolInfo(assignment.Left, context.CancellationToken).Symbol;
-        if (!SymbolEqualityComparer.Default.Equals(leftSymbol, backingFieldSymbol))
-        {
-            return false;
-        }
+        if (!SymbolEqualityComparer.Default.Equals(leftSymbol, backingFieldSymbol)) return false;
 
         // Require assignment from 'value'.
         var rightSymbol = context.SemanticModel.GetSymbolInfo(assignment.Right, context.CancellationToken).Symbol;

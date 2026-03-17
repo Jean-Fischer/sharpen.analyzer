@@ -29,30 +29,32 @@ public sealed class UseFieldKeywordInPropertiesCodeFixProvider : SharpenCodeFixP
         if (property is null)
             return;
 
-        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+        var semanticModel =
+            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
         if (semanticModel is null)
             return;
 
         var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            checker: new FieldBackedPropertySafetyChecker(),
-            syntaxTree: root.SyntaxTree,
-            semanticModel: semanticModel,
-            diagnostic: diagnostic,
-            matchSucceeded: true,
-            cancellationToken: context.CancellationToken);
+            new FieldBackedPropertySafetyChecker(),
+            root.SyntaxTree,
+            semanticModel,
+            diagnostic,
+            true,
+            context.CancellationToken);
 
         if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
             return;
 
         RegisterCodeFix(
-            context: context,
-            diagnostic: diagnostic,
-            title: "Use field-backed property",
-            equivalenceKey: nameof(UseFieldKeywordInPropertiesCodeFixProvider),
-            createChangedDocument: ct => ApplyAsync(context.Document, property, ct));
+            context,
+            diagnostic,
+            "Use field-backed property",
+            nameof(UseFieldKeywordInPropertiesCodeFixProvider),
+            ct => ApplyAsync(context.Document, property, ct));
     }
 
-    private static async Task<Document> ApplyAsync(Document document, PropertyDeclarationSyntax property, CancellationToken ct)
+    private static async Task<Document> ApplyAsync(Document document, PropertyDeclarationSyntax property,
+        CancellationToken ct)
     {
         var semanticModel = await document.GetSemanticModelAsync(ct).ConfigureAwait(false);
         if (semanticModel is null)
@@ -63,16 +65,20 @@ public sealed class UseFieldKeywordInPropertiesCodeFixProvider : SharpenCodeFixP
             return document;
 
         // Re-find the property in the current root (the node passed in may be from a different snapshot).
-        var currentProperty = root.FindNode(property.Span, getInnermostNodeForTie: true).FirstAncestorOrSelf<PropertyDeclarationSyntax>();
+        var currentProperty = root.FindNode(property.Span, getInnermostNodeForTie: true)
+            .FirstAncestorOrSelf<PropertyDeclarationSyntax>();
         if (currentProperty?.AccessorList is null)
             return document;
 
-        var getAccessor = currentProperty.AccessorList.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.GetAccessorDeclaration));
-        var setAccessor = currentProperty.AccessorList.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.SetAccessorDeclaration));
+        var getAccessor =
+            currentProperty.AccessorList.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.GetAccessorDeclaration));
+        var setAccessor =
+            currentProperty.AccessorList.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.SetAccessorDeclaration));
         if (getAccessor is null || setAccessor is null)
             return document;
 
-        if (!FieldBackedPropertyHelper.TryGetBackingFieldFromGetter(semanticModel, getAccessor, ct, out var backingFieldSymbol) || backingFieldSymbol is null)
+        if (!FieldBackedPropertyHelper.TryGetBackingFieldFromGetter(semanticModel, getAccessor, ct,
+                out var backingFieldSymbol) || backingFieldSymbol is null)
             return document;
 
         var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
@@ -117,8 +123,8 @@ public sealed class UseFieldKeywordInPropertiesCodeFixProvider : SharpenCodeFixP
     }
 
 
-
-    private static AccessorDeclarationSyntax ReplaceFieldIdentifierInAccessor(AccessorDeclarationSyntax accessor, string fieldName)
+    private static AccessorDeclarationSyntax ReplaceFieldIdentifierInAccessor(AccessorDeclarationSyntax accessor,
+        string fieldName)
     {
         // Prefer a targeted rewrite for the supported patterns.
         if (accessor.IsKind(SyntaxKind.GetAccessorDeclaration))
@@ -154,7 +160,8 @@ public sealed class UseFieldKeywordInPropertiesCodeFixProvider : SharpenCodeFixP
                 var newReturn = ((ReturnStatementSyntax)getAccessor.Body.Statements[0])
                     .WithExpression(SyntaxFactory.IdentifierName(SyntaxFactory.Identifier("field")).WithTriviaFrom(id));
 
-                return getAccessor.WithBody(getAccessor.Body.WithStatements(SyntaxFactory.SingletonList<StatementSyntax>(newReturn)));
+                return getAccessor.WithBody(
+                    getAccessor.Body.WithStatements(SyntaxFactory.SingletonList<StatementSyntax>(newReturn)));
             }
 
             return getAccessor;
@@ -183,15 +190,20 @@ public sealed class UseFieldKeywordInPropertiesCodeFixProvider : SharpenCodeFixP
         if (setAccessor.Body is not null)
         {
             if (setAccessor.Body.Statements.Count == 1 &&
-                setAccessor.Body.Statements[0] is ExpressionStatementSyntax { Expression: AssignmentExpressionSyntax assignment } &&
+                setAccessor.Body.Statements[0] is ExpressionStatementSyntax
+                {
+                    Expression: AssignmentExpressionSyntax assignment
+                } &&
                 assignment.IsKind(SyntaxKind.SimpleAssignmentExpression) &&
                 assignment.Left is IdentifierNameSyntax leftId &&
                 leftId.Identifier.ValueText == fieldName)
             {
                 var newAssignment = assignment.WithLeft(
                     SyntaxFactory.IdentifierName(SyntaxFactory.Identifier("field")).WithTriviaFrom(leftId));
-                var newStatement = ((ExpressionStatementSyntax)setAccessor.Body.Statements[0]).WithExpression(newAssignment);
-                return setAccessor.WithBody(setAccessor.Body.WithStatements(SyntaxFactory.SingletonList<StatementSyntax>(newStatement)));
+                var newStatement =
+                    ((ExpressionStatementSyntax)setAccessor.Body.Statements[0]).WithExpression(newAssignment);
+                return setAccessor.WithBody(
+                    setAccessor.Body.WithStatements(SyntaxFactory.SingletonList<StatementSyntax>(newStatement)));
             }
 
             return setAccessor;
@@ -199,6 +211,4 @@ public sealed class UseFieldKeywordInPropertiesCodeFixProvider : SharpenCodeFixP
 
         return setAccessor;
     }
-
-
 }

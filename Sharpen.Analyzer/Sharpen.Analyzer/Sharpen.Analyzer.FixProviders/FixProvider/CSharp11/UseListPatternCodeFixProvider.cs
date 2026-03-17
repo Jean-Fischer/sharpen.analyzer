@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
+using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.FixProvider.CSharp11;
 
@@ -17,9 +18,12 @@ namespace Sharpen.Analyzer.FixProvider.CSharp11;
 public sealed class UseListPatternCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.CSharp11Rules.UseListPatternRule.Id);
+        ImmutableArray.Create(CSharp11Rules.UseListPatternRule.Id);
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
@@ -42,9 +46,9 @@ public sealed class UseListPatternCodeFixProvider : CodeFixProvider
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: "Use list pattern",
-                createChangedDocument: ct => ApplyFixAsync(context.Document, ifStatement, targetExpression, ct),
-                equivalenceKey: "Use list pattern"),
+                "Use list pattern",
+                ct => ApplyFixAsync(context.Document, ifStatement, targetExpression, ct),
+                "Use list pattern"),
             diagnostic);
     }
 
@@ -58,9 +62,7 @@ public sealed class UseListPatternCodeFixProvider : CodeFixProvider
         if (!binary.IsKind(SyntaxKind.GreaterThanExpression)
             && !binary.IsKind(SyntaxKind.NotEqualsExpression)
             && !binary.IsKind(SyntaxKind.LessThanExpression))
-        {
             return false;
-        }
 
         // x.Length > 0
         if (binary.Left is MemberAccessExpressionSyntax leftMember

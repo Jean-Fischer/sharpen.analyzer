@@ -6,7 +6,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Sharpen.Analyzer.Common;
 using Sharpen.Analyzer.FixProvider.Common;
 using CSharpLanguageVersion = Sharpen.Analyzer.Common.CSharpLanguageVersion;
 
@@ -36,14 +35,15 @@ public sealed class UseTargetTypedNewCodeFixProvider : SharpenCodeFixProvider
         RegisterCodeFix(
             context,
             diagnostic,
-            title: "Use target-typed new",
-            equivalenceKey: "UseTargetTypedNew",
-            createChangedDocument: c => ApplyFixAsync(context.Document, objectCreation, c));
+            "Use target-typed new",
+            "UseTargetTypedNew",
+            c => ApplyFixAsync(context.Document, objectCreation, c));
 
         return Task.CompletedTask;
     }
 
-    private static async Task<Document> ApplyFixAsync(Document document, ObjectCreationExpressionSyntax objectCreation, CancellationToken ct)
+    private static async Task<Document> ApplyFixAsync(Document document, ObjectCreationExpressionSyntax objectCreation,
+        CancellationToken ct)
     {
         var root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
         if (root is null)

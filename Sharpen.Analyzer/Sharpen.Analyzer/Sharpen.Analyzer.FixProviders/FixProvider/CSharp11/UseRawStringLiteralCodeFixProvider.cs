@@ -11,20 +11,26 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Sharpen.Analyzer.Common;
+using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.FixProvider.CSharp11;
 
-[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseRawStringLiteralCodeFixProvider)), Shared]
+[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseRawStringLiteralCodeFixProvider))]
+[Shared]
 public sealed class UseRawStringLiteralCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.CSharp11Rules.UseRawStringLiteralRule.Id);
+        ImmutableArray.Create(CSharp11Rules.UseRawStringLiteralRule.Id);
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var compilation = await context.Document.Project.GetCompilationAsync(context.CancellationToken).ConfigureAwait(false);
+        var compilation = await context.Document.Project.GetCompilationAsync(context.CancellationToken)
+            .ConfigureAwait(false);
         if (compilation == null || !CSharpLanguageVersion.IsCSharp11OrAbove(compilation))
             return;
 
@@ -47,9 +53,7 @@ public sealed class UseRawStringLiteralCodeFixProvider : CodeFixProvider
 
         if (literal.Token.IsKind(SyntaxKind.MultiLineRawStringLiteralToken)
             || literal.Token.IsKind(SyntaxKind.SingleLineRawStringLiteralToken))
-        {
             return;
-        }
 
         if (literal.Token.ValueText is not string valueText)
             return;
@@ -60,22 +64,23 @@ public sealed class UseRawStringLiteralCodeFixProvider : CodeFixProvider
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: "Convert to raw string literal",
-                createChangedDocument: ct => ConvertAsync(context.Document, literal, rawLiteralText, ct),
-                equivalenceKey: nameof(UseRawStringLiteralCodeFixProvider)),
+                "Convert to raw string literal",
+                ct => ConvertAsync(context.Document, literal, rawLiteralText, ct),
+                nameof(UseRawStringLiteralCodeFixProvider)),
             diagnostic);
     }
 
-    private static async Task<Document> ConvertAsync(Document document, LiteralExpressionSyntax literal, string rawLiteralText, CancellationToken ct)
+    private static async Task<Document> ConvertAsync(Document document, LiteralExpressionSyntax literal,
+        string rawLiteralText, CancellationToken ct)
     {
         var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
 
         var newToken = SyntaxFactory.Token(
-            leading: literal.Token.LeadingTrivia,
-            kind: SyntaxKind.MultiLineRawStringLiteralToken,
-            text: rawLiteralText,
-            valueText: literal.Token.ValueText,
-            trailing: literal.Token.TrailingTrivia);
+            literal.Token.LeadingTrivia,
+            SyntaxKind.MultiLineRawStringLiteralToken,
+            rawLiteralText,
+            literal.Token.ValueText,
+            literal.Token.TrailingTrivia);
 
         var newLiteral = literal.WithToken(newToken);
         editor.ReplaceNode(literal, newLiteral);

@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Sharpen.Analyzer.Common;
+using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp12;
 
@@ -12,14 +12,15 @@ namespace Sharpen.Analyzer.Analyzers.CSharp12;
 public sealed class UsePrimaryConstructorAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.CSharp12Rules.UsePrimaryConstructorRule);
+        ImmutableArray.Create(CSharp12Rules.UsePrimaryConstructorRule);
 
     public override void Initialize(AnalysisContext context)
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
 
-        context.RegisterSyntaxNodeAction(AnalyzeTypeDeclaration, SyntaxKind.ClassDeclaration, SyntaxKind.StructDeclaration);
+        context.RegisterSyntaxNodeAction(AnalyzeTypeDeclaration, SyntaxKind.ClassDeclaration,
+            SyntaxKind.StructDeclaration);
     }
 
     private static void AnalyzeTypeDeclaration(SyntaxNodeAnalysisContext context)
@@ -115,6 +116,7 @@ public sealed class UsePrimaryConstructorAnalyzer : DiagnosticAnalyzer
         if (usedParameters.Any(u => !u))
             return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.CSharp12Rules.UsePrimaryConstructorRule, ctor.Identifier.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(CSharp12Rules.UsePrimaryConstructorRule,
+            ctor.Identifier.GetLocation()));
     }
 }

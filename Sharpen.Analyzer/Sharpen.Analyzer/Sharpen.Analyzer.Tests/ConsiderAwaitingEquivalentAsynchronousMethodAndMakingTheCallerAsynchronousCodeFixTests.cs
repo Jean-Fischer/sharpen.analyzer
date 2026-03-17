@@ -1,16 +1,18 @@
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
-    Sharpen.Analyzer.Analyzers.CSharp5.ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousAnalyzer,
-    Sharpen.Analyzer.ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+    Sharpen.Analyzer.Analyzers.CSharp5.
+    ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousAnalyzer,
+    Sharpen.Analyzer.ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousCodeFixProvider,
+    Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 
 public class ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousCodeFixTests
 {
     [Fact]
-    public async Task ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronous_AsyncCaller_ProducesDiagnostic()
+    public async Task
+        ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronous_AsyncCaller_ProducesDiagnostic()
     {
         var test = @"
 using System.IO;
@@ -29,7 +31,8 @@ class C
     }
 
     [Fact]
-    public async Task ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronous_AsyncCaller_CodeFix_RewritesInvocationAndAddsAwait()
+    public async Task
+        ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronous_AsyncCaller_CodeFix_RewritesInvocationAndAddsAwait()
     {
         var test = @"
 using System.IO;
@@ -61,7 +64,8 @@ class C
     }
 
     [Fact]
-    public async Task ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronous_NonAsyncCaller_ProducesNoDiagnostic()
+    public async Task
+        ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronous_NonAsyncCaller_ProducesNoDiagnostic()
     {
         var test = @"
 using System.IO;

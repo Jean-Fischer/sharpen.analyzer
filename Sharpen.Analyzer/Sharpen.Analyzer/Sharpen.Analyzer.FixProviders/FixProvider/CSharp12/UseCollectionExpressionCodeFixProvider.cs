@@ -21,7 +21,10 @@ public sealed class UseCollectionExpressionCodeFixProvider : CodeFixProvider
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(CSharp12Rules.UseCollectionExpressionRule.Id);
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
@@ -45,21 +48,21 @@ public sealed class UseCollectionExpressionCodeFixProvider : CodeFixProvider
             return;
 
         var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            checker: new CollectionExpressionSafetyChecker(),
-            syntaxTree: root.SyntaxTree,
-            semanticModel: semanticModel,
-            diagnostic: diagnostic,
-            matchSucceeded: true,
-            cancellationToken: context.CancellationToken);
+            new CollectionExpressionSafetyChecker(),
+            root.SyntaxTree,
+            semanticModel,
+            diagnostic,
+            true,
+            context.CancellationToken);
 
         if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
             return;
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: "Use collection expression",
-                createChangedDocument: c => UseCollectionExpressionAsync(context.Document, expression, c),
-                equivalenceKey: "UseCollectionExpression"),
+                "Use collection expression",
+                c => UseCollectionExpressionAsync(context.Document, expression, c),
+                "UseCollectionExpression"),
             diagnostic);
     }
 

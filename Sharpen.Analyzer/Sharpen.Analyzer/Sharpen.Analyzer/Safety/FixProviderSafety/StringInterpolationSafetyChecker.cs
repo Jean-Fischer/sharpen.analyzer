@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 namespace Sharpen.Analyzer.Safety.FixProviderSafety;
 
 /// <summary>
-/// Safety checker for converting string.Format / string concatenation to interpolated strings.
+///     Safety checker for converting string.Format / string concatenation to interpolated strings.
 /// </summary>
 public sealed class StringInterpolationSafetyChecker : IFixProviderSafetyChecker
 {
@@ -19,7 +19,7 @@ public sealed class StringInterpolationSafetyChecker : IFixProviderSafetyChecker
         // - ensure semantic model exists
         // - deeper checks (formatting behavior, side effects) can be added later
 
-        var langCheck = SafetyCheckHelpers.UnsafeIfNotCSharp(syntaxTree, reasonId: "not-csharp", message: "SyntaxTree is not C#.");
+        var langCheck = SafetyCheckHelpers.UnsafeIfNotCSharp(syntaxTree, "not-csharp", "SyntaxTree is not C#.");
         if (!langCheck.IsSafe)
             return langCheck;
 

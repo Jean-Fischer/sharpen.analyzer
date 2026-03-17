@@ -18,14 +18,14 @@ public sealed class FirstPassSafetyGateTests
         {
             new RecordingCheck("A", calls, SafetyResult.Safe()),
             new RecordingCheck("B", calls, SafetyResult.Unsafe("B")),
-            new RecordingCheck("C", calls, SafetyResult.Safe()),
+            new RecordingCheck("C", calls, SafetyResult.Safe())
         });
 
         var result = gate.Evaluate(
-            syntaxTree: null!,
-            semanticModel: null!,
-            diagnostic: Diagnostic.Create("X", "X", "X", DiagnosticSeverity.Warning, DiagnosticSeverity.Warning, true, 1),
-            cancellationToken: CancellationToken.None);
+            null!,
+            null!,
+            Diagnostic.Create("X", "X", "X", DiagnosticSeverity.Warning, DiagnosticSeverity.Warning, true, 1),
+            CancellationToken.None);
 
         Assert.False(result.IsSafe);
         Assert.Equal("B", result.ReasonId);
@@ -37,7 +37,7 @@ public sealed class FirstPassSafetyGateTests
     {
         var gate = new FirstPassSafetyGate(new IFirstPassSafetyCheck[]
         {
-            new NoopFirstPassSafetyCheck(),
+            new NoopFirstPassSafetyCheck()
         });
 
         using var cts = new CancellationTokenSource();
@@ -45,16 +45,16 @@ public sealed class FirstPassSafetyGateTests
 
         Assert.Throws<OperationCanceledException>(() =>
             gate.Evaluate(
-                syntaxTree: null!,
-                semanticModel: null!,
-                diagnostic: Diagnostic.Create("X", "X", "X", DiagnosticSeverity.Warning, DiagnosticSeverity.Warning, true, 1),
-                cancellationToken: cts.Token));
+                null!,
+                null!,
+                Diagnostic.Create("X", "X", "X", DiagnosticSeverity.Warning, DiagnosticSeverity.Warning, true, 1),
+                cts.Token));
     }
 
     private sealed class RecordingCheck : IFirstPassSafetyCheck
     {
-        private readonly string _id;
         private readonly List<string> _calls;
+        private readonly string _id;
         private readonly SafetyResult _result;
 
         public RecordingCheck(string id, List<string> calls, SafetyResult result)

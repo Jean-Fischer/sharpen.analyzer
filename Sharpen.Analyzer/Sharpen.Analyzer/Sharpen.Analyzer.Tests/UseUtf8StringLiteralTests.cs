@@ -2,7 +2,8 @@ using System.Threading.Tasks;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp11.UseUtf8StringLiteralAnalyzer,
-    Sharpen.Analyzer.FixProvider.CSharp11.UseUtf8StringLiteralCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+    Sharpen.Analyzer.FixProvider.CSharp11.UseUtf8StringLiteralCodeFixProvider,
+    Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 
@@ -30,7 +31,8 @@ class C
     [Fact]
     public async Task ReportsDiagnostic_ForEncodingUtf8GetBytes_ConstantString()
     {
-        var test = "using System;\r\nusing System.Text;\r\n\r\nclass C\r\n{\r\n    void M()\r\n    {\r\n        ReadOnlySpan<byte> bytes = Encoding.UTF8.GetBytes(\"hello\");\r\n    }\r\n}";
+        var test =
+            "using System;\r\nusing System.Text;\r\n\r\nclass C\r\n{\r\n    void M()\r\n    {\r\n        ReadOnlySpan<byte> bytes = Encoding.UTF8.GetBytes(\"hello\");\r\n    }\r\n}";
 
         await Verifier.VerifyAnalyzerAsync(test);
     }
@@ -38,7 +40,8 @@ class C
     [Fact]
     public async Task CodeFix_ReplacesWithByteArray_ForReadOnlySpanByte()
     {
-        var test = "using System;\r\n\r\nclass C\r\n{\r\n    void M()\r\n    {\r\n        ReadOnlySpan<byte> bytes = new byte[] { 0x68, 0x65, 0x6C, 0x6C, 0x6F };\r\n    }\r\n}";
+        var test =
+            "using System;\r\n\r\nclass C\r\n{\r\n    void M()\r\n    {\r\n        ReadOnlySpan<byte> bytes = new byte[] { 0x68, 0x65, 0x6C, 0x6C, 0x6F };\r\n    }\r\n}";
 
         await Verifier.VerifyAnalyzerAsync(test);
     }

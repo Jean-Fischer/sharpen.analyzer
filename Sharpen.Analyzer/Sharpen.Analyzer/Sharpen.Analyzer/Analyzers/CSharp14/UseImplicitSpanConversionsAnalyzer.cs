@@ -34,7 +34,10 @@ public sealed class UseImplicitSpanConversionsAnalyzer : DiagnosticAnalyzer
             return;
 
         // Match: <expr>.AsSpan()
-        if (invocation.Expression is not MemberAccessExpressionSyntax { Name.Identifier.ValueText: "AsSpan" } memberAccess)
+        if (invocation.Expression is not MemberAccessExpressionSyntax
+            {
+                Name.Identifier.ValueText: "AsSpan"
+            } memberAccess)
             return;
 
         if (invocation.ArgumentList.Arguments.Count != 0)
@@ -63,7 +66,8 @@ public sealed class UseImplicitSpanConversionsAnalyzer : DiagnosticAnalyzer
             return;
 
         // Ensure removing AsSpan does not change overload resolution.
-        var beforeSymbol = context.SemanticModel.GetSymbolInfo(outerInvocation, context.CancellationToken).Symbol as IMethodSymbol;
+        var beforeSymbol =
+            context.SemanticModel.GetSymbolInfo(outerInvocation, context.CancellationToken).Symbol as IMethodSymbol;
         if (beforeSymbol is null)
             return;
 
@@ -84,6 +88,7 @@ public sealed class UseImplicitSpanConversionsAnalyzer : DiagnosticAnalyzer
             return;
 
         // Report on the invocation expression (the AsSpan call).
-        context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseImplicitSpanConversionsRule, invocation.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseImplicitSpanConversionsRule,
+            invocation.GetLocation()));
     }
 }

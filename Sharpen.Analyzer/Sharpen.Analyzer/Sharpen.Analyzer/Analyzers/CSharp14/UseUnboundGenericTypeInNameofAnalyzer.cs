@@ -39,7 +39,9 @@ public sealed class UseUnboundGenericTypeInNameofAnalyzer : DiagnosticAnalyzer
         var argExpression = invocation.ArgumentList.Arguments[0].Expression;
 
         // We only care about nameof(SomeGeneric<...>) where the argument is a type.
-        if (argExpression is not TypeOfExpressionSyntax && argExpression is not IdentifierNameSyntax && argExpression is not GenericNameSyntax && argExpression is not QualifiedNameSyntax && argExpression is not AliasQualifiedNameSyntax)
+        if (argExpression is not TypeOfExpressionSyntax && argExpression is not IdentifierNameSyntax &&
+            argExpression is not GenericNameSyntax && argExpression is not QualifiedNameSyntax &&
+            argExpression is not AliasQualifiedNameSyntax)
         {
             // Still allow other TypeSyntax shapes via semantic model below.
         }
@@ -59,21 +61,23 @@ public sealed class UseUnboundGenericTypeInNameofAnalyzer : DiagnosticAnalyzer
         {
             if (typeSyntax is GenericNameSyntax genericName && genericName.TypeArgumentList.Arguments.Count > 0)
             {
-                context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseUnboundGenericTypeInNameofRule, typeSyntax.GetLocation()));
+                context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseUnboundGenericTypeInNameofRule,
+                    typeSyntax.GetLocation()));
                 return;
             }
 
-            if (typeSyntax is QualifiedNameSyntax { Right: GenericNameSyntax rightGeneric } && rightGeneric.TypeArgumentList.Arguments.Count > 0)
+            if (typeSyntax is QualifiedNameSyntax { Right: GenericNameSyntax rightGeneric } &&
+                rightGeneric.TypeArgumentList.Arguments.Count > 0)
             {
-                context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseUnboundGenericTypeInNameofRule, typeSyntax.GetLocation()));
+                context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseUnboundGenericTypeInNameofRule,
+                    typeSyntax.GetLocation()));
                 return;
             }
 
-            if (typeSyntax is AliasQualifiedNameSyntax { Name: GenericNameSyntax aliasGeneric } && aliasGeneric.TypeArgumentList.Arguments.Count > 0)
-            {
-                context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseUnboundGenericTypeInNameofRule, typeSyntax.GetLocation()));
-                return;
-            }
+            if (typeSyntax is AliasQualifiedNameSyntax { Name: GenericNameSyntax aliasGeneric } &&
+                aliasGeneric.TypeArgumentList.Arguments.Count > 0)
+                context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseUnboundGenericTypeInNameofRule,
+                    typeSyntax.GetLocation()));
         }
     }
 }

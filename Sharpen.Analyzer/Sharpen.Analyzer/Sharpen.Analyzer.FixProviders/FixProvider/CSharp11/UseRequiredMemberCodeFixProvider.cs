@@ -9,14 +9,16 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Sharpen.Analyzer.FixProvider.Common;
+using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.FixProvider.CSharp11;
 
-[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseRequiredMemberCodeFixProvider)), Shared]
+[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseRequiredMemberCodeFixProvider))]
+[Shared]
 public sealed class UseRequiredMemberCodeFixProvider : CSharp11OrAboveSharpenCodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.CSharp11Rules.UseRequiredMemberRule.Id);
+        ImmutableArray.Create(CSharp11Rules.UseRequiredMemberRule.Id);
 
     protected override Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
     {
@@ -30,14 +32,15 @@ public sealed class UseRequiredMemberCodeFixProvider : CSharp11OrAboveSharpenCod
         RegisterCodeFix(
             context,
             diagnostic,
-            title: "Add required modifier",
-            equivalenceKey: nameof(UseRequiredMemberCodeFixProvider),
-            createChangedDocument: ct => AddRequiredAsync(context.Document, property, ct));
+            "Add required modifier",
+            nameof(UseRequiredMemberCodeFixProvider),
+            ct => AddRequiredAsync(context.Document, property, ct));
 
         return Task.CompletedTask;
     }
 
-    private static async Task<Document> AddRequiredAsync(Document document, PropertyDeclarationSyntax property, CancellationToken ct)
+    private static async Task<Document> AddRequiredAsync(Document document, PropertyDeclarationSyntax property,
+        CancellationToken ct)
     {
         var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
 
@@ -47,7 +50,8 @@ public sealed class UseRequiredMemberCodeFixProvider : CSharp11OrAboveSharpenCod
         for (var i = 0; i < modifiers.Count; i++)
         {
             var kind = modifiers[i].Kind();
-            if (kind is SyntaxKind.PublicKeyword or SyntaxKind.PrivateKeyword or SyntaxKind.ProtectedKeyword or SyntaxKind.InternalKeyword)
+            if (kind is SyntaxKind.PublicKeyword or SyntaxKind.PrivateKeyword or SyntaxKind.ProtectedKeyword
+                or SyntaxKind.InternalKeyword)
             {
                 insertIndex = i + 1;
                 continue;

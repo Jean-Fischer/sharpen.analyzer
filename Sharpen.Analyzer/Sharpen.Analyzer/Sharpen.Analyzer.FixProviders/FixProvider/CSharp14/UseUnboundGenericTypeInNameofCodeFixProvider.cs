@@ -26,27 +26,28 @@ public sealed class UseUnboundGenericTypeInNameofCodeFixProvider : CSharp13OrAbo
         if (node is not TypeSyntax typeSyntax)
             return;
 
-        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+        var semanticModel =
+            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
         if (semanticModel is null)
             return;
 
         var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            checker: new UnboundGenericTypeInNameofSafetyChecker(),
-            syntaxTree: root.SyntaxTree,
-            semanticModel: semanticModel,
-            diagnostic: diagnostic,
-            matchSucceeded: true,
-            cancellationToken: context.CancellationToken);
+            new UnboundGenericTypeInNameofSafetyChecker(),
+            root.SyntaxTree,
+            semanticModel,
+            diagnostic,
+            true,
+            context.CancellationToken);
 
         if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
             return;
 
         RegisterCodeFix(
-            context: context,
-            diagnostic: diagnostic,
-            title: "Use unbound generic type in nameof",
-            equivalenceKey: nameof(UseUnboundGenericTypeInNameofCodeFixProvider),
-            createChangedDocument: ct => ApplyAsync(context.Document, typeSyntax, ct));
+            context,
+            diagnostic,
+            "Use unbound generic type in nameof",
+            nameof(UseUnboundGenericTypeInNameofCodeFixProvider),
+            ct => ApplyAsync(context.Document, typeSyntax, ct));
     }
 
     private static async Task<Document> ApplyAsync(Document document, TypeSyntax typeSyntax, CancellationToken ct)
@@ -81,7 +82,8 @@ public sealed class UseUnboundGenericTypeInNameofCodeFixProvider : CSharp13OrAbo
                 unboundType = qualifiedName.WithRight(MakeUnboundGenericName(rightGeneric));
                 return true;
 
-            case AliasQualifiedNameSyntax aliasQualifiedName when aliasQualifiedName.Name is GenericNameSyntax aliasGeneric:
+            case AliasQualifiedNameSyntax aliasQualifiedName
+                when aliasQualifiedName.Name is GenericNameSyntax aliasGeneric:
                 unboundType = aliasQualifiedName.WithName(MakeUnboundGenericName(aliasGeneric));
                 return true;
 

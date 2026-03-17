@@ -21,11 +21,15 @@ public sealed class UsePrimaryConstructorCodeFixProvider : CodeFixProvider
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(CSharp12Rules.UsePrimaryConstructorRule.Id);
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var compilation = await context.Document.Project.GetCompilationAsync(context.CancellationToken).ConfigureAwait(false);
+        var compilation = await context.Document.Project.GetCompilationAsync(context.CancellationToken)
+            .ConfigureAwait(false);
         if (compilation is null || !CSharpLanguageVersion.IsCSharp12OrAbove(compilation))
             return;
 
@@ -45,9 +49,9 @@ public sealed class UsePrimaryConstructorCodeFixProvider : CodeFixProvider
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: "Use primary constructor",
-                createChangedDocument: ct => UsePrimaryConstructorAsync(context.Document, typeDecl, ctor, ct),
-                equivalenceKey: nameof(UsePrimaryConstructorCodeFixProvider)),
+                "Use primary constructor",
+                ct => UsePrimaryConstructorAsync(context.Document, typeDecl, ctor, ct),
+                nameof(UsePrimaryConstructorCodeFixProvider)),
             diagnostic);
     }
 
@@ -66,8 +70,10 @@ public sealed class UsePrimaryConstructorCodeFixProvider : CodeFixProvider
             return document;
 
         // Re-acquire nodes from current root.
-        var currentCtor = root.FindNode(ctor.Span, getInnermostNodeForTie: true).FirstAncestorOrSelf<ConstructorDeclarationSyntax>() ?? ctor;
-        var currentType = root.FindNode(typeDecl.Span, getInnermostNodeForTie: true).FirstAncestorOrSelf<TypeDeclarationSyntax>() ?? typeDecl;
+        var currentCtor = root.FindNode(ctor.Span, getInnermostNodeForTie: true)
+            .FirstAncestorOrSelf<ConstructorDeclarationSyntax>() ?? ctor;
+        var currentType = root.FindNode(typeDecl.Span, getInnermostNodeForTie: true)
+            .FirstAncestorOrSelf<TypeDeclarationSyntax>() ?? typeDecl;
 
         if (currentCtor.Body is null)
             return document;
@@ -108,7 +114,9 @@ public sealed class UsePrimaryConstructorCodeFixProvider : CodeFixProvider
             var parameterName = kvp.Value;
 
             var memberDecl = currentType.Members
-                .FirstOrDefault(m => SymbolEqualityComparer.Default.Equals(semanticModel.GetDeclaredSymbol(m, cancellationToken), memberSymbol));
+                .FirstOrDefault(m =>
+                    SymbolEqualityComparer.Default.Equals(semanticModel.GetDeclaredSymbol(m, cancellationToken),
+                        memberSymbol));
 
             if (memberDecl is PropertyDeclarationSyntax property)
             {
@@ -123,7 +131,11 @@ public sealed class UsePrimaryConstructorCodeFixProvider : CodeFixProvider
 
                 // Remove set/init accessors.
                 var newAccessorList = property.AccessorList.WithAccessors(
-                    SyntaxFactory.List(new[] { getAccessor.WithBody(null).WithExpressionBody(null).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)) }));
+                    SyntaxFactory.List(new[]
+                    {
+                        getAccessor.WithBody(null).WithExpressionBody(null)
+                            .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken))
+                    }));
 
                 var newProperty = property
                     .WithAccessorList(newAccessorList)
@@ -139,8 +151,12 @@ public sealed class UsePrimaryConstructorCodeFixProvider : CodeFixProvider
                     continue;
 
                 var variable = field.Declaration.Variables[0];
-                var newVariable = variable.WithInitializer(SyntaxFactory.EqualsValueClause(SyntaxFactory.IdentifierName(parameterName)));
-                var newField = field.WithDeclaration(field.Declaration.WithVariables(SyntaxFactory.SingletonSeparatedList(newVariable)));
+                var newVariable =
+                    variable.WithInitializer(
+                        SyntaxFactory.EqualsValueClause(SyntaxFactory.IdentifierName(parameterName)));
+                var newField =
+                    field.WithDeclaration(
+                        field.Declaration.WithVariables(SyntaxFactory.SingletonSeparatedList(newVariable)));
                 updatedMembers = updatedMembers.Replace(field, newField);
             }
         }
@@ -149,7 +165,7 @@ public sealed class UsePrimaryConstructorCodeFixProvider : CodeFixProvider
         updatedMembers = SyntaxFactory.List(updatedMembers.Where(m => !m.IsEquivalentTo(currentCtor)));
 
         // Add primary constructor parameter list.
-        TypeDeclarationSyntax updatedType = currentType switch
+        var updatedType = currentType switch
         {
             ClassDeclarationSyntax c => c.WithParameterList(SyntaxFactory.ParameterList(parameters)),
             StructDeclarationSyntax s => s.WithParameterList(SyntaxFactory.ParameterList(parameters)),

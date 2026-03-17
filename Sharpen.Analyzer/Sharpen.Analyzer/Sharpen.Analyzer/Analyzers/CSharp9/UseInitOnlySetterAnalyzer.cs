@@ -74,7 +74,8 @@ public sealed class UseInitOnlySetterAnalyzer : DiagnosticAnalyzer
         if (IsAssignedOutsideConstructor(context, symbol, containingType))
             return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseInitOnlySetterRule, property.Identifier.GetLocation()));
+        context.ReportDiagnostic(
+            Diagnostic.Create(Rules.Rules.UseInitOnlySetterRule, property.Identifier.GetLocation()));
     }
 
     private static bool IsAssignedOutsideConstructor(

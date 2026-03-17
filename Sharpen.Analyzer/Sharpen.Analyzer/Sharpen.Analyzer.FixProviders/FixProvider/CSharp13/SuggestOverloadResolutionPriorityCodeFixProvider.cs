@@ -15,7 +15,8 @@ using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.FixProviders.FixProvider.CSharp13;
 
-[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(SuggestOverloadResolutionPriorityCodeFixProvider)), Shared]
+[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(SuggestOverloadResolutionPriorityCodeFixProvider))]
+[Shared]
 public sealed class SuggestOverloadResolutionPriorityCodeFixProvider : CSharp13OrAboveSharpenCodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
@@ -30,20 +31,19 @@ public sealed class SuggestOverloadResolutionPriorityCodeFixProvider : CSharp13O
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: "Add OverloadResolutionPriorityAttribute (requires review)",
-                createChangedDocument: ct => AddAttributeAsync(context.Document, method, ct),
-                equivalenceKey: "AddOverloadResolutionPriorityAttribute"),
+                "Add OverloadResolutionPriorityAttribute (requires review)",
+                ct => AddAttributeAsync(context.Document, method, ct),
+                "AddOverloadResolutionPriorityAttribute"),
             diagnostic);
     }
 
-    private static async Task<Document> AddAttributeAsync(Document document, MethodDeclarationSyntax method, CancellationToken ct)
+    private static async Task<Document> AddAttributeAsync(Document document, MethodDeclarationSyntax method,
+        CancellationToken ct)
     {
         // Avoid adding duplicates if the user runs the fix multiple times.
         if (method.AttributeLists.SelectMany(a => a.Attributes)
             .Any(a => a.Name.ToString().Contains("OverloadResolutionPriority")))
-        {
             return document;
-        }
 
         var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
 
@@ -51,12 +51,13 @@ public sealed class SuggestOverloadResolutionPriorityCodeFixProvider : CSharp13O
         const int priority = 1;
 
         var attribute = SyntaxFactory.Attribute(
-            SyntaxFactory.ParseName("System.Runtime.CompilerServices.OverloadResolutionPriority"))
+                SyntaxFactory.ParseName("System.Runtime.CompilerServices.OverloadResolutionPriority"))
             .WithArgumentList(
                 SyntaxFactory.AttributeArgumentList(
                     SyntaxFactory.SingletonSeparatedList(
                         SyntaxFactory.AttributeArgument(
-                            SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(priority))))));
+                            SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression,
+                                SyntaxFactory.Literal(priority))))));
 
         var list = SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(attribute));
 

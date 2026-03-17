@@ -60,6 +60,7 @@ public sealed class UseExtensionBlocksAnalyzer : DiagnosticAnalyzer
         if (dominantGroup.Count() < 2)
             return;
 
-        context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseExtensionBlocksRule, classDeclaration.Identifier.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseExtensionBlocksRule,
+            classDeclaration.Identifier.GetLocation()));
     }
 }

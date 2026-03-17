@@ -1,10 +1,10 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp10.UseFileScopedNamespaceAnalyzer,
-    Sharpen.Analyzer.FixProvider.CSharp10.UseFileScopedNamespaceCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+    Sharpen.Analyzer.FixProvider.CSharp10.UseFileScopedNamespaceCodeFixProvider,
+    Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 
@@ -65,11 +65,7 @@ namespace Inner
 
         // The code fix is not offered for nested namespaces (file-scoped namespaces cannot contain nested namespaces).
         await Verifier.VerifyAnalyzerAsync(
-            source,
-            new[]
-            {
-                Verifier.Diagnostic("SHARPEN040").WithSpan(2, 11, 2, 16).WithSeverity(DiagnosticSeverity.Info)
-            });
+            source, Verifier.Diagnostic("SHARPEN040").WithSpan(2, 11, 2, 16).WithSeverity(DiagnosticSeverity.Info));
     }
 
     [Fact]

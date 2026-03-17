@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sharpen.Analyzer.Common;
-using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp6;
 
@@ -26,32 +25,18 @@ public sealed class UseExpressionBodyForGetOnlyIndexersAnalyzer : DiagnosticAnal
     {
         var indexer = (IndexerDeclarationSyntax)context.Node;
 
-        if (indexer.ExpressionBody != null)
-        {
-            return;
-        }
+        if (indexer.ExpressionBody != null) return;
 
-        if (indexer.AccessorList == null)
-        {
-            return;
-        }
+        if (indexer.AccessorList == null) return;
 
-        if (indexer.AccessorList.Accessors.Count != 1)
-        {
-            return;
-        }
+        if (indexer.AccessorList.Accessors.Count != 1) return;
 
         var getter = indexer.AccessorList.Accessors[0];
-        if (!getter.IsKind(SyntaxKind.GetAccessorDeclaration))
-        {
-            return;
-        }
+        if (!getter.IsKind(SyntaxKind.GetAccessorDeclaration)) return;
 
-        if (!CSharp6SyntaxHelpers.TryGetSingleReturnExpressionFromGetter(getter, out _))
-        {
-            return;
-        }
+        if (!CSharp6SyntaxHelpers.TryGetSingleReturnExpressionFromGetter(getter, out _)) return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseExpressionBodyForGetOnlyIndexersRule, indexer.ThisKeyword.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseExpressionBodyForGetOnlyIndexersRule,
+            indexer.ThisKeyword.GetLocation()));
     }
 }

@@ -1,5 +1,5 @@
+using System.Threading.Tasks;
 using Sharpen.Analyzer.Rules;
-using Sharpen.Analyzer.Tests.Infrastructure;
 using Xunit;
 using Verifier = Sharpen.Analyzer.Tests.Infrastructure.CSharp13CodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp13.SuggestAllowsRefStructConstraintAnalyzer,
@@ -8,7 +8,7 @@ using Verifier = Sharpen.Analyzer.Tests.Infrastructure.CSharp13CodeFixVerifier<
 public sealed class SuggestAllowsRefStructConstraintCodeFixProviderTests
 {
     [Fact]
-    public async System.Threading.Tasks.Task Adds_constraint_to_generic_method()
+    public async Task Adds_constraint_to_generic_method()
     {
         var source = @"
 public class C

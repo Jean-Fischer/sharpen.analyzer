@@ -24,16 +24,17 @@ internal static class ThreadSleepToTaskDelayCodeFixHelper
         var invocation = root.FindNode(diagnostic.Location.SourceSpan) as InvocationExpressionSyntax;
         if (invocation is null) return;
 
-        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+        var semanticModel =
+            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
         if (semanticModel is null) return;
 
         if (!AsyncModernizationHelpers.IsAwaitLegalAt(invocation)) return;
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: title,
-                createChangedDocument: c => ApplyFixAsync(context.Document, invocation, semanticModel, c),
-                equivalenceKey: equivalenceKey),
+                title,
+                c => ApplyFixAsync(context.Document, invocation, semanticModel, c),
+                equivalenceKey),
             diagnostic);
     }
 

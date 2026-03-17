@@ -30,8 +30,10 @@ public sealed class UsePartialEventsAnalyzer : DiagnosticAnalyzer
         if (eventDeclaration.AccessorList is null)
             return;
 
-        var addAccessor = eventDeclaration.AccessorList.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.AddAccessorDeclaration));
-        var removeAccessor = eventDeclaration.AccessorList.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.RemoveAccessorDeclaration));
+        var addAccessor =
+            eventDeclaration.AccessorList.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.AddAccessorDeclaration));
+        var removeAccessor =
+            eventDeclaration.AccessorList.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.RemoveAccessorDeclaration));
 
         if (addAccessor?.Body is null || removeAccessor?.Body is null)
             return;
@@ -42,7 +44,8 @@ public sealed class UsePartialEventsAnalyzer : DiagnosticAnalyzer
         if (!AccessorBodyCallsPartialMethod(context, removeAccessor.Body))
             return;
 
-        context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UsePartialEventsRule, eventDeclaration.Identifier.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UsePartialEventsRule,
+            eventDeclaration.Identifier.GetLocation()));
     }
 
     private static bool AccessorBodyCallsPartialMethod(SyntaxNodeAnalysisContext context, BlockSyntax body)

@@ -84,10 +84,8 @@ public sealed class SuggestCompoundAssignmentOperatorsAnalyzer : DiagnosticAnaly
     {
         // C# represents user-defined compound assignment operators as op_AdditionAssignment, etc.
         foreach (var member in type.GetMembers("op_AdditionAssignment"))
-        {
             if (member is IMethodSymbol { IsStatic: true })
                 return true;
-        }
 
         return false;
     }

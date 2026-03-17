@@ -1,95 +1,25 @@
-using System.Collections.Immutable;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 
 namespace Sharpen.Analyzer.Tests.Infrastructure;
 
 /// <summary>
-/// Test verifier for C# 13 gated code fixes.
-///
-/// This sets:
-/// - C# parse options to <see cref="LanguageVersion.Preview"/> (the Roslyn version used by this repo
-///   does not expose a dedicated <c>LanguageVersion.CSharp13</c> constant).
-/// - A minimal stub for <c>System.Threading.Lock</c> so safety checkers can resolve the symbol.
-///
-/// Keep this verifier scoped to tests that need it.
+///     Test verifier for C# 13 gated code fixes.
+///     This sets:
+///     - C# parse options to <see cref="LanguageVersion.Preview" /> (the Roslyn version used by this repo
+///     does not expose a dedicated <c>LanguageVersion.CSharp13</c> constant).
+///     - A minimal stub for <c>System.Threading.Lock</c> so safety checkers can resolve the symbol.
+///     Keep this verifier scoped to tests that need it.
 /// </summary>
 public static class CSharp13CodeFixVerifier<TAnalyzer, TCodeFix>
     where TAnalyzer : DiagnosticAnalyzer, new()
     where TCodeFix : CodeFixProvider, new()
 {
-    public static DiagnosticResult Diagnostic(string diagnosticId)
-        => Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<TAnalyzer, TCodeFix, DefaultVerifier>.Diagnostic(diagnosticId);
-
-    public static DiagnosticResult Diagnostic(DiagnosticDescriptor descriptor)
-        => Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<TAnalyzer, TCodeFix, DefaultVerifier>.Diagnostic(descriptor);
-
-    public static async System.Threading.Tasks.Task VerifyAnalyzerAsync(
-        string source,
-        params DiagnosticResult[] expected)
-    {
-        var test = CreateTest();
-        test.TestCode = source;
-        test.ExpectedDiagnostics.AddRange(expected);
-        await test.RunAsync().ConfigureAwait(false);
-    }
-
-    public static async System.Threading.Tasks.Task VerifyCodeFixAsync(
-        string source,
-        string fixedSource)
-    {
-        var test = CreateTest();
-        test.TestState.Sources.Add(source);
-        test.TestState.Sources.Add(LockStubSource);
-
-        test.FixedState.Sources.Add(fixedSource);
-        test.FixedState.Sources.Add(LockStubSource);
-
-        await test.RunAsync().ConfigureAwait(false);
-    }
-
-    public static async System.Threading.Tasks.Task VerifyCodeFixAsync(
-        string source,
-        DiagnosticResult expected,
-        string fixedSource)
-    {
-        var test = CreateTest();
-        test.TestState.Sources.Add(source);
-        test.TestState.Sources.Add(LockStubSource);
-
-        test.FixedState.Sources.Add(fixedSource);
-        test.FixedState.Sources.Add(LockStubSource);
-
-        test.ExpectedDiagnostics.Add(expected);
-        await test.RunAsync().ConfigureAwait(false);
-    }
-
-    private static Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier> CreateTest()
-    {
-        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier>
-        {
-            // Use a modern target framework so preview C# 13 features that depend on runtime support
-            // (e.g. byref-like generics) can compile in fixed-state.
-            ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
-        };
-
-        test.SolutionTransforms.Add((solution, projectId) =>
-        {
-            var project = solution.GetProject(projectId)!;
-            var parseOptions = (CSharpParseOptions)project.ParseOptions!;
-
-            // Use Preview to exercise the "C# 13 or above" branch.
-            project = project.WithParseOptions(parseOptions.WithLanguageVersion(LanguageVersion.Preview));
-
-            return project.Solution;
-        });
-
-        return test;
-    }
-
     private const string LockStubSource = @"
 namespace System.Threading
 {
@@ -107,4 +37,79 @@ namespace System.Threading
     }
 }
 ";
+
+    public static DiagnosticResult Diagnostic(string diagnosticId)
+    {
+        return CSharpCodeFixVerifier<TAnalyzer, TCodeFix, DefaultVerifier>
+            .Diagnostic(diagnosticId);
+    }
+
+    public static DiagnosticResult Diagnostic(DiagnosticDescriptor descriptor)
+    {
+        return CSharpCodeFixVerifier<TAnalyzer, TCodeFix, DefaultVerifier>
+            .Diagnostic(descriptor);
+    }
+
+    public static async Task VerifyAnalyzerAsync(
+        string source,
+        params DiagnosticResult[] expected)
+    {
+        var test = CreateTest();
+        test.TestCode = source;
+        test.ExpectedDiagnostics.AddRange(expected);
+        await test.RunAsync().ConfigureAwait(false);
+    }
+
+    public static async Task VerifyCodeFixAsync(
+        string source,
+        string fixedSource)
+    {
+        var test = CreateTest();
+        test.TestState.Sources.Add(source);
+        test.TestState.Sources.Add(LockStubSource);
+
+        test.FixedState.Sources.Add(fixedSource);
+        test.FixedState.Sources.Add(LockStubSource);
+
+        await test.RunAsync().ConfigureAwait(false);
+    }
+
+    public static async Task VerifyCodeFixAsync(
+        string source,
+        DiagnosticResult expected,
+        string fixedSource)
+    {
+        var test = CreateTest();
+        test.TestState.Sources.Add(source);
+        test.TestState.Sources.Add(LockStubSource);
+
+        test.FixedState.Sources.Add(fixedSource);
+        test.FixedState.Sources.Add(LockStubSource);
+
+        test.ExpectedDiagnostics.Add(expected);
+        await test.RunAsync().ConfigureAwait(false);
+    }
+
+    private static CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier> CreateTest()
+    {
+        var test = new CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier>
+        {
+            // Use a modern target framework so preview C# 13 features that depend on runtime support
+            // (e.g. byref-like generics) can compile in fixed-state.
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net90
+        };
+
+        test.SolutionTransforms.Add((solution, projectId) =>
+        {
+            var project = solution.GetProject(projectId)!;
+            var parseOptions = (CSharpParseOptions)project.ParseOptions!;
+
+            // Use Preview to exercise the "C# 13 or above" branch.
+            project = project.WithParseOptions(parseOptions.WithLanguageVersion(LanguageVersion.Preview));
+
+            return project.Solution;
+        });
+
+        return test;
+    }
 }

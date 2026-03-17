@@ -14,10 +14,10 @@ public sealed class PartialPropertiesIndexersRefactoringSafetyChecker : IFixProv
         CancellationToken cancellationToken = default)
     {
         if (diagnostic is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "diagnostic-null");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "diagnostic-null");
 
         if (syntaxTree?.Options.Language != LanguageNames.CSharp)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "not-csharp");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "not-csharp");
 
         var root = syntaxTree.GetRoot(cancellationToken);
         var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
@@ -25,58 +25,56 @@ public sealed class PartialPropertiesIndexersRefactoringSafetyChecker : IFixProv
         // Analyzer reports on identifier/this keyword; normalize to the property/indexer declaration.
         var propertyOrIndexer = node.FirstAncestorOrSelf<BasePropertyDeclarationSyntax>();
         if (propertyOrIndexer is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "property-or-indexer-not-found");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "property-or-indexer-not-found");
 
         // Must be in a partial type.
         var containingType = propertyOrIndexer.FirstAncestorOrSelf<TypeDeclarationSyntax>();
         if (containingType is null || !containingType.Modifiers.Any(SyntaxKind.PartialKeyword))
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "not-in-partial-type");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "not-in-partial-type");
 
         // Must not already be partial.
         if (propertyOrIndexer.Modifiers.Any(SyntaxKind.PartialKeyword))
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "already-partial");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "already-partial");
 
         // Must not be abstract.
         if (propertyOrIndexer.Modifiers.Any(SyntaxKind.AbstractKeyword))
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "abstract");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "abstract");
 
         // Must not be expression-bodied.
         if (propertyOrIndexer is PropertyDeclarationSyntax { ExpressionBody: not null })
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "expression-bodied");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "expression-bodied");
 
         if (propertyOrIndexer is IndexerDeclarationSyntax { ExpressionBody: not null })
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "expression-bodied");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "expression-bodied");
 
         if (propertyOrIndexer.AccessorList is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "no-accessor-list");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "no-accessor-list");
 
         // Conservative: only auto accessors (no bodies, no expression bodies).
         foreach (var accessor in propertyOrIndexer.AccessorList.Accessors)
-        {
             if (accessor.Body is not null || accessor.ExpressionBody is not null)
-                return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "non-auto-accessor");
-        }
+                return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "non-auto-accessor");
 
         // Ensure symbol exists (avoid broken code).
         var symbol = semanticModel.GetDeclaredSymbol(propertyOrIndexer, cancellationToken);
         if (symbol is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "symbol-null");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "symbol-null");
 
         // Validate that we can produce a valid partial member:
         // - Must have at least one accessor
         // - Must not be an explicit interface implementation (partial members can't be explicit)
         // - Must not be in an interface (partial properties/indexers are for classes/structs/records)
         if (propertyOrIndexer.AccessorList.Accessors.Count == 0)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "no-accessors");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "no-accessors");
 
         if (propertyOrIndexer is PropertyDeclarationSyntax { ExplicitInterfaceSpecifier: not null })
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "explicit-interface-impl");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "explicit-interface-impl");
 
         if (propertyOrIndexer is IndexerDeclarationSyntax { ExplicitInterfaceSpecifier: not null })
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "explicit-interface-impl");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "explicit-interface-impl");
 
         if (containingType is InterfaceDeclarationSyntax)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "interface-member");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "interface-member");
 
         return FixProviderSafetyResult.Safe();
     }

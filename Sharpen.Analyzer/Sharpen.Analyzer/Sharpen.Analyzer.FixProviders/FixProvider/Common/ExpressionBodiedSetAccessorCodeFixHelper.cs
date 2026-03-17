@@ -12,5 +12,8 @@ internal static class ExpressionBodiedSetAccessorCodeFixHelper
         AccessorDeclarationSyntax accessor,
         CancellationToken cancellationToken)
         where TAncestor : SyntaxNode
-        => ExpressionBodiedAccessorCodeFixHelper.UseExpressionBodyForSetAccessorAsync<TAncestor>(document, accessor, cancellationToken);
+    {
+        return ExpressionBodiedAccessorCodeFixHelper.UseExpressionBodyForSetAccessorAsync<TAncestor>(document, accessor,
+            cancellationToken);
+    }
 }

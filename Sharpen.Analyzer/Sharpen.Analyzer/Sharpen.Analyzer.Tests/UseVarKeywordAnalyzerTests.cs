@@ -3,14 +3,14 @@ using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
     Sharpen.Analyzer.Analyzers.CSharp7.UseVarKeywordAnalyzer, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
-namespace Sharpen.Analyzer.Tests
+namespace Sharpen.Analyzer.Tests;
+
+public class UseVarKeywordAnalyzerTests
 {
-    public class UseVarKeywordAnalyzerTests
+    [Fact]
+    public async Task UseVarKeywordAnalyzer_TriggersOnExplicitType()
     {
-        [Fact]
-        public async Task UseVarKeywordAnalyzer_TriggersOnExplicitType()
-        {
-            const string text = @"
+        const string text = @"
 using System.Collections.Generic;
 
 public class Example
@@ -22,17 +22,17 @@ public class Example
 }
 ";
 
-            var expected = Verifier.Diagnostic()
-                .WithLocation(8, 9)
-                .WithArguments("System.Collections.Generic.List<string>");
+        var expected = Verifier.Diagnostic()
+            .WithLocation(8, 9)
+            .WithArguments("System.Collections.Generic.List<string>");
 
-            await Verifier.VerifyAnalyzerAsync(text, expected);
-        }
+        await Verifier.VerifyAnalyzerAsync(text, expected);
+    }
 
-        [Fact]
-        public async Task UseVarKeywordAnalyzer_DoesNotTriggerOnVar()
-        {
-            const string text = @"
+    [Fact]
+    public async Task UseVarKeywordAnalyzer_DoesNotTriggerOnVar()
+    {
+        const string text = @"
 using System.Collections.Generic;
 
 public class Example
@@ -44,13 +44,13 @@ public class Example
 }
 ";
 
-            await Verifier.VerifyAnalyzerAsync(text);
-        }
+        await Verifier.VerifyAnalyzerAsync(text);
+    }
 
-        [Fact]
-        public async Task UseVarKeywordAnalyzer_DoesNotTriggerOnNonObjectCreation()
-        {
-            const string text = @"
+    [Fact]
+    public async Task UseVarKeywordAnalyzer_DoesNotTriggerOnNonObjectCreation()
+    {
+        const string text = @"
 public class Example
 {
     public void Test()
@@ -60,7 +60,6 @@ public class Example
 }
 ";
 
-            await Verifier.VerifyAnalyzerAsync(text);
-        }
+        await Verifier.VerifyAnalyzerAsync(text);
     }
 }

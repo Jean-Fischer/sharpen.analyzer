@@ -40,7 +40,8 @@ public static class CSharp5Samples
         Task.WaitAll(Task.Delay(10), Task.Delay(20));
     }
 
-    public static async Task ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousAsync(Stream stream)
+    public static async Task ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousAsync(
+        Stream stream)
     {
         // SHARPEN003 / SHARPEN009
         stream.Read(new byte[1], 0, 1);

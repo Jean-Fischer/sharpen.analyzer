@@ -87,8 +87,10 @@ public static class NullConditionalAssignmentPattern
         return expression;
     }
 
-    private static bool IsNullLiteral(ExpressionSyntax expression) =>
-        expression is LiteralExpressionSyntax literal && literal.Kind() == SyntaxKind.NullLiteralExpression;
+    private static bool IsNullLiteral(ExpressionSyntax expression)
+    {
+        return expression is LiteralExpressionSyntax literal && literal.Kind() == SyntaxKind.NullLiteralExpression;
+    }
 
     private static bool AreEquivalentIgnoringParentheses(ExpressionSyntax left, ExpressionSyntax right)
     {

@@ -2,14 +2,6 @@ namespace Sharpen.Analyzer.Samples.CSharp7.OutVariables;
 
 public static class DiscardOutVariablesInObjectCreationsSample
 {
-    private sealed class C
-    {
-        public C(out int value)
-        {
-            value = 123;
-        }
-    }
-
     public static void Run()
     {
         // Before (candidate):
@@ -21,5 +13,13 @@ public static class DiscardOutVariablesInObjectCreationsSample
 
         int value;
         _ = new C(out value);
+    }
+
+    private sealed class C
+    {
+        public C(out int value)
+        {
+            value = 123;
+        }
     }
 }

@@ -7,7 +7,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Sharpen.Analyzer.Common;
 using Sharpen.Analyzer.FixProvider.Common;
 using CSharpLanguageVersion = Sharpen.Analyzer.Common.CSharpLanguageVersion;
 
@@ -35,14 +34,15 @@ public sealed class UseRecordTypeCodeFixProvider : SharpenCodeFixProvider
         RegisterCodeFix(
             context,
             diagnostic,
-            title: "Convert to record",
-            equivalenceKey: "UseRecordType",
-            createChangedDocument: c => ConvertToRecordAsync(context.Document, classDecl, c));
+            "Convert to record",
+            "UseRecordType",
+            c => ConvertToRecordAsync(context.Document, classDecl, c));
 
         return Task.CompletedTask;
     }
 
-    private static async Task<Document> ConvertToRecordAsync(Document document, ClassDeclarationSyntax classDecl, CancellationToken ct)
+    private static async Task<Document> ConvertToRecordAsync(Document document, ClassDeclarationSyntax classDecl,
+        CancellationToken ct)
     {
         var root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
         if (root is null)
@@ -53,18 +53,19 @@ public sealed class UseRecordTypeCodeFixProvider : SharpenCodeFixProvider
 
         // Convert `class` keyword to `record` keyword.
         var recordDecl = SyntaxFactory.RecordDeclaration(
-                attributeLists: classDecl.AttributeLists,
-                modifiers: newModifiers,
-                keyword: SyntaxFactory.Token(classDecl.Keyword.LeadingTrivia, SyntaxKind.RecordKeyword, classDecl.Keyword.TrailingTrivia),
-                identifier: classDecl.Identifier,
-                typeParameterList: classDecl.TypeParameterList,
-                parameterList: null,
-                baseList: null,
-                constraintClauses: classDecl.ConstraintClauses,
-                openBraceToken: classDecl.OpenBraceToken,
-                members: classDecl.Members,
-                closeBraceToken: classDecl.CloseBraceToken,
-                semicolonToken: classDecl.SemicolonToken);
+            classDecl.AttributeLists,
+            newModifiers,
+            SyntaxFactory.Token(classDecl.Keyword.LeadingTrivia, SyntaxKind.RecordKeyword,
+                classDecl.Keyword.TrailingTrivia),
+            classDecl.Identifier,
+            classDecl.TypeParameterList,
+            null,
+            null,
+            classDecl.ConstraintClauses,
+            classDecl.OpenBraceToken,
+            classDecl.Members,
+            classDecl.CloseBraceToken,
+            classDecl.SemicolonToken);
 
         // Ensure we end with a semicolon for a simple record declaration.
         if (recordDecl.SemicolonToken.IsKind(SyntaxKind.None))

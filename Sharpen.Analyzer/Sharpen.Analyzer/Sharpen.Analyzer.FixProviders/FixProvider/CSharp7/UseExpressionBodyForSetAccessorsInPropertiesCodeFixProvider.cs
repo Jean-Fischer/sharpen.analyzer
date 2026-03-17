@@ -1,4 +1,3 @@
-using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -8,8 +7,10 @@ using Sharpen.Analyzer.FixProvider.Common;
 
 namespace Sharpen.Analyzer.FixProvider.CSharp7;
 
-[ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseExpressionBodyForSetAccessorsInPropertiesCodeFixProvider))]
-public sealed class UseExpressionBodyForSetAccessorsInPropertiesCodeFixProvider : ExpressionBodiedAccessorCodeFixProviderBase
+[ExportCodeFixProvider(LanguageNames.CSharp,
+    Name = nameof(UseExpressionBodyForSetAccessorsInPropertiesCodeFixProvider))]
+public sealed class
+    UseExpressionBodyForSetAccessorsInPropertiesCodeFixProvider : ExpressionBodiedAccessorCodeFixProviderBase
 {
     protected override string DiagnosticId => Rules.Rules.UseExpressionBodyForSetAccessorsInPropertiesRule.Id;
 
@@ -17,6 +18,10 @@ public sealed class UseExpressionBodyForSetAccessorsInPropertiesCodeFixProvider 
 
     protected override string EquivalenceKey => "UseExpressionBodyForSetAccessorsInProperties";
 
-    protected override Task<Document> CreateChangedDocumentAsync(Document document, AccessorDeclarationSyntax accessor, CancellationToken ct) =>
-        ExpressionBodiedAccessorCodeFixHelper.UseExpressionBodyForSetAccessorAsync<PropertyDeclarationSyntax>(document, accessor, ct);
+    protected override Task<Document> CreateChangedDocumentAsync(Document document, AccessorDeclarationSyntax accessor,
+        CancellationToken ct)
+    {
+        return ExpressionBodiedAccessorCodeFixHelper.UseExpressionBodyForSetAccessorAsync<PropertyDeclarationSyntax>(
+            document, accessor, ct);
+    }
 }

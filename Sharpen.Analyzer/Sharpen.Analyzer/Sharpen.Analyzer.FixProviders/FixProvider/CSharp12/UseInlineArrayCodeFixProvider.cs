@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
@@ -21,7 +22,10 @@ public sealed class UseInlineArrayCodeFixProvider : CodeFixProvider
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(CSharp12Rules.UseInlineArrayRule.Id);
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
@@ -39,13 +43,14 @@ public sealed class UseInlineArrayCodeFixProvider : CodeFixProvider
 
         context.RegisterCodeFix(
             CodeAction.Create(
-                title: "Use InlineArray",
-                createChangedDocument: ct => UseInlineArrayAsync(context.Document, @struct, diagnostic, ct),
-                equivalenceKey: nameof(UseInlineArrayCodeFixProvider)),
+                "Use InlineArray",
+                ct => UseInlineArrayAsync(context.Document, @struct, diagnostic, ct),
+                nameof(UseInlineArrayCodeFixProvider)),
             diagnostic);
     }
 
-    private static async Task<Document> UseInlineArrayAsync(Document document, StructDeclarationSyntax @struct, Diagnostic diagnostic, CancellationToken cancellationToken)
+    private static async Task<Document> UseInlineArrayAsync(Document document, StructDeclarationSyntax @struct,
+        Diagnostic diagnostic, CancellationToken cancellationToken)
     {
         if (diagnostic.GetMessage() is null)
             return document;
@@ -59,8 +64,8 @@ public sealed class UseInlineArrayCodeFixProvider : CodeFixProvider
             return document;
 
         var currentStruct = currentRoot.FindNode(@struct.Span, getInnermostNodeForTie: true)
-            .FirstAncestorOrSelf<StructDeclarationSyntax>()
-            ?? @struct;
+                                .FirstAncestorOrSelf<StructDeclarationSyntax>()
+                            ?? @struct;
 
         // Diagnostic message argument 0 is N.
         var n = 1;
@@ -69,7 +74,7 @@ public sealed class UseInlineArrayCodeFixProvider : CodeFixProvider
             // We don't have access to Diagnostic.Arguments here (internal), so parse from the message.
             // Message format: "Use [InlineArray({0})] for this fixed-size buffer struct"
             var message = diagnostic.GetMessage();
-            var start = message.IndexOf("InlineArray(", System.StringComparison.Ordinal);
+            var start = message.IndexOf("InlineArray(", StringComparison.Ordinal);
             if (start >= 0)
             {
                 start += "InlineArray(".Length;
@@ -90,7 +95,8 @@ public sealed class UseInlineArrayCodeFixProvider : CodeFixProvider
         var originalFields = currentStruct.Members.OfType<FieldDeclarationSyntax>().ToArray();
         if (originalFields.Length == 0)
         {
-            var updatedStructWithoutFields = currentStruct.WithAttributeLists(currentStruct.AttributeLists.Insert(0, attributeList));
+            var updatedStructWithoutFields =
+                currentStruct.WithAttributeLists(currentStruct.AttributeLists.Insert(0, attributeList));
             editor.ReplaceNode(currentStruct, updatedStructWithoutFields);
             return editor.GetChangedDocument();
         }

@@ -1,10 +1,10 @@
 using System.Collections.Immutable;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sharpen.Analyzer.Common;
+using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp11;
 
@@ -12,7 +12,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp11;
 public sealed class UseGenericMathAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.CSharp11Rules.UseGenericMathRule);
+        ImmutableArray.Create(CSharp11Rules.UseGenericMathRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -69,7 +69,7 @@ public sealed class UseGenericMathAnalyzer : DiagnosticAnalyzer
             return;
 
         var diagnostic = Diagnostic.Create(
-            Rules.CSharp11Rules.UseGenericMathRule,
+            CSharp11Rules.UseGenericMathRule,
             binary.OperatorToken.GetLocation(),
             typeParam.Name);
 
@@ -87,7 +87,8 @@ public sealed class UseGenericMathAnalyzer : DiagnosticAnalyzer
                 continue;
 
             // INumber<TSelf> where TSelf is the type parameter itself.
-            if (named.TypeArguments.Length == 1 && SymbolEqualityComparer.Default.Equals(named.TypeArguments[0], typeParam))
+            if (named.TypeArguments.Length == 1 &&
+                SymbolEqualityComparer.Default.Equals(named.TypeArguments[0], typeParam))
                 return true;
         }
 

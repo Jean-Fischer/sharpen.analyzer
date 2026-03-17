@@ -1,5 +1,4 @@
 using System.Collections.Immutable;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -53,11 +52,12 @@ public sealed class UseTargetTypedNewAnalyzer : DiagnosticAnalyzer
                 // Explicit local declaration: T x = new T(...)
                 // Only safe when the declared type is exactly the created type.
                 // (e.g. don't suggest for: ICollection<object> x = new List<object>();)
-                var declaredType = context.SemanticModel.GetTypeInfo(variableDeclaration.Type, context.CancellationToken).Type;
-                if (declaredType != null && createdType != null && SymbolEqualityComparer.Default.Equals(declaredType, createdType))
-                {
-                    context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule, objectCreation.GetLocation()));
-                }
+                var declaredType = context.SemanticModel
+                    .GetTypeInfo(variableDeclaration.Type, context.CancellationToken).Type;
+                if (declaredType != null && createdType != null &&
+                    SymbolEqualityComparer.Default.Equals(declaredType, createdType))
+                    context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule,
+                        objectCreation.GetLocation()));
 
                 return;
             }
@@ -65,11 +65,12 @@ public sealed class UseTargetTypedNewAnalyzer : DiagnosticAnalyzer
             if (equalsValue.Parent is PropertyDeclarationSyntax propertyDeclaration)
             {
                 // Property initializer: T P {get;} = new T(...)
-                var declaredType = context.SemanticModel.GetTypeInfo(propertyDeclaration.Type, context.CancellationToken).Type;
-                if (declaredType != null && createdType != null && SymbolEqualityComparer.Default.Equals(declaredType, createdType))
-                {
-                    context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule, objectCreation.GetLocation()));
-                }
+                var declaredType = context.SemanticModel
+                    .GetTypeInfo(propertyDeclaration.Type, context.CancellationToken).Type;
+                if (declaredType != null && createdType != null &&
+                    SymbolEqualityComparer.Default.Equals(declaredType, createdType))
+                    context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule,
+                        objectCreation.GetLocation()));
 
                 return;
             }
@@ -77,25 +78,28 @@ public sealed class UseTargetTypedNewAnalyzer : DiagnosticAnalyzer
             if (equalsValue.Parent is FieldDeclarationSyntax fieldDeclaration)
             {
                 // Field initializer: T f = new T(...)
-                var declaredType = context.SemanticModel.GetTypeInfo(fieldDeclaration.Declaration.Type, context.CancellationToken).Type;
-                if (declaredType != null && createdType != null && SymbolEqualityComparer.Default.Equals(declaredType, createdType))
-                {
-                    context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule, objectCreation.GetLocation()));
-                }
+                var declaredType = context.SemanticModel
+                    .GetTypeInfo(fieldDeclaration.Declaration.Type, context.CancellationToken).Type;
+                if (declaredType != null && createdType != null &&
+                    SymbolEqualityComparer.Default.Equals(declaredType, createdType))
+                    context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule,
+                        objectCreation.GetLocation()));
 
                 return;
             }
         }
 
         // 6.2 assignments/returns where target type is unambiguous
-        if (objectCreation.Parent is AssignmentExpressionSyntax assignment && assignment.IsKind(SyntaxKind.SimpleAssignmentExpression))
+        if (objectCreation.Parent is AssignmentExpressionSyntax assignment &&
+            assignment.IsKind(SyntaxKind.SimpleAssignmentExpression))
         {
             var leftType = context.SemanticModel.GetTypeInfo(assignment.Left, context.CancellationToken).Type;
             var rightType = context.SemanticModel.GetTypeInfo(objectCreation, context.CancellationToken).Type;
 
             if (leftType != null && rightType != null && SymbolEqualityComparer.Default.Equals(leftType, rightType))
             {
-                context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule, objectCreation.GetLocation()));
+                context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule,
+                    objectCreation.GetLocation()));
                 return;
             }
         }
@@ -109,9 +113,8 @@ public sealed class UseTargetTypedNewAnalyzer : DiagnosticAnalyzer
                 var createdType = context.SemanticModel.GetTypeInfo(objectCreation, context.CancellationToken).Type;
 
                 if (createdType != null && SymbolEqualityComparer.Default.Equals(returnType, createdType))
-                {
-                    context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule, objectCreation.GetLocation()));
-                }
+                    context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule,
+                        objectCreation.GetLocation()));
             }
         }
     }

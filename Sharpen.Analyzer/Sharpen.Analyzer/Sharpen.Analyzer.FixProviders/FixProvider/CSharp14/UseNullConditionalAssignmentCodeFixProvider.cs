@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
+using Sharpen.Analyzer.Analyzers.CSharp14;
 using Sharpen.Analyzer.FixProvider.Common;
 using Sharpen.Analyzer.Rules;
 using Sharpen.Analyzer.Safety.FixProviderSafety;
@@ -27,41 +28,44 @@ public sealed class UseNullConditionalAssignmentCodeFixProvider : SharpenCodeFix
         if (ifStatement is null)
             return;
 
-        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+        var semanticModel =
+            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
         if (semanticModel is null)
             return;
 
         var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            checker: new NullConditionalAssignmentSafetyChecker(),
-            syntaxTree: root.SyntaxTree,
-            semanticModel: semanticModel,
-            diagnostic: diagnostic,
-            matchSucceeded: true,
-            cancellationToken: context.CancellationToken);
+            new NullConditionalAssignmentSafetyChecker(),
+            root.SyntaxTree,
+            semanticModel,
+            diagnostic,
+            true,
+            context.CancellationToken);
 
         if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
             return;
 
         RegisterCodeFix(
-            context: context,
-            diagnostic: diagnostic,
-            title: "Use null-conditional assignment",
-            equivalenceKey: nameof(UseNullConditionalAssignmentCodeFixProvider),
-            createChangedDocument: ct => ApplyAsync(context.Document, ifStatement, ct));
+            context,
+            diagnostic,
+            "Use null-conditional assignment",
+            nameof(UseNullConditionalAssignmentCodeFixProvider),
+            ct => ApplyAsync(context.Document, ifStatement, ct));
     }
 
-    private static async Task<Document> ApplyAsync(Document document, IfStatementSyntax ifStatement, CancellationToken ct)
+    private static async Task<Document> ApplyAsync(Document document, IfStatementSyntax ifStatement,
+        CancellationToken ct)
     {
         var root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false);
         if (root is null)
             return document;
 
         // Re-find node in current root.
-        var currentIf = root.FindNode(ifStatement.Span, getInnermostNodeForTie: true).FirstAncestorOrSelf<IfStatementSyntax>();
+        var currentIf = root.FindNode(ifStatement.Span, getInnermostNodeForTie: true)
+            .FirstAncestorOrSelf<IfStatementSyntax>();
         if (currentIf is null)
             return document;
 
-        if (!Analyzers.CSharp14.NullConditionalAssignmentPattern.TryMatch(
+        if (!NullConditionalAssignmentPattern.TryMatch(
                 currentIf,
                 out var checkedExpression,
                 out var memberAccess,
@@ -73,14 +77,15 @@ public sealed class UseNullConditionalAssignmentCodeFixProvider : SharpenCodeFix
         // Roslyn represents this as a SimpleAssignmentExpression whose LHS is a ConditionalAccessExpression.
         // (Not as a ConditionalAccessExpression whose WhenNotNull is an assignment.)
         var conditionalAccess = SyntaxFactory.ConditionalAccessExpression(
-            expression: Analyzers.CSharp14.NullConditionalAssignmentPattern.StripParentheses(checkedExpression).WithTriviaFrom(memberAccess.Expression),
-            whenNotNull: SyntaxFactory.MemberBindingExpression(memberAccess.Name));
+            NullConditionalAssignmentPattern.StripParentheses(checkedExpression)
+                .WithTriviaFrom(memberAccess.Expression),
+            SyntaxFactory.MemberBindingExpression(memberAccess.Name));
 
         var newAssignment = SyntaxFactory.AssignmentExpression(
-            kind: SyntaxKind.SimpleAssignmentExpression,
-            left: conditionalAccess,
-            operatorToken: assignment.OperatorToken,
-            right: assignment.Right);
+            SyntaxKind.SimpleAssignmentExpression,
+            conditionalAccess,
+            assignment.OperatorToken,
+            assignment.Right);
 
         var newStatement = SyntaxFactory.ExpressionStatement(newAssignment)
             .WithLeadingTrivia(currentIf.GetLeadingTrivia())
@@ -91,5 +96,4 @@ public sealed class UseNullConditionalAssignmentCodeFixProvider : SharpenCodeFix
 
         return editor.GetChangedDocument();
     }
-
 }

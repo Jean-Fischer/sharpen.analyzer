@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -17,51 +16,53 @@ public sealed class PreferParamsCollectionsSafetyChecker : IFixProviderSafetyChe
         CancellationToken cancellationToken = default)
     {
         if (diagnostic is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "diagnostic-null");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "diagnostic-null");
 
         if (syntaxTree?.Options.Language != LanguageNames.CSharp)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "not-csharp");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "not-csharp");
 
         var root = syntaxTree.GetRoot(cancellationToken);
         var parameter = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true)
             .FirstAncestorOrSelf<ParameterSyntax>();
         if (parameter is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "parameter-not-found");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "parameter-not-found");
 
         var method = parameter.FirstAncestorOrSelf<BaseMethodDeclarationSyntax>();
         if (method is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "method-not-found");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "method-not-found");
 
-        var methodSymbol = semanticModel.GetDeclaredSymbol(method, cancellationToken) as IMethodSymbol;
+        var methodSymbol = semanticModel.GetDeclaredSymbol(method, cancellationToken);
         if (methodSymbol is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "method-symbol-null");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "method-symbol-null");
 
         // Only allow non-public APIs.
-        if (methodSymbol.DeclaredAccessibility is Accessibility.Public or Accessibility.Protected or Accessibility.ProtectedOrInternal)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "public-or-protected");
+        if (methodSymbol.DeclaredAccessibility is Accessibility.Public or Accessibility.Protected
+            or Accessibility.ProtectedOrInternal)
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "public-or-protected");
 
-        var parameterSymbol = semanticModel.GetDeclaredSymbol(parameter, cancellationToken) as IParameterSymbol;
+        var parameterSymbol = semanticModel.GetDeclaredSymbol(parameter, cancellationToken);
         if (parameterSymbol is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "parameter-symbol-null");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "parameter-symbol-null");
 
         if (!parameterSymbol.IsParams)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "not-params");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "not-params");
 
         if (parameterSymbol.Type is not IArrayTypeSymbol arrayType || arrayType.Rank != 1)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "not-1d-array");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "not-1d-array");
 
         // Target type must exist.
         var readOnlySpanType = semanticModel.Compilation.GetTypeByMetadataName("System.ReadOnlySpan`1");
         if (readOnlySpanType is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "readonlyspan-missing");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "readonlyspan-missing");
 
         // Body must not use array-only semantics.
         if (method.Body is null && method.ExpressionBody is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "no-body");
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "no-body");
 
         var forbidden = FindForbiddenArraySemantics(method, parameterSymbol, semanticModel, cancellationToken);
         if (forbidden.Count > 0)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId: "array-semantics", message: string.Join(", ", forbidden));
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "array-semantics",
+                string.Join(", ", forbidden));
 
         // NOTE: We do not attempt to prove "no external call sites" here because the safety checker
         // runs per-document. The fix provider updates in-solution references; external callers are
@@ -78,31 +79,26 @@ public sealed class PreferParamsCollectionsSafetyChecker : IFixProviderSafetyChe
     {
         var forbidden = new HashSet<string>(StringComparer.Ordinal);
 
-        IEnumerable<SyntaxNode> nodes = method.Body?.DescendantNodes() ?? method.ExpressionBody!.DescendantNodes();
+        var nodes = method.Body?.DescendantNodes() ?? method.ExpressionBody!.DescendantNodes();
 
         foreach (var node in nodes)
         {
             // values.Length
             if (node is MemberAccessExpressionSyntax memberAccess)
-            {
                 if (IsParameterReference(memberAccess.Expression, parameterSymbol, semanticModel, ct))
                 {
                     var name = memberAccess.Name.Identifier.ValueText;
                     if (name is "Length" or "LongLength" or "Rank")
                         forbidden.Add($"member:{name}");
                 }
-            }
 
             // values[i]
             if (node is ElementAccessExpressionSyntax elementAccess)
-            {
                 if (IsParameterReference(elementAccess.Expression, parameterSymbol, semanticModel, ct))
                     forbidden.Add("indexing");
-            }
 
             // values.GetLength(...)
             if (node is InvocationExpressionSyntax invocation)
-            {
                 if (invocation.Expression is MemberAccessExpressionSyntax invokedMember)
                 {
                     if (IsParameterReference(invokedMember.Expression, parameterSymbol, semanticModel, ct))
@@ -115,24 +111,20 @@ public sealed class PreferParamsCollectionsSafetyChecker : IFixProviderSafetyChe
                     // Array.*(values, ...)
                     var invokedSymbol = semanticModel.GetSymbolInfo(invocation, ct).Symbol as IMethodSymbol;
                     if (invokedSymbol?.ContainingType?.ToDisplayString() == "System.Array")
-                    {
                         foreach (var arg in invocation.ArgumentList.Arguments)
-                        {
                             if (IsParameterReference(arg.Expression, parameterSymbol, semanticModel, ct))
                             {
                                 forbidden.Add($"System.Array:{invokedSymbol.Name}");
                                 break;
                             }
-                        }
-                    }
                 }
-            }
         }
 
         return forbidden;
     }
 
-    private static bool IsParameterReference(ExpressionSyntax expression, IParameterSymbol parameterSymbol, SemanticModel semanticModel, CancellationToken ct)
+    private static bool IsParameterReference(ExpressionSyntax expression, IParameterSymbol parameterSymbol,
+        SemanticModel semanticModel, CancellationToken ct)
     {
         expression = expression switch
         {

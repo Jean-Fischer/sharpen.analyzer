@@ -2,7 +2,8 @@ using System.Threading.Tasks;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskInsteadOfCallingTaskWaitAnalyzer,
-    Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskInsteadOfCallingTaskWaitCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+    Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskInsteadOfCallingTaskWaitCodeFixProvider,
+    Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 
@@ -22,7 +23,7 @@ class C
     }
 }";
 
-        var expected = Verifier.Diagnostic(Sharpen.Analyzer.Rules.Rules.AwaitTaskInsteadOfCallingTaskWaitRule)
+        var expected = Verifier.Diagnostic(Rules.Rules.AwaitTaskInsteadOfCallingTaskWaitRule)
             .WithSpan(8, 9, 8, 20);
 
         await Verifier.VerifyAnalyzerAsync(test, expected);
@@ -71,7 +72,7 @@ class C
     }
 }";
 
-        var expected = Verifier.Diagnostic(Sharpen.Analyzer.Rules.Rules.AwaitTaskInsteadOfCallingTaskWaitRule)
+        var expected = Verifier.Diagnostic(Rules.Rules.AwaitTaskInsteadOfCallingTaskWaitRule)
             .WithSpan(8, 9, 8, 20);
 
         await Verifier.VerifyCodeFixAsync(test, expected, fixedCode);
@@ -91,7 +92,7 @@ class C
     }
 }";
 
-        var expected = Verifier.Diagnostic(Sharpen.Analyzer.Rules.Rules.AwaitTaskInsteadOfCallingTaskWaitRule)
+        var expected = Verifier.Diagnostic(Rules.Rules.AwaitTaskInsteadOfCallingTaskWaitRule)
             .WithSpan(8, 9, 8, 21);
 
         await Verifier.VerifyAnalyzerAsync(test, expected);

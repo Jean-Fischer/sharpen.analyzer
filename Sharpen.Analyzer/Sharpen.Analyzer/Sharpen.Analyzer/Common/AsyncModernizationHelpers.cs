@@ -12,14 +12,14 @@ public static class AsyncModernizationHelpers
         var localFunction = node.FirstAncestorOrSelf<LocalFunctionStatementSyntax>();
         if (localFunction != null)
         {
-            var symbol = semanticModel.GetDeclaredSymbol(localFunction) as IMethodSymbol;
+            var symbol = semanticModel.GetDeclaredSymbol(localFunction);
             return symbol?.IsAsync == true;
         }
 
         var method = node.FirstAncestorOrSelf<MethodDeclarationSyntax>();
         if (method != null)
         {
-            var symbol = semanticModel.GetDeclaredSymbol(method) as IMethodSymbol;
+            var symbol = semanticModel.GetDeclaredSymbol(method);
             return symbol?.IsAsync == true;
         }
 
@@ -52,7 +52,7 @@ public static class AsyncModernizationHelpers
         var localFunction = node.FirstAncestorOrSelf<LocalFunctionStatementSyntax>();
         if (localFunction != null)
         {
-            var symbol = semanticModel.GetDeclaredSymbol(localFunction) as IMethodSymbol;
+            var symbol = semanticModel.GetDeclaredSymbol(localFunction);
             if (symbol == null) return false;
 
             // Only allow local functions that already return Task/Task<T>/ValueTask/ValueTask<T>.
@@ -65,7 +65,7 @@ public static class AsyncModernizationHelpers
         var method = node.FirstAncestorOrSelf<MethodDeclarationSyntax>();
         if (method != null)
         {
-            var symbol = semanticModel.GetDeclaredSymbol(method) as IMethodSymbol;
+            var symbol = semanticModel.GetDeclaredSymbol(method);
             if (symbol == null) return false;
 
             // Only allow methods that already return Task/Task<T>/ValueTask/ValueTask<T>.
@@ -77,10 +77,9 @@ public static class AsyncModernizationHelpers
             if (symbol.ExplicitInterfaceImplementations.Length > 0) return false;
             if (symbol.ContainingType?.AllInterfaces.Any(i =>
                     i.GetMembers(symbol.Name).OfType<IMethodSymbol>().Any(m =>
-                        SymbolEqualityComparer.Default.Equals(symbol.ContainingType.FindImplementationForInterfaceMember(m), symbol))) == true)
-            {
+                        SymbolEqualityComparer.Default.Equals(
+                            symbol.ContainingType.FindImplementationForInterfaceMember(m), symbol))) == true)
                 return false;
-            }
 
             return !symbol.IsAsync;
         }
@@ -95,10 +94,7 @@ public static class AsyncModernizationHelpers
         if (method.ReturnType == null) return false;
 
         var returnType = method.ReturnType;
-        if (returnType is INamedTypeSymbol named && named.IsGenericType)
-        {
-            returnType = named.ConstructedFrom;
-        }
+        if (returnType is INamedTypeSymbol named && named.IsGenericType) returnType = named.ConstructedFrom;
 
         var fullName = returnType.ToDisplayString();
         return fullName == "System.Threading.Tasks.Task" ||
@@ -126,7 +122,8 @@ public static class AsyncModernizationHelpers
         {
             if (localFunction.Modifiers.Any(m => m.IsKind(SyntaxKind.AsyncKeyword))) return root;
 
-            var newLocalFunction = localFunction.WithModifiers(localFunction.Modifiers.Add(SyntaxFactory.Token(SyntaxKind.AsyncKeyword)));
+            var newLocalFunction =
+                localFunction.WithModifiers(localFunction.Modifiers.Add(SyntaxFactory.Token(SyntaxKind.AsyncKeyword)));
             return root.ReplaceNode(localFunction, newLocalFunction);
         }
 

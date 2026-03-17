@@ -4,5 +4,5 @@ public enum FixProviderSafetyOutcome
 {
     MatchFailed,
     Safe,
-    Unsafe,
+    Unsafe
 }

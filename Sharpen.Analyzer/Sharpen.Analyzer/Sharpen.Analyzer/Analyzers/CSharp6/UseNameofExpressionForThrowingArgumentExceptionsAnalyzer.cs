@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -8,7 +7,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sharpen.Analyzer.Common;
-using Sharpen.Analyzer.Rules;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp6;
 
@@ -30,57 +28,31 @@ public sealed class UseNameofExpressionForThrowingArgumentExceptionsAnalyzer : D
     {
         var throwStatement = (ThrowStatementSyntax)context.Node;
 
-        if (throwStatement.Expression is not ObjectCreationExpressionSyntax objectCreation)
-        {
-            return;
-        }
+        if (throwStatement.Expression is not ObjectCreationExpressionSyntax objectCreation) return;
 
-        if (objectCreation.ArgumentList is null)
-        {
-            return;
-        }
+        if (objectCreation.ArgumentList is null) return;
 
         var semanticModel = context.SemanticModel;
         var cancellationToken = context.CancellationToken;
 
         var createdType = semanticModel.GetTypeInfo(objectCreation, cancellationToken).Type as INamedTypeSymbol;
-        if (createdType is null)
-        {
-            return;
-        }
+        if (createdType is null) return;
 
-        if (!IsSupportedArgumentExceptionType(createdType))
-        {
-            return;
-        }
+        if (!IsSupportedArgumentExceptionType(createdType)) return;
 
-        if (!TryGetParameterNameArgumentIndex(createdType, objectCreation, semanticModel, cancellationToken, out var paramNameArgIndex))
-        {
-            return;
-        }
+        if (!TryGetParameterNameArgumentIndex(createdType, objectCreation, semanticModel, cancellationToken,
+                out var paramNameArgIndex)) return;
 
-        if (paramNameArgIndex < 0 || paramNameArgIndex >= objectCreation.ArgumentList.Arguments.Count)
-        {
-            return;
-        }
+        if (paramNameArgIndex < 0 || paramNameArgIndex >= objectCreation.ArgumentList.Arguments.Count) return;
 
         var paramNameArgument = objectCreation.ArgumentList.Arguments[paramNameArgIndex];
         var paramNameExpression = paramNameArgument.Expression;
 
-        if (CSharp6SyntaxHelpers.IsNameofExpression(paramNameExpression))
-        {
-            return;
-        }
+        if (CSharp6SyntaxHelpers.IsNameofExpression(paramNameExpression)) return;
 
-        if (!CSharp6SyntaxHelpers.TryGetStringLiteralValue(paramNameExpression, out var paramName))
-        {
-            return;
-        }
+        if (!CSharp6SyntaxHelpers.TryGetStringLiteralValue(paramNameExpression, out var paramName)) return;
 
-        if (!IsInScopeParameterName(paramName, throwStatement, semanticModel, cancellationToken))
-        {
-            return;
-        }
+        if (!IsInScopeParameterName(paramName, throwStatement, semanticModel, cancellationToken)) return;
 
         context.ReportDiagnostic(
             Diagnostic.Create(
@@ -97,9 +69,7 @@ public sealed class UseNameofExpressionForThrowingArgumentExceptionsAnalyzer : D
             nameof(ArgumentException) or
             nameof(ArgumentNullException) or
             nameof(ArgumentOutOfRangeException)))
-        {
             return false;
-        }
 
         // Ensure it's System.*
         return createdType.ContainingNamespace?.ToDisplayString() == "System";
@@ -116,26 +86,17 @@ public sealed class UseNameofExpressionForThrowingArgumentExceptionsAnalyzer : D
 
         // Prefer the actual constructor symbol to determine which argument is the paramName.
         var ctor = semanticModel.GetSymbolInfo(objectCreation, cancellationToken).Symbol as IMethodSymbol;
-        if (ctor is null)
-        {
-            return false;
-        }
+        if (ctor is null) return false;
 
         // Find the parameter named "paramName".
         // This matches the BCL constructors for ArgumentException/ArgumentNullException/ArgumentOutOfRangeException.
         var paramNameParam = ctor.Parameters.FirstOrDefault(p => p.Name == "paramName");
-        if (paramNameParam is null)
-        {
-            return false;
-        }
+        if (paramNameParam is null) return false;
 
         // Map the constructor parameter to the argument index.
         // Handle named arguments and positional arguments.
         var args = objectCreation.ArgumentList?.Arguments;
-        if (args is null)
-        {
-            return false;
-        }
+        if (args is null) return false;
 
         // Named argument: paramName: "p"
         for (var i = 0; i < args.Value.Count; i++)
@@ -162,22 +123,15 @@ public sealed class UseNameofExpressionForThrowingArgumentExceptionsAnalyzer : D
         // Find the nearest enclosing symbol that can have parameters.
         // This covers methods, constructors, local functions, and lambdas.
         var enclosingSymbol = semanticModel.GetEnclosingSymbol(throwStatement.SpanStart, cancellationToken);
-        if (enclosingSymbol is null)
-        {
-            return false;
-        }
+        if (enclosingSymbol is null) return false;
 
-        IEnumerable<IParameterSymbol> parameters = Enumerable.Empty<IParameterSymbol>();
+        var parameters = Enumerable.Empty<IParameterSymbol>();
 
         if (enclosingSymbol is IMethodSymbol methodSymbol)
-        {
             parameters = methodSymbol.Parameters;
-        }
         else if (enclosingSymbol is IPropertySymbol propertySymbol)
-        {
             // Indexer accessors can throw; include indexer parameters.
             parameters = propertySymbol.Parameters;
-        }
 
         return parameters.Any(p => p.Name == paramName);
     }

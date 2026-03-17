@@ -34,6 +34,7 @@ public sealed class UseNullConditionalAssignmentAnalyzer : DiagnosticAnalyzer
 
         // Only support simple member access: x.Member = rhs;
         // (No element access, no conditional access, no compound assignments.)
-        context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseNullConditionalAssignmentRule, ifStatement.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseNullConditionalAssignmentRule,
+            ifStatement.GetLocation()));
     }
 }

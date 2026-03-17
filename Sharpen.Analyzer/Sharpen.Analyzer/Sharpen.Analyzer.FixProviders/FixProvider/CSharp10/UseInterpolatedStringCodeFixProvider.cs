@@ -1,10 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -14,6 +12,8 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
+using Sharpen.Analyzer.FixProvider.Common;
+using Sharpen.Analyzer.Rules;
 using Sharpen.Analyzer.Safety.FixProviderSafety;
 
 namespace Sharpen.Analyzer.FixProvider.CSharp10;
@@ -24,10 +24,13 @@ public sealed class UseInterpolatedStringCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(
-            Rules.CSharp10Rules.UseInterpolatedStringRule.Id,
-            Rules.CSharp10Rules.UseConstInterpolatedStringRule.Id);
+            CSharp10Rules.UseInterpolatedStringRule.Id,
+            CSharp10Rules.UseConstInterpolatedStringRule.Id);
 
-    public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+    public override FixAllProvider GetFixAllProvider()
+    {
+        return WellKnownFixAllProviders.BatchFixer;
+    }
 
     public override async Task RegisterCodeFixesAsync(CodeFixContext context)
     {
@@ -49,11 +52,11 @@ public sealed class UseInterpolatedStringCodeFixProvider : CodeFixProvider
 
         // Fix-provider-side safety gate: only offer code actions when the mapped safety checker says it's safe.
         var safetyEvaluation = FixProviderSafetyRunner.Evaluate(
-            semanticModel: semanticModel,
-            fixProviderType: typeof(UseInterpolatedStringCodeFixProvider),
-            node: node,
-            diagnostic: diagnostic,
-            cancellationToken: context.CancellationToken);
+            semanticModel,
+            typeof(UseInterpolatedStringCodeFixProvider),
+            node,
+            diagnostic,
+            context.CancellationToken);
 
         if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
             return;
@@ -62,32 +65,31 @@ public sealed class UseInterpolatedStringCodeFixProvider : CodeFixProvider
         {
             context.RegisterCodeFix(
                 CodeAction.Create(
-                    title: "Use interpolated string",
-                    createChangedDocument: c => FixStringFormatAsync(context.Document, invocation, c),
-                    equivalenceKey: "UseInterpolatedString_StringFormat"),
+                    "Use interpolated string",
+                    c => FixStringFormatAsync(context.Document, invocation, c),
+                    "UseInterpolatedString_StringFormat"),
                 diagnostic);
             return;
         }
 
         var add = node.FirstAncestorOrSelf<BinaryExpressionSyntax>();
         if (add != null && add.IsKind(SyntaxKind.AddExpression))
-        {
             context.RegisterCodeFix(
                 CodeAction.Create(
-                    title: "Use interpolated string",
-                    createChangedDocument: c => FixConcatenationAsync(context.Document, add, c),
-                    equivalenceKey: "UseInterpolatedString_Concat"),
+                    "Use interpolated string",
+                    c => FixConcatenationAsync(context.Document, add, c),
+                    "UseInterpolatedString_Concat"),
                 diagnostic);
-        }
     }
 
     private static async Task<bool> IsCSharp10OrAboveAsync(Document document, CancellationToken ct)
     {
         var compilation = await document.Project.GetCompilationAsync(ct).ConfigureAwait(false);
-        return compilation != null && Common.CSharpLanguageVersion.IsCSharp10OrAbove(compilation);
+        return compilation != null && CSharpLanguageVersion.IsCSharp10OrAbove(compilation);
     }
 
-    private static async Task<Document> FixStringFormatAsync(Document document, InvocationExpressionSyntax invocation, CancellationToken ct)
+    private static async Task<Document> FixStringFormatAsync(Document document, InvocationExpressionSyntax invocation,
+        CancellationToken ct)
     {
         // Convert string.Format("Hello, {0}!", name) => $"Hello, {name}!"
         if (invocation.Expression is not MemberAccessExpressionSyntax ma)
@@ -156,12 +158,13 @@ public sealed class UseInterpolatedStringCodeFixProvider : CodeFixProvider
                     return null;
 
                 sb.Append("{");
-                sb.Append(args[index].ToString());
+                sb.Append(args[index]);
                 if (parts.Length == 2)
                 {
                     sb.Append(":");
                     sb.Append(parts[1]);
                 }
+
                 sb.Append("}");
 
                 i = end;
@@ -193,7 +196,8 @@ public sealed class UseInterpolatedStringCodeFixProvider : CodeFixProvider
         return sb.ToString();
     }
 
-    private static async Task<Document> FixConcatenationAsync(Document document, BinaryExpressionSyntax add, CancellationToken ct)
+    private static async Task<Document> FixConcatenationAsync(Document document, BinaryExpressionSyntax add,
+        CancellationToken ct)
     {
         // Convert "Hello, " + name + "!" => $"Hello, {name}!"
         // Only handles + chains.
@@ -206,7 +210,6 @@ public sealed class UseInterpolatedStringCodeFixProvider : CodeFixProvider
         sb.Append("$\"");
 
         foreach (var part in parts)
-        {
             if (part is LiteralExpressionSyntax lit && lit.IsKind(SyntaxKind.StringLiteralExpression))
             {
                 var text = lit.Token.ValueText;
@@ -215,10 +218,9 @@ public sealed class UseInterpolatedStringCodeFixProvider : CodeFixProvider
             else
             {
                 sb.Append("{");
-                sb.Append(part.ToString());
+                sb.Append(part);
                 sb.Append("}");
             }
-        }
 
         sb.Append("\"");
 
