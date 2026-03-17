@@ -32,10 +32,19 @@ internal static class FixProviderSafetyTypeResolution
             }
         }
 
-        // IMPORTANT: do not call Assembly.Load here.
-        // This code lives in an analyzer assembly and is subject to RS1035.
-        // The test project already references Sharpen.Analyzer.FixProviders, so the assembly
-        // will be loaded by the runtime when needed.
-        return null;
+        // If the fix provider assembly isn't loaded yet, try to force-load it in a safe way.
+        //
+        // Rationale:
+        // - In some test/coverage runners, a referenced assembly may not be loaded until a type is touched.
+        // - We must not call Assembly.Load here (analyzer assemblies are subject to RS1035).
+        // - Type.GetType("Namespace.Type, AssemblyName") triggers normal type resolution without explicit loads.
+        //
+        // This keeps production behavior unchanged when the assembly is already loaded, while making
+        // validation robust in CI/coverage runs.
+        var assemblyQualifiedName = preferredAssemblyName is null
+            ? fullName
+            : $"{fullName}, {preferredAssemblyName}";
+
+        return Type.GetType(assemblyQualifiedName, throwOnError: false, ignoreCase: false);
     }
 }
