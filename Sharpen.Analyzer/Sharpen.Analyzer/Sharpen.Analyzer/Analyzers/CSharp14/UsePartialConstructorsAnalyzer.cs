@@ -43,9 +43,7 @@ public sealed class UsePartialConstructorsAnalyzer : DiagnosticAnalyzer
             if (!LooksLikeGeneratedInitializationMethodName(name))
                 continue;
 
-            var symbol =
-                context.SemanticModel.GetSymbolInfo(invocation, context.CancellationToken).Symbol as IMethodSymbol;
-            if (symbol is null)
+            if (context.SemanticModel.GetSymbolInfo(invocation, context.CancellationToken).Symbol is not IMethodSymbol symbol)
                 continue;
 
             if (!symbol.IsPartialDefinition)

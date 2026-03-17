@@ -8,24 +8,6 @@ namespace Sharpen.Analyzer.Extensions;
 
 public static class SyntaxNodeExtensions
 {
-    public static bool IsAnyOfKinds(this SyntaxNode syntaxNode, SyntaxKind firstKind, SyntaxKind secondKind)
-    {
-        return syntaxNode.IsKind(firstKind) || syntaxNode.IsKind(secondKind);
-    }
-
-    public static bool IsAnyOfKinds(this SyntaxNode syntaxNode, SyntaxKind firstKind, SyntaxKind secondKind,
-        SyntaxKind thirdKind)
-    {
-        return syntaxNode.IsKind(firstKind) || syntaxNode.IsKind(secondKind) || syntaxNode.IsKind(thirdKind);
-    }
-
-    public static bool IsAnyOfKinds(this SyntaxNode syntaxNode, SyntaxKind firstKind, SyntaxKind secondKind,
-        SyntaxKind thirdKind, SyntaxKind fourthKind)
-    {
-        return syntaxNode.IsKind(firstKind) || syntaxNode.IsKind(secondKind) || syntaxNode.IsKind(thirdKind) ||
-               syntaxNode.IsKind(fourthKind);
-    }
-
     public static bool IsWithinLambdaOrAnonymousMethod(this SyntaxNode syntaxNode)
     {
         return syntaxNode.FirstAncestorOrSelf<AnonymousFunctionExpressionSyntax>() != null;
@@ -33,107 +15,9 @@ public static class SyntaxNodeExtensions
 
     // Returning lists... mutable to be worse... I don't like it. Still, in this case, the best tradeoff
     // until we introduce some good both semantically correct and performant collection handling.
-    public static List<string> GetParameterNamesVisibleInScope(this SyntaxNode syntaxNode)
-    {
-        var result = new List<string>();
-
-        CollectParameterNames();
-
-        return result;
-
-        void CollectParameterNames()
-        {
-            var currentSyntaxNode = syntaxNode;
-            while (currentSyntaxNode != null)
-                // Some of the nodes cannot be nested e.g. methods or constructors.
-                // If the current node is any of these nodes, after adding its parameters
-                // we can set it to null and avoid unnecessary traversal up the parents line.
-                // Otherwise, in the case of nested nodes e.g. local functions, we continue
-                // traversing up.
-                switch (currentSyntaxNode)
-                {
-                    // Methods and constructors.
-                    case BaseMethodDeclarationSyntax baseMethod:
-                        result.AddRange(
-                            baseMethod.ParameterList.Parameters.Select(parameter => parameter.Identifier.ValueText));
-                        currentSyntaxNode = null;
-                        break;
-
-                    // Property setters, event adders, and event removers.
-                    case AccessorDeclarationSyntax accessor when !accessor.Keyword.IsKind(SyntaxKind.GetKeyword):
-                        result.Add("value");
-                        // Accessors are not nested so normally we would return null and stop the traversing.
-                        // But if an accessor is within an indexer (that means indexer's setter), we have to
-                        // reach to the indexer declaration to collect the indexer parameters that are also
-                        // visible within its setter.
-                        currentSyntaxNode = accessor.FirstAncestorOrSelf<IndexerDeclarationSyntax>() != null
-                            ? currentSyntaxNode.Parent
-                            : null;
-                        break;
-
-                    // Indexers.
-                    case IndexerDeclarationSyntax indexer:
-                        result.AddRange(
-                            indexer.ParameterList.Parameters.Select(parameter => parameter.Identifier.ValueText));
-                        currentSyntaxNode = null;
-                        break;
-
-                    case SimpleLambdaExpressionSyntax simpleLambda:
-                        result.Add(simpleLambda.Parameter.Identifier.ValueText);
-                        currentSyntaxNode = currentSyntaxNode.Parent;
-                        break;
-
-                    case ParenthesizedLambdaExpressionSyntax parenthesizedLambda:
-                        result.AddRange(
-                            parenthesizedLambda.ParameterList.Parameters.Select(parameter =>
-                                parameter.Identifier.ValueText));
-                        currentSyntaxNode = currentSyntaxNode.Parent;
-                        break;
-
-                    // Anonymous delegates.
-                    case AnonymousMethodExpressionSyntax anonymousMethod:
-                        result.AddRange(
-                            anonymousMethod.ParameterList.Parameters.Select(parameter =>
-                                parameter.Identifier.ValueText));
-                        currentSyntaxNode = currentSyntaxNode.Parent;
-                        break;
-
-                    case LocalFunctionStatementSyntax localFunction:
-                        result.AddRange(
-                            localFunction.ParameterList.Parameters.Select(parameter => parameter.Identifier.ValueText));
-                        currentSyntaxNode = currentSyntaxNode.Parent;
-                        break;
-
-                    default:
-                        currentSyntaxNode = currentSyntaxNode.Parent;
-                        break;
-                }
-        }
-    }
-
-    public static bool IsAnyAncestorOfOrSelf<T>(this IEnumerable<T> syntaxNodes,
-        SyntaxNode potentialDescendantNodeOrSelf, SyntaxNode? searchUpToNode = null) where T : SyntaxNode
-    {
-        return syntaxNodes.Any(node => node.IsAncestorOfOrSelf(potentialDescendantNodeOrSelf, searchUpToNode));
-    }
 
     extension(SyntaxNode syntaxNode)
     {
-        private bool IsAncestorOfOrSelf(SyntaxNode potentialDescendantNodeOrSelf,
-            SyntaxNode? searchUpToNode = null)
-        {
-            if (syntaxNode == potentialDescendantNodeOrSelf) return true;
-
-            var currentNode = potentialDescendantNodeOrSelf.Parent;
-            while (currentNode != searchUpToNode)
-            {
-                if (currentNode == syntaxNode) return true;
-                currentNode = currentNode?.Parent;
-            }
-
-            return false;
-        }
-
         public TNode? FirstAncestorOrSelfWithinEnclosingNode<TNode>(SyntaxNode enclosingNode, bool includeEnclosingNode = true) where TNode : SyntaxNode
         {
             // TODO-IG: We should assert here that the syntaxNode is really within the enclosingNode.
@@ -194,84 +78,7 @@ public static class SyntaxNodeExtensions
 
     // TODO-IG: Use these methods on the places where we now use nodes.Where(node => node.IsKind(...) ...).
 
-    // We have several methods here instead of using "params SyntaxKind syntaxKinds" in
-    // order to avoid the hidden allocation of a SyntaxKind array.
-    public static IEnumerable<SyntaxNode> OfKind(this IEnumerable<SyntaxNode> syntaxNodes, SyntaxKind kind)
-    {
-        return syntaxNodes.Where(syntaxNode => syntaxNode.IsKind(kind));
-    }
-
-    public static IEnumerable<SyntaxNode> OfAnyOfKinds(this IEnumerable<SyntaxNode> syntaxNodes, SyntaxKind firstKind,
-        SyntaxKind secondKind)
-    {
-        return syntaxNodes.Where(syntaxNode => syntaxNode.IsKind(firstKind) ||
-                                               syntaxNode.IsKind(secondKind));
-    }
-
-    public static IEnumerable<SyntaxNode> OfAnyOfKinds(this IEnumerable<SyntaxNode> syntaxNodes, SyntaxKind firstKind,
-        SyntaxKind secondKind, SyntaxKind thirdKind)
-    {
-        return syntaxNodes.Where(syntaxNode => syntaxNode.IsKind(firstKind) ||
-                                               syntaxNode.IsKind(secondKind) ||
-                                               syntaxNode.IsKind(thirdKind));
-    }
-
-    public static IEnumerable<SyntaxNode> OfAnyOfKinds(this IEnumerable<SyntaxNode> syntaxNodes, SyntaxKind firstKind,
-        SyntaxKind secondKind, SyntaxKind thirdKind, SyntaxKind fourthKind)
-    {
-        return syntaxNodes.Where(syntaxNode => syntaxNode.IsKind(firstKind) ||
-                                               syntaxNode.IsKind(secondKind) ||
-                                               syntaxNode.IsKind(thirdKind) ||
-                                               syntaxNode.IsKind(fourthKind));
-    }
-
-    public static IEnumerable<SyntaxNode> OfAnyOfKinds(this IEnumerable<SyntaxNode> syntaxNodes, SyntaxKind firstKind,
-        SyntaxKind secondKind, SyntaxKind thirdKind, SyntaxKind fourthKind, SyntaxKind fifthKind)
-    {
-        return syntaxNodes.Where(syntaxNode => syntaxNode.IsKind(firstKind) ||
-                                               syntaxNode.IsKind(secondKind) ||
-                                               syntaxNode.IsKind(thirdKind) ||
-                                               syntaxNode.IsKind(fourthKind) ||
-                                               syntaxNode.IsKind(fifthKind));
-    }
-
-    public static IEnumerable<SyntaxNode> OfAnyOfKinds(this IEnumerable<SyntaxNode> syntaxNodes, SyntaxKind firstKind,
-        SyntaxKind secondKind, SyntaxKind thirdKind, SyntaxKind fourthKind, SyntaxKind fifthKind, SyntaxKind sixthKind)
-    {
-        return syntaxNodes.Where(syntaxNode => syntaxNode.IsKind(firstKind) ||
-                                               syntaxNode.IsKind(secondKind) ||
-                                               syntaxNode.IsKind(thirdKind) ||
-                                               syntaxNode.IsKind(fourthKind) ||
-                                               syntaxNode.IsKind(fifthKind) ||
-                                               syntaxNode.IsKind(sixthKind));
-    }
-
-    public static IEnumerable<SyntaxNode> OfAnyOfKinds(this IEnumerable<SyntaxNode> syntaxNodes, SyntaxKind firstKind,
-        SyntaxKind secondKind, SyntaxKind thirdKind, SyntaxKind fourthKind, SyntaxKind fifthKind, SyntaxKind sixthKind,
-        SyntaxKind seventhKind)
-    {
-        return syntaxNodes.Where(syntaxNode => syntaxNode.IsKind(firstKind) ||
-                                               syntaxNode.IsKind(secondKind) ||
-                                               syntaxNode.IsKind(thirdKind) ||
-                                               syntaxNode.IsKind(fourthKind) ||
-                                               syntaxNode.IsKind(fifthKind) ||
-                                               syntaxNode.IsKind(sixthKind) ||
-                                               syntaxNode.IsKind(seventhKind));
-    }
-
-    public static IEnumerable<SyntaxNode> OfAnyOfKinds(this IEnumerable<SyntaxNode> syntaxNodes, SyntaxKind firstKind,
-        SyntaxKind secondKind, SyntaxKind thirdKind, SyntaxKind fourthKind, SyntaxKind fifthKind, SyntaxKind sixthKind,
-        SyntaxKind seventhKind, SyntaxKind eightKind)
-    {
-        return syntaxNodes.Where(syntaxNode => syntaxNode.IsKind(firstKind) ||
-                                               syntaxNode.IsKind(secondKind) ||
-                                               syntaxNode.IsKind(thirdKind) ||
-                                               syntaxNode.IsKind(fourthKind) ||
-                                               syntaxNode.IsKind(fifthKind) ||
-                                               syntaxNode.IsKind(sixthKind) ||
-                                               syntaxNode.IsKind(seventhKind) ||
-                                               syntaxNode.IsKind(eightKind));
-    }
+   
 
     public static bool IsLeftSideOfAssignExpression(this SyntaxNode node)
     {
@@ -284,105 +91,39 @@ public static class SyntaxNodeExtensions
         return node.Parent?.IsKind(kind) == true;
     }
 
-    public static bool IsThisExpression(this SyntaxNode node)
+    extension(SyntaxNode node)
     {
-        return node.IsKind(SyntaxKind.ThisExpression);
-    }
-
-    public static bool IsBaseExpression(this SyntaxNode node)
-    {
-        return node.IsKind(SyntaxKind.BaseExpression);
-    }
-
-    public static bool IsIdentifierName(this SyntaxNode node)
-    {
-        return node.IsKind(SyntaxKind.IdentifierName);
-    }
-
-    public static bool IsParenthesizedExpression(this SyntaxNode node)
-    {
-        return node.IsKind(SyntaxKind.ParenthesizedExpression);
-    }
-
-    public static bool IsSimpleMemberAccessExpression(this SyntaxNode node)
-    // TODO: Taken over from CSharpSyntaxFactsService.cs. Why such a strange implementation? Check it.
-    {
-    return (node as MemberAccessExpressionSyntax)?.Kind() == SyntaxKind.SimpleMemberAccessExpression;
-    }
-
-    public static bool IsConditionalAccessExpression(this SyntaxNode node)
-    // TODO: Can it be implemented by using SyntaxKinds?
-    {
-    return node is ConditionalAccessExpressionSyntax;
-    }
-
-    public static bool IsObjectInitializerNamedAssignmentIdentifier(this SyntaxNode node)
-    {
-        return node.IsObjectInitializerNamedAssignmentIdentifier(out _);
-    }
-
-    public static bool IsObjectInitializerNamedAssignmentIdentifier(this SyntaxNode node,
-        out SyntaxNode? initializedInstance)
-    {
-        initializedInstance = null;
+        public bool IsObjectInitializerNamedAssignmentIdentifier(out SyntaxNode? initializedInstance)
+        {
+            initializedInstance = null;
  
-        if (node is not IdentifierNameSyntax identifier ||
-            !identifier.IsLeftSideOfAssignExpression() ||
-            !identifier.Parent.IsParentKind(SyntaxKind.ObjectInitializerExpression))
-        {
-            return false;
-        }
+            if (node is not IdentifierNameSyntax identifier ||
+                !identifier.IsLeftSideOfAssignExpression() ||
+                !identifier.Parent.IsParentKind(SyntaxKind.ObjectInitializerExpression))
+            {
+                return false;
+            }
 
-        if (identifier.Parent?.Parent is not InitializerExpressionSyntax objectInitializer)
-        {
-            return false;
-        }
+            if (identifier.Parent?.Parent is not InitializerExpressionSyntax objectInitializer)
+            {
+                return false;
+            }
 
-        // new C { P = 1 }
-        if (objectInitializer.Parent is ObjectCreationExpressionSyntax objectCreation &&
-            objectCreation.Parent is not AssignmentExpressionSyntax)
-        {
-            initializedInstance = objectCreation;
-            return true;
-        }
+            // new C { P = 1 }
+            if (objectInitializer.Parent is ObjectCreationExpressionSyntax objectCreation &&
+                objectCreation.Parent is not AssignmentExpressionSyntax)
+            {
+                initializedInstance = objectCreation;
+                return true;
+            }
 
-        // c = new C { P = 1 }
-        if (objectInitializer.Parent is ObjectCreationExpressionSyntax objectCreationOnRight &&
-            objectCreationOnRight.Parent is AssignmentExpressionSyntax assignmentExpression &&
-            assignmentExpression.IsKind(SyntaxKind.SimpleAssignmentExpression) &&
-            assignmentExpression.Right == objectCreationOnRight)
-        {
+            // c = new C { P = 1 }
+            if (objectInitializer.Parent is not ObjectCreationExpressionSyntax { Parent: AssignmentExpressionSyntax assignmentExpression } objectCreationOnRight ||
+                !assignmentExpression.IsKind(SyntaxKind.SimpleAssignmentExpression) ||
+                assignmentExpression.Right != objectCreationOnRight) return false;
             initializedInstance = assignmentExpression.Left;
             return true;
+
         }
-
-        return false;
-    }
-
-    public static void GetPartsOfParenthesizedExpression(this SyntaxNode node, out SyntaxToken openParen,
-        out SyntaxNode expression, out SyntaxToken closeParen)
-    {
-        var parenthesizedExpression = (ParenthesizedExpressionSyntax)node;
-        openParen = parenthesizedExpression.OpenParenToken;
-        expression = parenthesizedExpression.Expression;
-        closeParen = parenthesizedExpression.CloseParenToken;
-    }
-
-    public static void GetPartsOfMemberAccessExpression(this SyntaxNode node, out SyntaxNode expression,
-        out SyntaxToken operatorToken, out SyntaxNode name)
-    {
-        var memberAccess = (MemberAccessExpressionSyntax)node;
-        expression = memberAccess.Expression;
-        operatorToken = memberAccess.OperatorToken;
-        name = memberAccess.Name;
-    }
-
-    public static void GetPartsOfConditionalAccessExpression(this SyntaxNode node, out SyntaxNode expression,
-        out SyntaxToken operatorToken, out SyntaxNode whenNotNull)
-    {
-        var conditionalAccess = (ConditionalAccessExpressionSyntax)node;
-        expression = conditionalAccess.Expression;
-        operatorToken = conditionalAccess.OperatorToken;
-        whenNotNull = conditionalAccess.WhenNotNull;
     }
 }

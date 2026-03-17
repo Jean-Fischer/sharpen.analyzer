@@ -57,27 +57,18 @@ public sealed class UseUnboundGenericTypeInNameofAnalyzer : DiagnosticAnalyzer
 
         // Only when the syntax is a constructed generic type (i.e., has type arguments).
         // nameof(Dictionary<,>) is already unbound and should not be flagged.
-        if (argExpression is TypeSyntax typeSyntax)
+        if (argExpression is not TypeSyntax typeSyntax) return;
+        switch (typeSyntax)
         {
-            if (typeSyntax is GenericNameSyntax genericName && genericName.TypeArgumentList.Arguments.Count > 0)
-            {
+            case GenericNameSyntax genericName when genericName.TypeArgumentList.Arguments.Count > 0:
+            case QualifiedNameSyntax { Right: GenericNameSyntax { TypeArgumentList.Arguments.Count: > 0 } }:
                 context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseUnboundGenericTypeInNameofRule,
                     typeSyntax.GetLocation()));
                 return;
-            }
-
-            if (typeSyntax is QualifiedNameSyntax { Right: GenericNameSyntax rightGeneric } &&
-                rightGeneric.TypeArgumentList.Arguments.Count > 0)
-            {
+            case AliasQualifiedNameSyntax { Name: GenericNameSyntax { TypeArgumentList.Arguments.Count: > 0 } }:
                 context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseUnboundGenericTypeInNameofRule,
                     typeSyntax.GetLocation()));
-                return;
-            }
-
-            if (typeSyntax is AliasQualifiedNameSyntax { Name: GenericNameSyntax aliasGeneric } &&
-                aliasGeneric.TypeArgumentList.Arguments.Count > 0)
-                context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseUnboundGenericTypeInNameofRule,
-                    typeSyntax.GetLocation()));
+                break;
         }
     }
 }

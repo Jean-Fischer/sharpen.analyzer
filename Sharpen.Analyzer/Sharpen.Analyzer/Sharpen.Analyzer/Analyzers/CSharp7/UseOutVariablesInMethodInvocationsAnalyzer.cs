@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -27,14 +28,8 @@ public sealed class UseOutVariablesInMethodInvocationsAnalyzer : DiagnosticAnaly
 
         var argumentList = invocation.ArgumentList;
 
-        foreach (var argument in argumentList.Arguments)
+        foreach (var argument in from argument in argumentList.Arguments where argument.RefOrOutKeyword.IsKind(SyntaxKind.OutKeyword) where argument.Expression.IsKind(SyntaxKind.IdentifierName) where OutVariableCandidateHelper.IsCandidate(context.SemanticModel, argument, false) select argument)
         {
-            if (!argument.RefOrOutKeyword.IsKind(SyntaxKind.OutKeyword)) continue;
-
-            if (!argument.Expression.IsKind(SyntaxKind.IdentifierName)) continue;
-
-            if (!OutVariableCandidateHelper.IsCandidate(context.SemanticModel, argument, false)) continue;
-
             context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseOutVariablesInMethodInvocationsRule,
                 argument.RefOrOutKeyword.GetLocation()));
         }

@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -52,11 +53,8 @@ public sealed class PreferParamsCollectionsAnalyzer : DiagnosticAnalyzer
         if (parameterList is null)
             return;
 
-        foreach (var parameter in parameterList.Parameters)
+        foreach (var parameter in parameterList.Parameters.Where(parameter => parameter.Modifiers.Any(SyntaxKind.ParamsKeyword)))
         {
-            if (!parameter.Modifiers.Any(SyntaxKind.ParamsKeyword))
-                continue;
-
             // Only consider params arrays: params T[]
             if (parameter.Type is not ArrayTypeSyntax)
                 continue;

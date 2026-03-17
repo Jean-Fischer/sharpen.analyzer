@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -65,9 +66,10 @@ public sealed class UseDefaultLambdaParametersAnalyzer : DiagnosticAnalyzer
             return;
 
         // C# 12 default lambda parameters require explicit parameter types.
-        foreach (var parameter in lambda.ParameterList.Parameters)
-            if (parameter.Type is null)
-                return;
+        if (lambda.ParameterList.Parameters.Any(parameter => parameter.Type is null))
+        {
+            return;
+        }
 
         if (context.SemanticModel.GetTypeInfo(lambda).ConvertedType is not INamedTypeSymbol delegateType)
             return;

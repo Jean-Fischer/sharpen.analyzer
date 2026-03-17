@@ -35,8 +35,7 @@ public sealed class UseNameofExpressionForThrowingArgumentExceptionsAnalyzer : D
         var semanticModel = context.SemanticModel;
         var cancellationToken = context.CancellationToken;
 
-        var createdType = semanticModel.GetTypeInfo(objectCreation, cancellationToken).Type as INamedTypeSymbol;
-        if (createdType is null) return;
+        if (semanticModel.GetTypeInfo(objectCreation, cancellationToken).Type is not INamedTypeSymbol createdType) return;
 
         if (!IsSupportedArgumentExceptionType(createdType)) return;
 
@@ -84,11 +83,10 @@ public sealed class UseNameofExpressionForThrowingArgumentExceptionsAnalyzer : D
 
         // Prefer the actual constructor symbol to determine which argument is the paramName.
         var ctor = semanticModel.GetSymbolInfo(objectCreation, cancellationToken).Symbol as IMethodSymbol;
-        if (ctor is null) return false;
 
         // Find the parameter named "paramName".
         // This matches the BCL constructors for ArgumentException/ArgumentNullException/ArgumentOutOfRangeException.
-        var paramNameParam = ctor.Parameters.FirstOrDefault(p => p.Name == "paramName");
+        var paramNameParam = ctor?.Parameters.FirstOrDefault(p => p.Name == "paramName");
         if (paramNameParam is null) return false;
 
         // Map the constructor parameter to the argument index.
@@ -100,11 +98,9 @@ public sealed class UseNameofExpressionForThrowingArgumentExceptionsAnalyzer : D
         for (var i = 0; i < args.Value.Count; i++)
         {
             var arg = args.Value[i];
-            if (arg.NameColon is not null && arg.NameColon.Name.Identifier.ValueText == "paramName")
-            {
-                index = i;
-                return true;
-            }
+            if (arg.NameColon is null || arg.NameColon.Name.Identifier.ValueText != "paramName") continue;
+            index = i;
+            return true;
         }
 
         // Positional argument: use the parameter ordinal.

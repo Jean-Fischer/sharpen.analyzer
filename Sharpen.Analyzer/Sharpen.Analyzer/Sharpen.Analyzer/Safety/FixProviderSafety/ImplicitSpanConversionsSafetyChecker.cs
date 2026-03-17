@@ -41,14 +41,12 @@ public sealed class ImplicitSpanConversionsSafetyChecker : IFixProviderSafetyChe
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "no-outer-invocation");
 
         // Ensure the AsSpan call is the BCL MemoryExtensions.AsSpan.
-        var asSpanSymbol = semanticModel.GetSymbolInfo(asSpanInvocation, cancellationToken).Symbol as IMethodSymbol;
-        if (asSpanSymbol is null || asSpanSymbol.Name != "AsSpan" ||
+        if (semanticModel.GetSymbolInfo(asSpanInvocation, cancellationToken).Symbol is not IMethodSymbol asSpanSymbol || asSpanSymbol.Name != "AsSpan" ||
             asSpanSymbol.ContainingType?.ToDisplayString() != "System.MemoryExtensions")
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "not-bcl-as-span");
 
         // Ensure removing AsSpan does not change overload resolution.
-        var beforeSymbol = semanticModel.GetSymbolInfo(outerInvocation, cancellationToken).Symbol as IMethodSymbol;
-        if (beforeSymbol is null)
+        if (semanticModel.GetSymbolInfo(outerInvocation, cancellationToken).Symbol is not IMethodSymbol beforeSymbol)
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "outer-symbol-null");
 
         var receiverExpression = (asSpanInvocation.Expression as MemberAccessExpressionSyntax)!.Expression;
@@ -56,12 +54,10 @@ public sealed class ImplicitSpanConversionsSafetyChecker : IFixProviderSafetyChe
         var newArgumentList = argumentList.ReplaceNode(argument, newArgument);
         var newOuterInvocation = outerInvocation.WithArgumentList(newArgumentList);
 
-        var speculativeSymbol = semanticModel.GetSpeculativeSymbolInfo(
-            outerInvocation.SpanStart,
-            newOuterInvocation,
-            SpeculativeBindingOption.BindAsExpression).Symbol as IMethodSymbol;
-
-        if (speculativeSymbol is null)
+        if (semanticModel.GetSpeculativeSymbolInfo(
+                outerInvocation.SpanStart,
+                newOuterInvocation,
+                SpeculativeBindingOption.BindAsExpression).Symbol is not IMethodSymbol speculativeSymbol)
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "speculative-symbol-null");
 
         if (!SymbolEqualityComparer.Default.Equals(beforeSymbol, speculativeSymbol))

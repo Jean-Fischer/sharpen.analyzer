@@ -99,8 +99,6 @@ public sealed class UseFieldKeywordInPropertiesAnalyzer : DiagnosticAnalyzer
             assignedExpression = expressionStatement.Expression;
         }
 
-        if (assignedExpression is null) return false;
-
         if (assignedExpression is not AssignmentExpressionSyntax assignment ||
             !assignment.IsKind(SyntaxKind.SimpleAssignmentExpression))
             return false;

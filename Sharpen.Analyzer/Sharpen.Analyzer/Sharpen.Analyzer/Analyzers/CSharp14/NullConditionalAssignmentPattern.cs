@@ -43,22 +43,18 @@ public static class NullConditionalAssignmentPattern
         checkedExpression = null!;
 
         // Support: x != null
-        if (condition is BinaryExpressionSyntax binary && binary.Kind() == SyntaxKind.NotEqualsExpression)
+        if (condition is not BinaryExpressionSyntax binary ||
+            binary.Kind() != SyntaxKind.NotEqualsExpression) return false;
+        if (IsNullLiteral(binary.Right))
         {
-            if (IsNullLiteral(binary.Right))
-            {
-                checkedExpression = binary.Left;
-                return true;
-            }
-
-            if (IsNullLiteral(binary.Left))
-            {
-                checkedExpression = binary.Right;
-                return true;
-            }
+            checkedExpression = binary.Left;
+            return true;
         }
 
-        return false;
+        if (!IsNullLiteral(binary.Left)) return false;
+        checkedExpression = binary.Right;
+        return true;
+
     }
 
     public static bool TryGetSingleStatement(StatementSyntax statement, out StatementSyntax singleStatement)

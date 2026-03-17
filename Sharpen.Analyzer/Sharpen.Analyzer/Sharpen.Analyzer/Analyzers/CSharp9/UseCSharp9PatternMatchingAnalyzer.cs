@@ -53,9 +53,7 @@ public sealed class UseCSharp9PatternMatchingAnalyzer : DiagnosticAnalyzer
         if (lambda == null)
             return false;
 
-        var convertedType =
-            context.SemanticModel.GetTypeInfo(lambda, context.CancellationToken).ConvertedType as INamedTypeSymbol;
-        if (convertedType == null)
+        if (context.SemanticModel.GetTypeInfo(lambda, context.CancellationToken).ConvertedType is not INamedTypeSymbol convertedType)
             return false;
 
         return convertedType.Name == "Expression" &&
@@ -93,15 +91,13 @@ public sealed class UseCSharp9PatternMatchingAnalyzer : DiagnosticAnalyzer
             return;
 
         // !(expr is T) => expr is not T
-        if (prefix.Operand is ParenthesizedExpressionSyntax paren)
-        {
-            var inner = paren.Expression.WalkDownParentheses();
-            if (inner is BinaryExpressionSyntax isExpr
-                && isExpr.IsKind(SyntaxKind.IsExpression)
-                && IsSideEffectFree(isExpr.Left))
-                context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseCSharp9PatternMatchingRule,
-                    prefix.GetLocation()));
-        }
+        if (prefix.Operand is not ParenthesizedExpressionSyntax paren) return;
+        var inner = paren.Expression.WalkDownParentheses();
+        if (inner is BinaryExpressionSyntax isExpr
+            && isExpr.IsKind(SyntaxKind.IsExpression)
+            && IsSideEffectFree(isExpr.Left))
+            context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseCSharp9PatternMatchingRule,
+                prefix.GetLocation()));
     }
 
     private static void AnalyzeLogicalBinaryExpression(SyntaxNodeAnalysisContext context)
@@ -156,17 +152,14 @@ public sealed class UseCSharp9PatternMatchingAnalyzer : DiagnosticAnalyzer
         if (expression is not BinaryExpressionSyntax binary)
             return false;
 
-        if (binary.IsKind(SyntaxKind.GreaterThanOrEqualExpression)
-            || binary.IsKind(SyntaxKind.LessThanOrEqualExpression)
-            || binary.IsKind(SyntaxKind.LessThanExpression)
-            || binary.IsKind(SyntaxKind.GreaterThanExpression))
-        {
-            left = binary.Left;
-            right = binary.Right;
-            opKind = binary.Kind();
-            return true;
-        }
+        if (!binary.IsKind(SyntaxKind.GreaterThanOrEqualExpression)
+            && !binary.IsKind(SyntaxKind.LessThanOrEqualExpression)
+            && !binary.IsKind(SyntaxKind.LessThanExpression)
+            && !binary.IsKind(SyntaxKind.GreaterThanExpression)) return false;
+        left = binary.Left;
+        right = binary.Right;
+        opKind = binary.Kind();
+        return true;
 
-        return false;
     }
 }

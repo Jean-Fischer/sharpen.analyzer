@@ -52,8 +52,6 @@ public sealed class UseDefaultExpressionInReturnStatementsAnalyzer : DiagnosticA
         if (conversion != null) return semanticModel.GetDeclaredSymbol(conversion)?.ReturnType;
 
         var property = expression.FirstAncestorOrSelf<BasePropertyDeclarationSyntax>();
-        if (property != null) return (semanticModel.GetDeclaredSymbol(property) as IPropertySymbol)?.Type;
-
-        return null;
+        return property != null ? (semanticModel.GetDeclaredSymbol(property) as IPropertySymbol)?.Type : null;
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -65,9 +66,10 @@ public sealed class UseLambdaParameterModifiersWithoutTypesAnalyzer : Diagnostic
 
         // If any parameter type is already implicit (null), we don't suggest.
         // If any parameter has a modifier but no type, it's already in the desired form.
-        foreach (var parameter in parameterList.Parameters)
-            if (parameter.Modifiers.Count > 0 && parameter.Type is null)
-                return;
+        if (parameterList.Parameters.Any(parameter => parameter.Modifiers.Count > 0 && parameter.Type is null))
+        {
+            return;
+        }
 
         // Report on the parameter list to keep the diagnostic stable.
         context.ReportDiagnostic(

@@ -67,10 +67,7 @@ public sealed class PartialPropertiesIndexersRefactoringSafetyChecker : IFixProv
         if (propertyOrIndexer.AccessorList.Accessors.Count == 0)
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "no-accessors");
 
-        if (propertyOrIndexer is PropertyDeclarationSyntax { ExplicitInterfaceSpecifier: not null })
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "explicit-interface-impl");
-
-        if (propertyOrIndexer is IndexerDeclarationSyntax { ExplicitInterfaceSpecifier: not null })
+        if (propertyOrIndexer is PropertyDeclarationSyntax { ExplicitInterfaceSpecifier: not null } or IndexerDeclarationSyntax { ExplicitInterfaceSpecifier: not null })
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "explicit-interface-impl");
 
         if (containingType is InterfaceDeclarationSyntax)

@@ -18,9 +18,7 @@ internal static class NamespaceSymbolExtensions
     {
         if (namespaceSymbol == null) return false;
 
-        if (namespaceName.Length != GetLengthOfTheNamespaceFullName()) return false;
-
-        return EachNamespacePartEqualsNamespacePartInFullName();
+        return namespaceName.Length == GetLengthOfTheNamespaceFullName() && EachNamespacePartEqualsNamespacePartInFullName();
 
         int GetLengthOfTheNamespaceFullName()
         {
@@ -52,12 +50,10 @@ internal static class NamespaceSymbolExtensions
                 currentNamespace = currentNamespace.ContainingNamespace;
 
                 // If there are more namespace parts to check.
-                if (fullNameStartingIndex > 0)
-                {
-                    // Check for the dot and skip it.
-                    fullNameStartingIndex--;
-                    if (namespaceName[fullNameStartingIndex] != '.') return false;
-                }
+                if (fullNameStartingIndex <= 0) continue;
+                // Check for the dot and skip it.
+                fullNameStartingIndex--;
+                if (namespaceName[fullNameStartingIndex] != '.') return false;
             }
 
             return true;

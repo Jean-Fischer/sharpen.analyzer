@@ -60,11 +60,9 @@ internal static class OutVariableCandidateHelper
                 (!outArgumentCanBeDiscarded && numberOfUsagesAfterOutArgument > 0)
             );
 
-        if (!localVariableCouldBecomeOutVariableOrDiscarded) return false;
-
+        return localVariableCouldBecomeOutVariableOrDiscarded;
         // Scope validation is intentionally simplified for the initial migration.
         // If we ever see false positives/negatives, port the upstream scope logic.
-        return true;
     }
 
     private static VariableDeclaratorSyntax? GetLocalVariableDeclaratorForOutArgument(

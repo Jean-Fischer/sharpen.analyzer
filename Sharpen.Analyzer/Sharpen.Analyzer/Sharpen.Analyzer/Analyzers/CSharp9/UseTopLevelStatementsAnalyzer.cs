@@ -28,8 +28,7 @@ public sealed class UseTopLevelStatementsAnalyzer : DiagnosticAnalyzer
             parseOptions.LanguageVersion < LanguageVersion.CSharp9)
             return;
 
-        var root = context.Tree.GetRoot(context.CancellationToken) as CompilationUnitSyntax;
-        if (root == null)
+        if (context.Tree.GetRoot(context.CancellationToken) is not CompilationUnitSyntax root)
             return;
 
         // Conservative: only when there is no namespace declaration.

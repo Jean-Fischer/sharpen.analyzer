@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sharpen.Analyzer.Common;
+using CSharpExtensions = Microsoft.CodeAnalysis.CSharp.CSharpExtensions;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp9;
 
@@ -67,8 +68,7 @@ public sealed class UseInitOnlySetterAnalyzer : DiagnosticAnalyzer
 
         // Conservative: ensure the property is not assigned outside constructors.
         // We only look within the containing type and only for direct assignments to this property.
-        var containingType = property.Parent as TypeDeclarationSyntax;
-        if (containingType == null)
+        if (property.Parent is not TypeDeclarationSyntax containingType)
             return;
 
         if (IsAssignedOutsideConstructor(context, symbol, containingType))
@@ -83,17 +83,6 @@ public sealed class UseInitOnlySetterAnalyzer : DiagnosticAnalyzer
         IPropertySymbol propertySymbol,
         TypeDeclarationSyntax containingType)
     {
-        foreach (var assignment in containingType.DescendantNodes().OfType<AssignmentExpressionSyntax>())
-        {
-            var leftSymbol = context.SemanticModel.GetSymbolInfo(assignment.Left, context.CancellationToken).Symbol;
-            if (!SymbolEqualityComparer.Default.Equals(leftSymbol, propertySymbol))
-                continue;
-
-            // If the assignment is not inside a constructor, we consider it unsafe.
-            if (assignment.FirstAncestorOrSelf<ConstructorDeclarationSyntax>() == null)
-                return true;
-        }
-
-        return false;
+        return (from assignment in containingType.DescendantNodes().OfType<AssignmentExpressionSyntax>() let leftSymbol = CSharpExtensions.GetSymbolInfo(context.SemanticModel, (ExpressionSyntax)assignment.Left, context.CancellationToken).Symbol where SymbolEqualityComparer.Default.Equals(leftSymbol, propertySymbol) select assignment).Any(assignment => assignment.FirstAncestorOrSelf<ConstructorDeclarationSyntax>() == null);
     }
 }

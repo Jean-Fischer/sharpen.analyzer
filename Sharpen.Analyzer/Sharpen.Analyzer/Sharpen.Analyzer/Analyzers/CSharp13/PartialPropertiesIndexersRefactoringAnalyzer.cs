@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -72,9 +73,10 @@ public sealed class PartialPropertiesIndexersRefactoringAnalyzer : DiagnosticAna
         if (property.AccessorList is null) return false;
 
         // Only auto accessors (no bodies, no expression bodies)
-        foreach (var accessor in property.AccessorList.Accessors)
-            if (accessor.Body is not null || accessor.ExpressionBody is not null)
-                return false;
+        if (property.AccessorList.Accessors.Any(accessor => accessor.Body is not null || accessor.ExpressionBody is not null))
+        {
+            return false;
+        }
 
         // Must be in a partial type
         var containingType = property.FirstAncestorOrSelf<TypeDeclarationSyntax>();

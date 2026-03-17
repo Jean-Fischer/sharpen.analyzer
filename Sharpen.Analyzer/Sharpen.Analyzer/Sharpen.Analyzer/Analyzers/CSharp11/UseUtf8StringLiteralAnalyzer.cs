@@ -78,9 +78,7 @@ public sealed class UseUtf8StringLiteralAnalyzer : DiagnosticAnalyzer
         if (!constant.HasValue || constant.Value is not string s)
             return;
 
-        var symbol =
-            context.SemanticModel.GetSymbolInfo(memberAccess, context.CancellationToken).Symbol as IMethodSymbol;
-        if (symbol == null)
+        if (context.SemanticModel.GetSymbolInfo(memberAccess, context.CancellationToken).Symbol is not IMethodSymbol symbol)
             return;
 
         if (symbol.ContainingType.ToDisplayString() != "System.Text.Encoding")
@@ -106,16 +104,13 @@ public sealed class UseUtf8StringLiteralAnalyzer : DiagnosticAnalyzer
 
     private static byte? TryGetByteConstant(ExpressionSyntax expr)
     {
-        if (expr is LiteralExpressionSyntax literal)
+        if (expr is not LiteralExpressionSyntax literal) return null;
+        return literal.Token.Value switch
         {
-            if (literal.Token.Value is byte b)
-                return b;
-
-            if (literal.Token.Value is int i && i is >= 0 and <= 255)
-                return (byte)i;
-        }
-
-        return null;
+            byte b => b,
+            int i and >= 0 and <= 255 => (byte)i,
+            _ => null
+        };
     }
 
     private static bool TryDecodeAscii(byte[] bytes)
@@ -126,7 +121,7 @@ public sealed class UseUtf8StringLiteralAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        Encoding.ASCII.GetString(bytes);
+        _ = Encoding.ASCII.GetString(bytes);
         return true;
     }
 }

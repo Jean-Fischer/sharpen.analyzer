@@ -28,8 +28,7 @@ public sealed class UseSystemThreadingLockSafetyChecker : IFixProviderSafetyChec
         if (variable is null)
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "field-variable-not-found");
 
-        var fieldSymbol = semanticModel.GetDeclaredSymbol(variable, cancellationToken) as IFieldSymbol;
-        if (fieldSymbol is null)
+        if (semanticModel.GetDeclaredSymbol(variable, cancellationToken) is not IFieldSymbol fieldSymbol)
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "field-symbol-not-found");
 
         // Ensure System.Threading.Lock is available.

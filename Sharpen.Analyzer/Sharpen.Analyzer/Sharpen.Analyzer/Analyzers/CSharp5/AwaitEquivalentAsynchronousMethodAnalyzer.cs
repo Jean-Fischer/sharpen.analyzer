@@ -28,18 +28,16 @@ public class AwaitEquivalentAsynchronousMethodAnalyzer : DiagnosticAnalyzer
 
         // Reuse your existing logic
         var finder = new HardcodedLookupBasedEquivalentAsynchronousMethodFinder();
-        if (finder.EquivalentAsynchronousCandidateExistsFor(
+        if (!finder.EquivalentAsynchronousCandidateExistsFor(
                 invocation,
                 semanticModel,
                 EquivalentAsynchronousMethodFinder.CallerAsyncStatus.CallerMustBeAsync,
-                EquivalentAsynchronousMethodFinder.CallerYieldingStatus.Irrelevant))
-        {
-            var diagnostic = Diagnostic.Create(
-                Rules.Rules.AwaitEquivalentAsynchronousMethodRule,
-                invocation.GetLocation(),
-                invocation.Expression.ToString()
-            );
-            context.ReportDiagnostic(diagnostic);
-        }
+                EquivalentAsynchronousMethodFinder.CallerYieldingStatus.Irrelevant)) return;
+        var diagnostic = Diagnostic.Create(
+            Rules.Rules.AwaitEquivalentAsynchronousMethodRule,
+            invocation.GetLocation(),
+            invocation.Expression.ToString()
+        );
+        context.ReportDiagnostic(diagnostic);
     }
 }

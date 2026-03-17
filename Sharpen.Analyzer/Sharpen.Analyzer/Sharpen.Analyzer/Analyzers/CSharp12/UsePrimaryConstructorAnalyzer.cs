@@ -85,18 +85,15 @@ public sealed class UsePrimaryConstructorAnalyzer : DiagnosticAnalyzer
 
             usedParameters[paramIndex] = true;
 
-            // LHS must be an instance member access: this.X or X.
-            if (assignment.Left is IdentifierNameSyntax)
+            switch (assignment.Left)
             {
-                // ok
-            }
-            else if (assignment.Left is MemberAccessExpressionSyntax { Expression: ThisExpressionSyntax })
-            {
-                // ok
-            }
-            else
-            {
-                return;
+                // LHS must be an instance member access: this.X or X.
+                case IdentifierNameSyntax:
+                case MemberAccessExpressionSyntax { Expression: ThisExpressionSyntax }:
+                    // ok
+                    break;
+                default:
+                    return;
             }
 
             // Ensure LHS binds to an instance field/property.

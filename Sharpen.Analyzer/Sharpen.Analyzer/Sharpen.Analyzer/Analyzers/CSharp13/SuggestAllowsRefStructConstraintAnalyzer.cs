@@ -157,8 +157,7 @@ public sealed class SuggestAllowsRefStructConstraintAnalyzer : DiagnosticAnalyze
         SemanticModel semanticModel,
         CancellationToken cancellationToken)
     {
-        var type = semanticModel.GetTypeInfo(typeSyntax, cancellationToken).Type as INamedTypeSymbol;
-        if (type is null)
+        if (semanticModel.GetTypeInfo(typeSyntax, cancellationToken).Type is not INamedTypeSymbol type)
             return false;
 
         if (type.TypeArguments.Length != 1)
@@ -169,6 +168,6 @@ public sealed class SuggestAllowsRefStructConstraintAnalyzer : DiagnosticAnalyze
 
         // Match Span<T> / ReadOnlySpan<T> by metadata name.
         return type.ContainingNamespace?.ToDisplayString() == "System"
-               && (type.Name == "Span" || type.Name == "ReadOnlySpan");
+               && type.Name is "Span" or "ReadOnlySpan";
     }
 }

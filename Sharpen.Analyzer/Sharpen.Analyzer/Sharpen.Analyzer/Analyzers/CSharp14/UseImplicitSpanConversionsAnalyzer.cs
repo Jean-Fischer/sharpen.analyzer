@@ -55,8 +55,7 @@ public sealed class UseImplicitSpanConversionsAnalyzer : DiagnosticAnalyzer
             return;
 
         // Ensure this is the BCL AsSpan extension/instance method.
-        var symbol = context.SemanticModel.GetSymbolInfo(invocation, context.CancellationToken).Symbol as IMethodSymbol;
-        if (symbol is null)
+        if (context.SemanticModel.GetSymbolInfo(invocation, context.CancellationToken).Symbol is not IMethodSymbol symbol)
             return;
 
         if (symbol.Name != "AsSpan")
@@ -66,9 +65,7 @@ public sealed class UseImplicitSpanConversionsAnalyzer : DiagnosticAnalyzer
             return;
 
         // Ensure removing AsSpan does not change overload resolution.
-        var beforeSymbol =
-            context.SemanticModel.GetSymbolInfo(outerInvocation, context.CancellationToken).Symbol as IMethodSymbol;
-        if (beforeSymbol is null)
+        if (context.SemanticModel.GetSymbolInfo(outerInvocation, context.CancellationToken).Symbol is not IMethodSymbol beforeSymbol)
             return;
 
         var receiverExpression = memberAccess.Expression;
@@ -76,12 +73,10 @@ public sealed class UseImplicitSpanConversionsAnalyzer : DiagnosticAnalyzer
         var newArgumentList = argumentList.ReplaceNode(argument, newArgument);
         var newOuterInvocation = outerInvocation.WithArgumentList(newArgumentList);
 
-        var speculativeSymbol = context.SemanticModel.GetSpeculativeSymbolInfo(
-            outerInvocation.SpanStart,
-            newOuterInvocation,
-            SpeculativeBindingOption.BindAsExpression).Symbol as IMethodSymbol;
-
-        if (speculativeSymbol is null)
+        if (context.SemanticModel.GetSpeculativeSymbolInfo(
+                outerInvocation.SpanStart,
+                newOuterInvocation,
+                SpeculativeBindingOption.BindAsExpression).Symbol is not IMethodSymbol speculativeSymbol)
             return;
 
         if (!SymbolEqualityComparer.Default.Equals(beforeSymbol, speculativeSymbol))

@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sharpen.Analyzer.Rules;
+using CSharpExtensions = Microsoft.CodeAnalysis.CSharpExtensions;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp13;
 
@@ -73,15 +74,8 @@ public sealed class SuggestOverloadResolutionPriorityAnalyzer : DiagnosticAnalyz
         SemanticModel semanticModel,
         CancellationToken cancellationToken)
     {
-        foreach (var method in overloads)
+        foreach (var last in from method in overloads where method.ParameterList.Parameters.Count != 0 select method.ParameterList.Parameters[method.ParameterList.Parameters.Count - 1] into last where last.Modifiers.Any(SyntaxKind.ParamsKeyword) select last)
         {
-            if (method.ParameterList.Parameters.Count == 0)
-                continue;
-
-            var last = method.ParameterList.Parameters[method.ParameterList.Parameters.Count - 1];
-            if (!last.Modifiers.Any(SyntaxKind.ParamsKeyword))
-                continue;
-
             if (last.Type is null)
                 continue;
 

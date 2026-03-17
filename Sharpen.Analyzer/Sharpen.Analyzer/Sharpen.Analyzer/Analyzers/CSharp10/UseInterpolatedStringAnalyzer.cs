@@ -41,9 +41,7 @@ public sealed class UseInterpolatedStringAnalyzer : DiagnosticAnalyzer
         if (invocation.Expression is not MemberAccessExpressionSyntax memberAccess)
             return;
 
-        var symbol =
-            context.SemanticModel.GetSymbolInfo(memberAccess, context.CancellationToken).Symbol as IMethodSymbol;
-        if (symbol == null)
+        if (context.SemanticModel.GetSymbolInfo(memberAccess, context.CancellationToken).Symbol is not IMethodSymbol symbol)
             return;
 
         if (symbol.Name != "Format")
@@ -128,27 +126,27 @@ public sealed class UseInterpolatedStringAnalyzer : DiagnosticAnalyzer
         if (declarator.Parent is not VariableDeclarationSyntax declaration)
             return false;
 
-        // const local
-        if (declaration.Parent is LocalDeclarationStatementSyntax local)
+        switch (declaration.Parent)
         {
-            if (!local.Modifiers.Any(m => m.IsKind(SyntaxKind.ConstKeyword)))
+            // const local
+            case LocalDeclarationStatementSyntax local when !local.Modifiers.Any(m => m.IsKind(SyntaxKind.ConstKeyword)):
                 return false;
-
-            var type = model.GetTypeInfo(declaration.Type, ct).ConvertedType;
-            return type != null && type.SpecialType == SpecialType.System_String;
-        }
-
-        // const field
-        if (declaration.Parent is FieldDeclarationSyntax field)
-        {
-            if (!field.Modifiers.Any(m => m.IsKind(SyntaxKind.ConstKeyword)))
+            case LocalDeclarationStatementSyntax:
+            {
+                var type = model.GetTypeInfo(declaration.Type, ct).ConvertedType;
+                return type != null && type.SpecialType == SpecialType.System_String;
+            }
+            // const field
+            case FieldDeclarationSyntax field when !field.Modifiers.Any(m => m.IsKind(SyntaxKind.ConstKeyword)):
                 return false;
-
-            var type = model.GetTypeInfo(declaration.Type, ct).ConvertedType;
-            return type != null && type.SpecialType == SpecialType.System_String;
+            case FieldDeclarationSyntax:
+            {
+                var type = model.GetTypeInfo(declaration.Type, ct).ConvertedType;
+                return type is { SpecialType: SpecialType.System_String };
+            }
+            default:
+                return false;
         }
-
-        return false;
     }
 
 
@@ -156,7 +154,7 @@ public sealed class UseInterpolatedStringAnalyzer : DiagnosticAnalyzer
     {
         // Ensure the overall type is string.
         var type = model.GetTypeInfo(add, ct).ConvertedType;
-        if (type == null || type.SpecialType != SpecialType.System_String)
+        if (type is not { SpecialType: SpecialType.System_String })
             return false;
 
         // Require at least one string literal in the chain.
@@ -166,15 +164,17 @@ public sealed class UseInterpolatedStringAnalyzer : DiagnosticAnalyzer
 
     private static IEnumerable<ExpressionSyntax> FlattenAdd(ExpressionSyntax expr)
     {
-        if (expr is BinaryExpressionSyntax bin && bin.IsKind(SyntaxKind.AddExpression))
+        while (true)
         {
-            foreach (var e in FlattenAdd(bin.Left))
-                yield return e;
-            foreach (var e in FlattenAdd(bin.Right))
-                yield return e;
-            yield break;
-        }
+            if (expr is BinaryExpressionSyntax bin && bin.IsKind(SyntaxKind.AddExpression))
+            {
+                foreach (var e in FlattenAdd(bin.Left)) yield return e;
+                expr = bin.Right;
+                continue;
+            }
 
-        yield return expr;
+            yield return expr;
+            break;
+        }
     }
 }

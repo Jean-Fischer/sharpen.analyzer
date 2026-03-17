@@ -107,21 +107,14 @@ public sealed class
             return false;
 
         var symbol = symbolInfo.Symbol;
-        switch (symbol.Kind)
+        return symbol.Kind switch
         {
-            case SymbolKind.Namespace:
-            case SymbolKind.NamedType:
-            case SymbolKind.Field:
-            case SymbolKind.Parameter:
-            case SymbolKind.Local:
-                return true;
-        }
+            SymbolKind.Namespace or SymbolKind.NamedType or SymbolKind.Field or SymbolKind.Parameter
+                or SymbolKind.Local => true,
+            _ => symbol.Kind == SymbolKind.Property && isTopLevelNode
+        };
 
-        if (symbol.Kind == SymbolKind.Property && isTopLevelNode)
-            // Legacy analyzer had a TODO about ref-properties. We keep the same conservative behavior.
-            // If this repository's Roslyn version exposes ReturnsByRef, we could refine this later.
-            return true;
-
-        return false;
+        // Legacy analyzer had a TODO about ref-properties. We keep the same conservative behavior.
+        // If this repository's Roslyn version exposes ReturnsByRef, we could refine this later.
     }
 }

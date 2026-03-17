@@ -9,7 +9,7 @@ internal static class SymbolExtensions
     public static IEnumerable<IMethodSymbol> GetImplementedInterfaceMethods(this IMethodSymbol? methodSymbol)
     {
         if (methodSymbol == null)
-            return Enumerable.Empty<IMethodSymbol>();
+            return [];
 
         var methodContainingType = methodSymbol.ContainingType;
         if (methodContainingType == null)

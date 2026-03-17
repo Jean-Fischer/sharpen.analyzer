@@ -71,34 +71,30 @@ public sealed class UseListPatternAnalyzer : DiagnosticAnalyzer
         }
 
         // 0 < x.Length
-        if (condition.Right is MemberAccessExpressionSyntax rightMember
-            && rightMember.Name.Identifier.ValueText == "Length"
-            && condition.Left is LiteralExpressionSyntax leftLiteral
-            && leftLiteral.Token.ValueText == "0")
-        {
-            target = rightMember.Expression;
-            return true;
-        }
+        if (condition.Right is not MemberAccessExpressionSyntax rightMember
+            || rightMember.Name.Identifier.ValueText != "Length"
+            || condition.Left is not LiteralExpressionSyntax leftLiteral
+            || leftLiteral.Token.ValueText != "0") return false;
+        target = rightMember.Expression;
+        return true;
 
-        return false;
     }
 
     private static bool IsArrayOrSpanLike(ITypeSymbol? type)
     {
-        if (type == null)
-            return false;
-
-        if (type is IArrayTypeSymbol)
-            return true;
-
-        if (type is INamedTypeSymbol named)
+        switch (type)
+        {
+            case null:
+                return false;
+            case IArrayTypeSymbol:
             // Span<T> / ReadOnlySpan<T>
-            if (named.ContainingNamespace?.ToDisplayString() == "System" &&
-                (named.Name == "Span" || named.Name == "ReadOnlySpan") &&
-                named.TypeArguments.Length == 1)
+            case INamedTypeSymbol named when (named.ContainingNamespace?.ToDisplayString() == "System" &&
+                                              named.Name is "Span" or "ReadOnlySpan" &&
+                                              named.TypeArguments.Length == 1):
                 return true;
-
-        return false;
+            default:
+                return false;
+        }
     }
 
     private static bool ContainsZeroIndexAccess(SyntaxNodeAnalysisContext context, StatementSyntax statement,

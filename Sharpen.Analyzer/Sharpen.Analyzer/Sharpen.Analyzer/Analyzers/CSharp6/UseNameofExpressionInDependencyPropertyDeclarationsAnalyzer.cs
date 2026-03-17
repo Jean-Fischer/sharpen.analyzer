@@ -37,8 +37,7 @@ public sealed class UseNameofExpressionInDependencyPropertyDeclarationsAnalyzer 
 
         // Semantic check: ensure this is DependencyProperty.Register/RegisterAttached.
         var symbolInfo = context.SemanticModel.GetSymbolInfo(invocation, context.CancellationToken);
-        var methodSymbol = symbolInfo.Symbol as IMethodSymbol;
-        if (methodSymbol is null) return;
+        if (symbolInfo.Symbol is not IMethodSymbol methodSymbol) return;
 
         if (!IsDependencyPropertyRegistrationMethod(methodSymbol)) return;
 
