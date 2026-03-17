@@ -35,7 +35,7 @@ public sealed class UseDefaultLambdaParametersAnalyzer : DiagnosticAnalyzer
         if (context.SemanticModel.GetTypeInfo(lambda).ConvertedType is not INamedTypeSymbol delegateType)
             return;
 
-        if (delegateType.DelegateInvokeMethod is not IMethodSymbol invoke)
+        if (delegateType.DelegateInvokeMethod is not { } invoke)
             return;
 
         if (invoke.Parameters.Length != 1)
@@ -72,7 +72,7 @@ public sealed class UseDefaultLambdaParametersAnalyzer : DiagnosticAnalyzer
         if (context.SemanticModel.GetTypeInfo(lambda).ConvertedType is not INamedTypeSymbol delegateType)
             return;
 
-        if (delegateType.DelegateInvokeMethod is not IMethodSymbol invoke)
+        if (delegateType.DelegateInvokeMethod is not { } invoke)
             return;
 
         if (invoke.Parameters.Length != lambda.ParameterList.Parameters.Count)

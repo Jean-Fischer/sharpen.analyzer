@@ -42,7 +42,7 @@ public sealed class UseRawStringLiteralAnalyzer : DiagnosticAnalyzer
         if (literal.IsKind(SyntaxKind.InterpolatedStringExpression))
             return;
 
-        if (literal.Token.ValueText is not string valueText)
+        if (literal.Token.ValueText is not { } valueText)
             return;
 
         if (!ShouldSuggestRawString(literal, valueText))

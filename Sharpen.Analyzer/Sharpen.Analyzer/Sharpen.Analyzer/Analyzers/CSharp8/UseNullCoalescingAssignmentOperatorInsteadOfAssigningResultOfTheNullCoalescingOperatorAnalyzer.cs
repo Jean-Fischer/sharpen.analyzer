@@ -88,10 +88,10 @@ public sealed class
         if (expression is ConditionalAccessExpressionSyntax conditionalAccess)
         {
             // `a?.b` is represented as ConditionalAccessExpression(accessExpression, whenNotNull)
-            if (conditionalAccess.Expression is not ExpressionSyntax accessExpression)
+            if (conditionalAccess.Expression is not { } accessExpression)
                 return false;
 
-            if (conditionalAccess.WhenNotNull is not ExpressionSyntax whenNotNull)
+            if (conditionalAccess.WhenNotNull is not { } whenNotNull)
                 return false;
 
             return IsSideEffectFree(context, accessExpression, false) &&

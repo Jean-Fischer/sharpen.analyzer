@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Sharpen.Analyzer.Extensions;
 using Sharpen.Engine.Extensions;
 
 namespace Sharpen.Engine.SharpenSuggestions.Common.AsyncAwaitAndAsyncStreams;
@@ -239,7 +240,7 @@ internal abstract class EquivalentAsynchronousMethodFinder
                 // If they cannot, means if they are referenced from an assembly
                 // and not defined in code, we assume that the enclosing
                 // method implements a non-changeable interface method.
-                return callerSymbol.GetImplementedInterfaceMethods(semanticModel)
+                return callerSymbol.GetImplementedInterfaceMethods()
                     .All(interfaceMethod => interfaceMethod
                         .ContainingType?.Locations.All(location => location.IsInSource) == true);
             }

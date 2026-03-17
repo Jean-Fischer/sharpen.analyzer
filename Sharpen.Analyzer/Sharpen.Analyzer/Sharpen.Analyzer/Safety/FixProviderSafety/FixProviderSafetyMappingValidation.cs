@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sharpen.Analyzer.Safety.FixProviderSafety;
 
@@ -39,10 +40,11 @@ public static partial class FixProviderSafetyMappingValidation
     /// </remarks>
     public static void ValidateNoDuplicateFixProviderTypes(IEnumerable<KeyValuePair<Type, Type>> mapping)
     {
-        ThrowIfNull(mapping);
+        var keyValuePairs = mapping as KeyValuePair<Type, Type>[] ?? mapping.ToArray();
+        ThrowIfNull(keyValuePairs);
 
         var seen = new HashSet<Type>();
-        foreach (var entry in mapping)
+        foreach (var entry in keyValuePairs)
             if (!seen.Add(entry.Key))
                 throw new InvalidOperationException($"Duplicate fix provider type in mapping: {entry.Key.FullName}");
     }

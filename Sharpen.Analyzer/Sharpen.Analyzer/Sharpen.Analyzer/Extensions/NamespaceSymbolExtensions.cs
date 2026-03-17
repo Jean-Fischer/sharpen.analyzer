@@ -14,7 +14,7 @@ internal static class NamespaceSymbolExtensions
 
     // We want to check if the full name of the namespace equals the full name presented as
     // dot-separated string without creating any new strings.
-    public static bool FullNameIsEqualTo(this INamespaceSymbol namespaceSymbol, string namespaceName)
+    public static bool FullNameIsEqualTo(this INamespaceSymbol? namespaceSymbol, string namespaceName)
     {
         if (namespaceSymbol == null) return false;
 
@@ -27,7 +27,7 @@ internal static class NamespaceSymbolExtensions
             var numberOfNamespaces = 0;
             var length = 0;
             var currentNamespace = namespaceSymbol;
-            while (currentNamespace != null && !currentNamespace.IsGlobalNamespace)
+            while (currentNamespace is { IsGlobalNamespace: false })
             {
                 length += currentNamespace.Name.Length;
                 numberOfNamespaces++;

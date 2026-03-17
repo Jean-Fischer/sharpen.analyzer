@@ -6,16 +6,11 @@ internal static class InvocationExpressionSyntaxExtensions
 {
     public static string GetInvokedMemberName(this InvocationExpressionSyntax invocation)
     {
-        if (invocation.Expression == null) return string.Empty;
-
-        switch (invocation.Expression)
+        return invocation.Expression switch
         {
-            case MemberAccessExpressionSyntax memberAccess:
-                return memberAccess.Name.Identifier.ValueText;
-            case IdentifierNameSyntax identifierName:
-                return identifierName.Identifier.ValueText;
-        }
-
-        return string.Empty;
+            MemberAccessExpressionSyntax memberAccess => memberAccess.Name.Identifier.ValueText,
+            IdentifierNameSyntax identifierName => identifierName.Identifier.ValueText,
+            _ => string.Empty
+        };
     }
 }

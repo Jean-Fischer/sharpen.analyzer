@@ -2,7 +2,7 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-namespace Sharpen.Engine.Extensions;
+namespace Sharpen.Analyzer.Extensions;
 
 internal static class SymbolExtensions
 {
@@ -10,7 +10,7 @@ internal static class SymbolExtensions
     ///     Returns true if the method represented by <paramref name="methodSymbol" />
     ///     is either implicit or explicit implementation of any interface method.
     /// </summary>
-    public static bool ImplementsInterfaceMethod(this IMethodSymbol methodSymbol)
+    public static bool ImplementsInterfaceMethod(this IMethodSymbol? methodSymbol)
     {
         if (methodSymbol == null)
             return false;
@@ -34,8 +34,7 @@ internal static class SymbolExtensions
                 true);
     }
 
-    public static IEnumerable<IMethodSymbol> GetImplementedInterfaceMethods(this IMethodSymbol methodSymbol,
-        SemanticModel semanticModel)
+    public static IEnumerable<IMethodSymbol> GetImplementedInterfaceMethods(this IMethodSymbol? methodSymbol)
     {
         if (methodSymbol == null)
             return Enumerable.Empty<IMethodSymbol>();
@@ -52,8 +51,7 @@ internal static class SymbolExtensions
             // and at the end we will add the explicit interface implementations.
             .SelectMany(@interface => @interface.GetMembers(methodSymbol.Name).OfType<IMethodSymbol>())
             .Where(interfaceMethod =>
-                methodContainingType.FindImplementationForInterfaceMember(interfaceMethod)?.Equals(methodSymbol) ==
-                true);
+                SymbolEqualityComparer.Default.Equals(methodContainingType.FindImplementationForInterfaceMember(interfaceMethod), methodSymbol));
 
         return implicitInterfaceImplementations.Concat(methodSymbol.ExplicitInterfaceImplementations);
     }
