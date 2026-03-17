@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Testing;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp5.AwaitEquivalentAsynchronousMethodAnalyzer,
@@ -6,6 +7,24 @@ using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
 
 public class AwaitEquivalentAsynchronousMethodCodeFixTests
 {
+    [Fact]
+    public async Task AwaitEquivalentAsynchronousMethodAnalyzer_InvocationOutsideMethod_ProducesNoDiagnostic()
+    {
+        const string test = @"
+using System.Threading.Tasks;
+
+public class Example
+{
+    private readonly int _ = Task.CompletedTask.GetAwaiter().GetResult();
+}";
+
+        var expectedCompilerError = DiagnosticResult.CompilerError("CS0029")
+            .WithSpan(6, 30, 6, 73)
+            .WithArguments("void", "int");
+
+        await Verifier.VerifyAnalyzerAsync(test, expectedCompilerError);
+    }
+
     [Fact]
     public async Task AwaitEquivalentAsynchronousMethodCodeFix_ReplacesSynchronousCallWithAsync()
     {
@@ -167,11 +186,30 @@ public class Example
 }";
 
         await Verifier.VerifyAnalyzerAsync(original);
-    }
-
-    [Fact]
-    public async Task AwaitEquivalentAsynchronousMethodAnalyzer_IgnoredMethod_ProducesNoDiagnostic()
-    {
+     }
+ 
+     [Fact]
+     public async Task AwaitEquivalentAsynchronousMethodAnalyzer_NoAsyncEquivalent_ProducesNoDiagnostic()
+     {
+         const string original = @"
+ using System.Threading.Tasks;
+ 
+ public class Example
+ {
+     public int M() => 1;
+ 
+     public async Task<int> TestAsync()
+     {
+         return M();
+     }
+ }";
+ 
+         await Verifier.VerifyAnalyzerAsync(original);
+     }
+ 
+     [Fact]
+     public async Task AwaitEquivalentAsynchronousMethodAnalyzer_IgnoredMethod_ProducesNoDiagnostic()
+     {
         // We don't reference EF Core in the test project; provide a minimal stub with the same full name.
         const string original = @"
 using System.Threading.Tasks;

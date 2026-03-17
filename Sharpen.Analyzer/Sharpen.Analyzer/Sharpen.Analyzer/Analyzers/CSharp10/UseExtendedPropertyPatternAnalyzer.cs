@@ -116,7 +116,7 @@ public sealed class UseExtendedPropertyPatternAnalyzer : DiagnosticAnalyzer
             current = ca.Expression;
         }
 
-        root = current ?? expr;
+        root = current;
         members = builder.ToImmutable();
         return members.Length > 0;
     }

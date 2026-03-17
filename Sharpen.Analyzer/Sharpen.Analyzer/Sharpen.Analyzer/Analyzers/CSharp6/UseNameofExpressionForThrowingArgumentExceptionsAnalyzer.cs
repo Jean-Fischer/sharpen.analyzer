@@ -40,7 +40,7 @@ public sealed class UseNameofExpressionForThrowingArgumentExceptionsAnalyzer : D
 
         if (!IsSupportedArgumentExceptionType(createdType)) return;
 
-        if (!TryGetParameterNameArgumentIndex(createdType, objectCreation, semanticModel, cancellationToken,
+        if (!TryGetParameterNameArgumentIndex(objectCreation, semanticModel, cancellationToken,
                 out var paramNameArgIndex)) return;
 
         if (paramNameArgIndex < 0 || paramNameArgIndex >= objectCreation.ArgumentList.Arguments.Count) return;
@@ -75,9 +75,7 @@ public sealed class UseNameofExpressionForThrowingArgumentExceptionsAnalyzer : D
         return createdType.ContainingNamespace?.ToDisplayString() == "System";
     }
 
-    private static bool TryGetParameterNameArgumentIndex(
-        INamedTypeSymbol createdType,
-        ObjectCreationExpressionSyntax objectCreation,
+    private static bool TryGetParameterNameArgumentIndex(ObjectCreationExpressionSyntax objectCreation,
         SemanticModel semanticModel,
         CancellationToken cancellationToken,
         out int index)

@@ -26,7 +26,6 @@ public sealed class DiscardOutVariablesInMethodInvocationsAnalyzer : DiagnosticA
         var invocation = (InvocationExpressionSyntax)context.Node;
 
         var argumentList = invocation.ArgumentList;
-        if (argumentList == null) return;
 
         foreach (var argument in argumentList.Arguments)
         {

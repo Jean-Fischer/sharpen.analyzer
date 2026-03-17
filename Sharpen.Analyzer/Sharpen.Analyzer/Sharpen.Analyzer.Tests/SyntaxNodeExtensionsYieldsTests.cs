@@ -2,7 +2,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Sharpen.Engine.Extensions;
+using Sharpen.Analyzer.Extensions;
 using Xunit;
 
 namespace Sharpen.Analyzer.Tests;

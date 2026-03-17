@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Sharpen.Engine.Extensions;
+namespace Sharpen.Analyzer.Extensions;
 
 public static class SyntaxNodeExtensions
 {
@@ -112,110 +112,83 @@ public static class SyntaxNodeExtensions
     }
 
     public static bool IsAnyAncestorOfOrSelf<T>(this IEnumerable<T> syntaxNodes,
-        SyntaxNode potentialDescendantNodeOrSelf, SyntaxNode searchUpToNode = null) where T : SyntaxNode
+        SyntaxNode potentialDescendantNodeOrSelf, SyntaxNode? searchUpToNode = null) where T : SyntaxNode
     {
         return syntaxNodes.Any(node => node.IsAncestorOfOrSelf(potentialDescendantNodeOrSelf, searchUpToNode));
     }
 
-    public static bool IsAncestorOfOrSelf(this SyntaxNode syntaxNode, SyntaxNode potentialDescendantNodeOrSelf,
-        SyntaxNode searchUpToNode = null)
+    extension(SyntaxNode syntaxNode)
     {
-        if (syntaxNode == potentialDescendantNodeOrSelf) return true;
-
-        var currentNode = potentialDescendantNodeOrSelf.Parent;
-        while (currentNode != searchUpToNode)
+        private bool IsAncestorOfOrSelf(SyntaxNode potentialDescendantNodeOrSelf,
+            SyntaxNode? searchUpToNode = null)
         {
-            if (currentNode == syntaxNode) return true;
-            currentNode = currentNode.Parent;
+            if (syntaxNode == potentialDescendantNodeOrSelf) return true;
+
+            var currentNode = potentialDescendantNodeOrSelf.Parent;
+            while (currentNode != searchUpToNode)
+            {
+                if (currentNode == syntaxNode) return true;
+                currentNode = currentNode?.Parent;
+            }
+
+            return false;
         }
 
-        return false;
-    }
-
-    public static TNode LastAncestorOrSelf<TNode>(this SyntaxNode syntaxNode) where TNode : SyntaxNode
-    {
-        TNode result = null;
-        var currentNode = syntaxNode;
-        while (currentNode != null)
+        public TNode? FirstAncestorOrSelfWithinEnclosingNode<TNode>(SyntaxNode enclosingNode, bool includeEnclosingNode = true) where TNode : SyntaxNode
         {
-            if (currentNode is TNode node) result = node;
-            currentNode = currentNode.Parent;
+            // TODO-IG: We should assert here that the syntaxNode is really within the enclosingNode.
+            //          Define in general how to do asserting.
+
+            var currentNode = syntaxNode;
+            while (currentNode != enclosingNode)
+            {
+                if (currentNode is TNode node) return node;
+                currentNode = currentNode.Parent;
+            }
+
+            if (includeEnclosingNode && enclosingNode is TNode enclosingNodeAsTNode) return enclosingNodeAsTNode;
+
+            return null;
         }
 
-        return result;
-    }
-
-    public static TNode? FirstAncestorOrSelfWithinEnclosingNode<TNode>(this SyntaxNode syntaxNode,
-        SyntaxNode enclosingNode, bool includeEnclosingNode = true) where TNode : SyntaxNode
-    {
-        // TODO-IG: We should assert here that the syntaxNode is really within the enclosingNode.
-        //          Define in general how to do asserting.
-
-        var currentNode = syntaxNode;
-        while (currentNode != enclosingNode)
+        /// <summary>
+        ///     Returns true if the  <paramref name="syntaxNode" /> yields.
+        ///     We say that a syntax node yields if it contains yield statements
+        ///     that causes its first yieldable parent or self (e.g. method, local function,
+        ///     property, etc.) to yield.
+        /// </summary>
+        public bool Yields()
         {
-            if (currentNode is TNode node) return node;
-            currentNode = currentNode.Parent;
-        }
+            // A yield statement only makes the *nearest yieldable ancestor* yield.
+            // If the yield is inside a lambda/anonymous method or a local function nested within
+            // the current syntaxNode, it must not be considered as making the current syntaxNode yield.
+            return syntaxNode.DescendantNodes()
+                .OfType<YieldStatementSyntax>()
+                .Any(yieldStatement =>
+                    IsNotWithinLambdaOrAnonymousMethodDifferentThanSyntaxNode(yieldStatement)
+                    &&
+                    IsNotWithinLocalFunctionDifferentThanSyntaxNode(yieldStatement)
+                );
 
-        if (includeEnclosingNode && enclosingNode is TNode enclosingNodeAsTNode) return enclosingNodeAsTNode;
+            bool IsNotWithinLambdaOrAnonymousMethodDifferentThanSyntaxNode(YieldStatementSyntax yieldStatement)
+            {
+                // If there is an anonymous function between the yield statement and the syntax node,
+                // then the yield belongs to that anonymous function, not to the syntax node.
+                var enclosingAnonymousFunction =
+                    yieldStatement.FirstAncestorOrSelfWithinEnclosingNode<AnonymousFunctionExpressionSyntax>(syntaxNode,
+                        includeEnclosingNode: false);
+                return enclosingAnonymousFunction == null;
+            }
 
-        return null;
-    }
-
-    public static SyntaxNode PrecedingSiblingOrSelf(this SyntaxNode syntaxNode)
-    {
-        if (syntaxNode.Parent == null) return syntaxNode;
-
-        var previous = syntaxNode;
-        foreach (var node in syntaxNode.Parent.ChildNodes())
-        {
-            if (node == syntaxNode) return previous;
-            previous = node;
-        }
-
-        // This will never happen since the syntaxNode is in the list of its parent child nodes.
-        // Still, we have to satisfy the compiler.
-        return syntaxNode;
-    }
-
-    /// <summary>
-    ///     Returns true if the  <paramref name="syntaxNode" /> yields.
-    ///     We say that a syntax node yields if it contains yield statements
-    ///     that causes its first yieldable parent or self (e.g. method, local function,
-    ///     property, etc.) to yield.
-    /// </summary>
-    public static bool Yields(this SyntaxNode syntaxNode)
-    {
-        // A yield statement only makes the *nearest yieldable ancestor* yield.
-        // If the yield is inside a lambda/anonymous method or a local function nested within
-        // the current syntaxNode, it must not be considered as making the current syntaxNode yield.
-        return syntaxNode.DescendantNodes()
-            .OfType<YieldStatementSyntax>()
-            .Any(yieldStatement =>
-                IsNotWithinLambdaOrAnonymousMethodDifferentThanSyntaxNode(yieldStatement)
-                &&
-                IsNotWithinLocalFunctionDifferentThanSyntaxNode(yieldStatement)
-            );
-
-        bool IsNotWithinLambdaOrAnonymousMethodDifferentThanSyntaxNode(YieldStatementSyntax yieldStatement)
-        {
-            // If there is an anonymous function between the yield statement and the syntax node,
-            // then the yield belongs to that anonymous function, not to the syntax node.
-            var enclosingAnonymousFunction =
-                yieldStatement.FirstAncestorOrSelfWithinEnclosingNode<AnonymousFunctionExpressionSyntax>(syntaxNode,
-                    includeEnclosingNode: false);
-            return enclosingAnonymousFunction == null;
-        }
-
-        bool IsNotWithinLocalFunctionDifferentThanSyntaxNode(YieldStatementSyntax yieldStatement)
-        {
-            // If there is a local function between the yield statement and the syntax node,
-            // then the yield belongs to that local function, not to the syntax node.
-            var localFunction =
-                yieldStatement.FirstAncestorOrSelfWithinEnclosingNode<LocalFunctionStatementSyntax>(syntaxNode,
-                    includeEnclosingNode: false);
-            return localFunction == null;
+            bool IsNotWithinLocalFunctionDifferentThanSyntaxNode(YieldStatementSyntax yieldStatement)
+            {
+                // If there is a local function between the yield statement and the syntax node,
+                // then the yield belongs to that local function, not to the syntax node.
+                var localFunction =
+                    yieldStatement.FirstAncestorOrSelfWithinEnclosingNode<LocalFunctionStatementSyntax>(syntaxNode,
+                        includeEnclosingNode: false);
+                return localFunction == null;
+            }
         }
     }
 
@@ -306,7 +279,7 @@ public static class SyntaxNodeExtensions
                ((AssignmentExpressionSyntax)node.Parent).Left == node;
     }
 
-    public static bool IsParentKind(this SyntaxNode node, SyntaxKind kind)
+    public static bool IsParentKind(this SyntaxNode? node, SyntaxKind kind)
     {
         return node.Parent?.IsKind(kind) == true;
     }
@@ -349,25 +322,38 @@ public static class SyntaxNodeExtensions
     }
 
     public static bool IsObjectInitializerNamedAssignmentIdentifier(this SyntaxNode node,
-        out SyntaxNode initializedInstance)
+        out SyntaxNode? initializedInstance)
     {
         initializedInstance = null;
-        if (node is IdentifierNameSyntax identifier &&
-            identifier.IsLeftSideOfAssignExpression() &&
-            identifier.Parent.IsParentKind(SyntaxKind.ObjectInitializerExpression))
+ 
+        if (node is not IdentifierNameSyntax identifier ||
+            !identifier.IsLeftSideOfAssignExpression() ||
+            !identifier.Parent.IsParentKind(SyntaxKind.ObjectInitializerExpression))
         {
-            var objectInitializer = identifier.Parent.Parent;
-            if (objectInitializer.IsParentKind(SyntaxKind.ObjectCreationExpression))
-            {
-                initializedInstance = objectInitializer.Parent;
-                return true;
-            }
+            return false;
+        }
 
-            if (objectInitializer.IsParentKind(SyntaxKind.SimpleAssignmentExpression))
-            {
-                initializedInstance = ((AssignmentExpressionSyntax)objectInitializer.Parent).Left;
-                return true;
-            }
+        if (identifier.Parent?.Parent is not InitializerExpressionSyntax objectInitializer)
+        {
+            return false;
+        }
+
+        // new C { P = 1 }
+        if (objectInitializer.Parent is ObjectCreationExpressionSyntax objectCreation &&
+            objectCreation.Parent is not AssignmentExpressionSyntax)
+        {
+            initializedInstance = objectCreation;
+            return true;
+        }
+
+        // c = new C { P = 1 }
+        if (objectInitializer.Parent is ObjectCreationExpressionSyntax objectCreationOnRight &&
+            objectCreationOnRight.Parent is AssignmentExpressionSyntax assignmentExpression &&
+            assignmentExpression.IsKind(SyntaxKind.SimpleAssignmentExpression) &&
+            assignmentExpression.Right == objectCreationOnRight)
+        {
+            initializedInstance = assignmentExpression.Left;
+            return true;
         }
 
         return false;

@@ -33,8 +33,6 @@ public sealed class UseCollectionExpressionAnalyzer : DiagnosticAnalyzer
             return;
 
         // Avoid unsafe/unsupported cases (e.g. stackalloc, omitted sizes, etc.)
-        if (arrayCreation.Type == null)
-            return;
 
         // If there is an explicit size, only allow empty size: new T[] { ... }
         // Disallow: new T[3] { ... } (could be rewritten, but keep conservative)
@@ -61,8 +59,6 @@ public sealed class UseCollectionExpressionAnalyzer : DiagnosticAnalyzer
             return;
 
         // new[] { ... }
-        if (implicitArrayCreation.Initializer == null)
-            return;
 
         if (!IsSafeToReport(context, implicitArrayCreation))
             return;

@@ -74,12 +74,10 @@ public sealed class ReplaceSwitchStatementWithSwitchExpressionAnalyzer : Diagnos
                     // Legacy behavior: do not support compound assignments (+=, *=, -=, /=, ...).
                     if (!assignment.IsKind(SyntaxKind.SimpleAssignmentExpression)) return false;
 
-                    if (assignment.Left == null) return false;
-
                     var currentIdentifierSymbol = semanticModel.GetSymbolInfo(assignment.Left).Symbol;
                     if (currentIdentifierSymbol == null) return false;
 
-                    if (previousIdentifierSymbol != null && !previousIdentifierSymbol.Equals(currentIdentifierSymbol))
+                    if (previousIdentifierSymbol != null && !SymbolEqualityComparer.Default.Equals(previousIdentifierSymbol, currentIdentifierSymbol))
                         return false;
 
                     previousIdentifierSymbol = currentIdentifierSymbol;

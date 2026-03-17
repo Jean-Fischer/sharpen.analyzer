@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Sharpen.Engine.Extensions;
+using Sharpen.Analyzer.Extensions;
 
-namespace Sharpen.Engine.SharpenSuggestions.Common.AsyncAwaitAndAsyncStreams;
+namespace Sharpen.Analyzer.Common;
 
 /// <summary>
 ///     Decides if the method has an asynchronous equivalent based on a hardcoded

@@ -1,20 +1,19 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Sharpen.Engine.Extensions;
+using Sharpen.Analyzer.Extensions;
 
-namespace Sharpen.Engine.SharpenSuggestions.Common.AsyncAwaitAndAsyncStreams;
+namespace Sharpen.Analyzer.Common;
 
 public static class EquivalentAsynchronousMethodResolver
 {
-    public static IMethodSymbol ResolveAsyncEquivalent(
-        InvocationExpressionSyntax invocation,
-        SemanticModel semanticModel)
+    public static IMethodSymbol? ResolveAsyncEquivalent(
+        InvocationExpressionSyntax? invocation,
+        SemanticModel? semanticModel)
     {
         if (invocation?.Expression == null) return null;
-        if (semanticModel == null) return null;
 
-        if (!(semanticModel.GetSymbolInfo(invocation).Symbol is IMethodSymbol method)) return null;
+        if (semanticModel?.GetSymbolInfo(invocation).Symbol is not IMethodSymbol method) return null;
 
         // Mirror the finder behavior: ignore known methods.
         if (IsIgnoredMethod(method)) return null;
@@ -30,9 +29,7 @@ public static class EquivalentAsynchronousMethodResolver
         if (asyncEquivalent != null) return asyncEquivalent;
 
         var calledOnType = GetCalledOnType(invocation, semanticModel);
-        if (calledOnType == null || Equals(calledOnType, method.ContainingType)) return null;
-
-        return FindAsyncEquivalentOnType(semanticModel, calledOnType, method, invocation);
+        return SymbolEqualityComparer.Default.Equals(calledOnType, method.ContainingType) ? null : FindAsyncEquivalentOnType(semanticModel, calledOnType, method, invocation);
     }
 
     private static bool IsIgnoredMethod(IMethodSymbol method)
@@ -44,15 +41,12 @@ public static class EquivalentAsynchronousMethodResolver
                (method.Name == "Add" || method.Name == "AddRange");
     }
 
-    private static IMethodSymbol FindAsyncEquivalentOnType(
+    private static IMethodSymbol? FindAsyncEquivalentOnType(
         SemanticModel semanticModel,
         INamedTypeSymbol type,
         IMethodSymbol syncMethod,
         InvocationExpressionSyntax invocation)
     {
-        if (type == null) return null;
-        if (syncMethod == null) return null;
-
         var asyncName = syncMethod.Name + "Async";
 
         // Use LookupSymbols at the invocation position to match the finder behavior
@@ -64,7 +58,7 @@ public static class EquivalentAsynchronousMethodResolver
         return candidates.FirstOrDefault(candidate => IsAsynchronousEquivalent(candidate, syncMethod));
     }
 
-    private static bool IsAsynchronousEquivalent(IMethodSymbol potentialEquivalent, IMethodSymbol method)
+    private static bool IsAsynchronousEquivalent(IMethodSymbol? potentialEquivalent, IMethodSymbol method)
     {
         // Copied from EquivalentAsynchronousMethodFinder.TypeContainsAsynchronousEquivalentOf(...)
         // but returns the chosen symbol instead of bool.
@@ -73,7 +67,6 @@ public static class EquivalentAsynchronousMethodResolver
 
         // We insist that the async method returns an awaitable object.
         if (potentialEquivalent.ReturnsVoid) return false;
-        if (potentialEquivalent.ReturnType == null) return false;
 
         // If the method returns void its async equivalent must return
         // any of the known awaitable types that can be void equivalents.
@@ -86,9 +79,7 @@ public static class EquivalentAsynchronousMethodResolver
         }
         else
         {
-            if (method.ReturnType == null) return false;
-
-            if (!(potentialEquivalent.ReturnType is INamedTypeSymbol potentialEquivalentReturnType))
+            if (potentialEquivalent.ReturnType is not INamedTypeSymbol potentialEquivalentReturnType)
                 return false;
 
             if (potentialEquivalentReturnType.Arity != 1)
@@ -101,7 +92,7 @@ public static class EquivalentAsynchronousMethodResolver
 
             if (returnedKnownAwaitableType.WrapsReturnType())
             {
-                if (!method.ReturnType.Equals(potentialEquivalentReturnType.TypeArguments[0]))
+                if (!SymbolEqualityComparer.Default.Equals(method.ReturnType, potentialEquivalentReturnType.TypeArguments[0]))
                     return false;
             }
             else
@@ -109,7 +100,7 @@ public static class EquivalentAsynchronousMethodResolver
                 if (!(method.ReturnType is INamedTypeSymbol methodReturnType && methodReturnType.Arity == 1))
                     return false;
 
-                if (!methodReturnType.TypeArguments[0].Equals(potentialEquivalentReturnType.TypeArguments[0]))
+                if (!SymbolEqualityComparer.Default.Equals(methodReturnType.TypeArguments[0], potentialEquivalentReturnType.TypeArguments[0]))
                     return false;
             }
         }
@@ -122,9 +113,7 @@ public static class EquivalentAsynchronousMethodResolver
 
         for (var i = 0; i < numberOfParameters; i++)
         {
-            if (method.Parameters[i].Type == null)
-                return false;
-            if (!method.Parameters[i].Type.Equals(potentialEquivalent.Parameters[i].Type))
+            if (!SymbolEqualityComparer.Default.Equals(method.Parameters[i].Type, potentialEquivalent.Parameters[i].Type))
                 return false;
             if (method.Parameters[i].Name != potentialEquivalent.Parameters[i].Name)
                 return false;
@@ -148,13 +137,12 @@ public static class EquivalentAsynchronousMethodResolver
         // If syntax tree is unexpected, be conservative and treat as within containing type.
         if (invokedInType == null) return true;
 
-        return method.ContainingType?.Equals(semanticModel.GetDeclaredSymbol(invokedInType)) == true;
+        return SymbolEqualityComparer.Default.Equals(method.ContainingType, semanticModel.GetDeclaredSymbol(invokedInType)) == true;
     }
 
-    private static INamedTypeSymbol GetCalledOnType(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
+    private static INamedTypeSymbol? GetCalledOnType(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
     {
         if (!(invocation.Expression is MemberAccessExpressionSyntax memberAccess)) return null;
-        if (memberAccess.Expression == null) return null;
 
         return semanticModel.GetTypeInfo(memberAccess.Expression).Type as INamedTypeSymbol;
     }

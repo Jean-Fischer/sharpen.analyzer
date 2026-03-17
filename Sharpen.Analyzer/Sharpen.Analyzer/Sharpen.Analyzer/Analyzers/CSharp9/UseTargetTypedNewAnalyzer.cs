@@ -37,17 +37,13 @@ public sealed class UseTargetTypedNewAnalyzer : DiagnosticAnalyzer
             return;
 
         // Don't touch arrays/implicit object creation (already target-typed) etc.
-        if (objectCreation.Type == null)
-            return;
 
         // 6.1 explicit-type local/field/property initializers
         if (objectCreation.Parent is EqualsValueClauseSyntax equalsValue)
         {
             var createdType = context.SemanticModel.GetTypeInfo(objectCreation, context.CancellationToken).Type;
 
-            if (equalsValue.Parent is VariableDeclaratorSyntax variableDeclarator
-                && variableDeclarator.Parent is VariableDeclarationSyntax variableDeclaration
-                && variableDeclaration.Type is not IdentifierNameSyntax { Identifier.ValueText: "var" })
+            if (equalsValue.Parent is VariableDeclaratorSyntax { Parent: VariableDeclarationSyntax { Type: not IdentifierNameSyntax { Identifier.ValueText: "var" } } variableDeclaration })
             {
                 // Explicit local declaration: T x = new T(...)
                 // Only safe when the declared type is exactly the created type.
@@ -104,18 +100,16 @@ public sealed class UseTargetTypedNewAnalyzer : DiagnosticAnalyzer
             }
         }
 
-        if (objectCreation.Parent is ReturnStatementSyntax returnStatement)
+        if (objectCreation.Parent is not ReturnStatementSyntax returnStatement) return;
         {
             var symbol = context.SemanticModel.GetEnclosingSymbol(returnStatement.SpanStart, context.CancellationToken);
-            if (symbol is IMethodSymbol method)
-            {
-                var returnType = method.ReturnType;
-                var createdType = context.SemanticModel.GetTypeInfo(objectCreation, context.CancellationToken).Type;
+            if (symbol is not IMethodSymbol method) return;
+            var returnType = method.ReturnType;
+            var createdType = context.SemanticModel.GetTypeInfo(objectCreation, context.CancellationToken).Type;
 
-                if (createdType != null && SymbolEqualityComparer.Default.Equals(returnType, createdType))
-                    context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule,
-                        objectCreation.GetLocation()));
-            }
+            if (createdType != null && SymbolEqualityComparer.Default.Equals(returnType, createdType))
+                context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule,
+                    objectCreation.GetLocation()));
         }
     }
 }

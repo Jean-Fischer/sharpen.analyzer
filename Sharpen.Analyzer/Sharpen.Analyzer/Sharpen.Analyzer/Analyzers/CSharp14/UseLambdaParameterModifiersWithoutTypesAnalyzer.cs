@@ -30,7 +30,6 @@ public sealed class UseLambdaParameterModifiersWithoutTypesAnalyzer : Diagnostic
 
         // Only consider lambdas with explicit parameter list.
         var parameterList = lambda.ParameterList;
-        if (parameterList is null) return;
 
         // We only care about parameters that have BOTH:
         // - a modifier (ref/in/out/scoped/etc.)

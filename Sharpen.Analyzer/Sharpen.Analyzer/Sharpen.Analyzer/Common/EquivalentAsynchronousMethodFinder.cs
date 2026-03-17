@@ -3,9 +3,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Sharpen.Analyzer.Extensions;
-using Sharpen.Engine.Extensions;
 
-namespace Sharpen.Engine.SharpenSuggestions.Common.AsyncAwaitAndAsyncStreams;
+namespace Sharpen.Analyzer.Common;
 // TODO-IG: Refactor this. The class heavily violates the single responsibility principle.
 //          It does two heavy things at the moment, searches for the equivalent async methods,
 //          but also checks the "environment" to see if it fits requirements of just a one
@@ -72,8 +71,6 @@ internal abstract class EquivalentAsynchronousMethodFinder
     public bool EquivalentAsynchronousCandidateExistsFor(InvocationExpressionSyntax invocation,
         SemanticModel semanticModel, CallerAsyncStatus callerAsyncStatus, CallerYieldingStatus callerYieldingStatus)
     {
-        if (invocation.Expression == null) return false;
-
         if (!InvokedMethodPotentiallyHasAsynchronousEquivalent(invocation)) return false;
 
         if (!(semanticModel.GetSymbolInfo(invocation).Symbol is IMethodSymbol method)) return false;
@@ -98,8 +95,7 @@ internal abstract class EquivalentAsynchronousMethodFinder
         if (!MethodIsInvokedWithinACallerNodeThatCanBeMarkedAsAsync()) return false;
 
         // Caller is either a method or a local function.
-        var (callerSymbol, callerSyntaxNode) = GetEnclosingLocalFunctionOrMethod();
-        if (callerSymbol == null) return false;
+        if (!TryGetEnclosingLocalFunctionOrMethod(out var callerSymbol, out var callerSyntaxNode)) return false;
 
         if (callerAsyncStatus == CallerAsyncStatus.CallerMustNotBeAsync)
         {
@@ -146,11 +142,9 @@ internal abstract class EquivalentAsynchronousMethodFinder
         // Let's now check the type on which the method is called,
         // if there is such.
         var calledOnType = GetCalledOnType();
-        if (calledOnType == null || Equals(calledOnType, method.ContainingType)) return false;
+        if (calledOnType == null || SymbolEqualityComparer.Default.Equals(calledOnType, method.ContainingType)) return false;
 
-        if (TypeContainsAsynchronousEquivalentOf(semanticModel, calledOnType, method, invocation)) return true;
-
-        return false;
+        return TypeContainsAsynchronousEquivalentOf(semanticModel, calledOnType, method, invocation);
 
         bool MethodIsInvokedWithinACallerNodeThatCanBeMarkedAsAsync()
         {
@@ -180,18 +174,29 @@ internal abstract class EquivalentAsynchronousMethodFinder
             // zero sense.)
         }
 
-        (IMethodSymbol, SyntaxNode) GetEnclosingLocalFunctionOrMethod()
+        bool TryGetEnclosingLocalFunctionOrMethod(out IMethodSymbol pCallerSymbol, out SyntaxNode pcallerSyntaxNode)
         {
             // Of course, first we have to check if the invocation happens within a local function.
             // The declaration symbol of a local function implements IMethodSymbol so the cast is safe.
             var enclosingLocalFunction = invocation.FirstAncestorOrSelf<LocalFunctionStatementSyntax>();
             if (enclosingLocalFunction != null)
-                return ((IMethodSymbol)semanticModel.GetDeclaredSymbol(enclosingLocalFunction), enclosingLocalFunction);
+            {
+                pCallerSymbol = semanticModel.GetDeclaredSymbol(enclosingLocalFunction)!;
+                pcallerSyntaxNode = enclosingLocalFunction;
+                return true;
+            }
 
             var enclosingMethod = invocation.FirstAncestorOrSelf<MethodDeclarationSyntax>();
-            return enclosingMethod == null
-                ? (null, null)
-                : (semanticModel.GetDeclaredSymbol(enclosingMethod), enclosingMethod);
+            if (enclosingMethod != null)
+            {
+                pCallerSymbol = semanticModel.GetDeclaredSymbol(enclosingMethod)!;
+                pcallerSyntaxNode = enclosingMethod;
+                return true;
+            }
+
+            pCallerSymbol = null!;
+            pcallerSyntaxNode = null!;
+            return false;
         }
 
         bool CallerCanBeMadeAsync()
@@ -260,16 +265,12 @@ internal abstract class EquivalentAsynchronousMethodFinder
             // by stating that the method is called withing its containing type.
             if (invokedInType == null) return true;
 
-            if (method.ContainingType?.Equals(semanticModel.GetDeclaredSymbol(invokedInType)) == true)
-                return true;
-
-            return false;
+            return SymbolEqualityComparer.Default.Equals(method.ContainingType, semanticModel.GetDeclaredSymbol(invokedInType));
         }
 
-        INamedTypeSymbol GetCalledOnType()
+        INamedTypeSymbol? GetCalledOnType()
         {
-            if (!(invocation.Expression is MemberAccessExpressionSyntax memberAccess)) return null;
-            if (memberAccess.Expression == null) return null;
+            if (invocation.Expression is not MemberAccessExpressionSyntax memberAccess) return null;
 
             return semanticModel.GetTypeInfo(memberAccess.Expression).Type as INamedTypeSymbol;
         }
@@ -277,8 +278,8 @@ internal abstract class EquivalentAsynchronousMethodFinder
 
     protected abstract bool InvokedMethodPotentiallyHasAsynchronousEquivalent(InvocationExpressionSyntax invocation);
 
-    private static bool TypeContainsAsynchronousEquivalentOf(SemanticModel semanticModel, INamedTypeSymbol type,
-        IMethodSymbol method, InvocationExpressionSyntax invocation = null)
+    private static bool TypeContainsAsynchronousEquivalentOf(SemanticModel semanticModel, INamedTypeSymbol? type,
+        IMethodSymbol? method, InvocationExpressionSyntax? invocation = null)
     {
         if (type == null) return false;
         if (method == null) return false;
@@ -310,8 +311,6 @@ internal abstract class EquivalentAsynchronousMethodFinder
             // We insist that the async method returns an awaitable object.
             if (potentialEquivalent.ReturnsVoid) return false;
 
-            if (potentialEquivalent.ReturnType == null) return false;
-
             // If the method returns void its async equivalent must return
             // any of the known awaitable types that can be void equivalents.
             if (method.ReturnsVoid)
@@ -324,8 +323,6 @@ internal abstract class EquivalentAsynchronousMethodFinder
             }
             else // The method does not return void.
             {
-                if (method.ReturnType == null) return false;
-
                 // If the method returns non-void its async equivalent must
                 // either return generic awaitable type parametrized exactly with the
                 // method return type or a generic awaitable type parametrized exactly with the
@@ -348,16 +345,16 @@ internal abstract class EquivalentAsynchronousMethodFinder
                 // parameterized with the proper type.
                 if (returnedKnownAwaitableType.WrapsReturnType())
                 {
-                    if (!method.ReturnType.Equals(potentialEquivalentReturnType.TypeArguments[0]))
+                    if (!SymbolEqualityComparer.Default.Equals(method.ReturnType, potentialEquivalentReturnType.TypeArguments[0]))
                         return false;
                 }
                 else // The returned awaitable type wraps the type parameter of the original generic returned type.
                 {
                     // The method must return generic type with exactly one type parameter.
-                    if (!(method.ReturnType is INamedTypeSymbol methodReturnType && methodReturnType.Arity == 1))
+                    if (method.ReturnType is not INamedTypeSymbol { Arity: 1 } methodReturnType)
                         return false;
 
-                    if (!methodReturnType.TypeArguments[0].Equals(potentialEquivalentReturnType.TypeArguments[0]))
+                    if (!SymbolEqualityComparer.Default.Equals(methodReturnType.TypeArguments[0], potentialEquivalentReturnType.TypeArguments[0]))
                         return false;
                 }
             }
@@ -373,9 +370,7 @@ internal abstract class EquivalentAsynchronousMethodFinder
 
             for (var i = 0; i < numberOfParameters; i++)
             {
-                if (method.Parameters[i].Type == null)
-                    return false;
-                if (!method.Parameters[i].Type.Equals(potentialEquivalent.Parameters[i].Type))
+                if (!SymbolEqualityComparer.Default.Equals(method.Parameters[i].Type, potentialEquivalent.Parameters[i].Type))
                     return false;
                 if (method.Parameters[i].Name != potentialEquivalent.Parameters[i].Name)
                     return false;
@@ -390,7 +385,12 @@ internal abstract class EquivalentAsynchronousMethodFinder
         }
     }
 
-    internal class KnownAwaitableTypeInfo : KnownTypeInfo
+    internal class KnownAwaitableTypeInfo(
+        string typeName,
+        string typeNamespace,
+        KnownAwaitableTypeInfo.ReturnTypeWrappingKind wrappingKind,
+        bool isVoidEquivalent)
+        : KnownTypeInfo(typeName, typeNamespace)
     {
         public enum ReturnTypeWrappingKind
         {
@@ -415,21 +415,11 @@ internal abstract class EquivalentAsynchronousMethodFinder
             WrapsReturnTypeTypeParameter
         }
 
-        private readonly ReturnTypeWrappingKind wrappingKind;
-
-        public KnownAwaitableTypeInfo(string typeName, string typeNamespace, ReturnTypeWrappingKind wrappingKind,
-            bool isVoidEquivalent)
-            : base(typeName, typeNamespace)
-        {
-            this.wrappingKind = wrappingKind;
-            IsVoidEquivalent = isVoidEquivalent;
-        }
-
         /// <summary>
         ///     True if the type in its non-generic form is expected to
         ///     be return if the original non-async method was returning void.
         /// </summary>
-        public bool IsVoidEquivalent { get; }
+        public bool IsVoidEquivalent { get; } = isVoidEquivalent;
 
         public bool WrapsReturnType()
         {
@@ -443,25 +433,20 @@ internal abstract class EquivalentAsynchronousMethodFinder
     //          if the MethodName is null. At the moment, this is not needed at
     //          all. And if it is once needed, introduce a proper abstraction
     //          for that case.
-    private class MethodToIgnore : KnownTypeInfo
+    private class MethodToIgnore(string typeName, string typeNamespace, string? methodName = null)
+        : KnownTypeInfo(typeName, typeNamespace)
     {
-        public MethodToIgnore(string typeName, string typeNamespace, string methodName = null)
-            : base(typeName, typeNamespace)
-        {
-            MethodName = methodName;
-        }
-
         /// <summary>
         ///     Name of the method whose asynchronous equivalent exists,
         ///     but should be ignored. If null, all the methods on the type
         ///     should be ignored.
         /// </summary>
-        private string MethodName { get; }
+        private string MethodName { get; } = methodName;
 
         public bool RepresentsMethod(IMethodSymbol method)
         {
             return RepresentsType(method.ContainingType) &&
-                   (MethodName == null || MethodName == method.Name);
+                   (MethodName == method.Name);
         }
     }
 }

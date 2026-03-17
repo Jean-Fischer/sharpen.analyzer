@@ -48,8 +48,6 @@ public sealed class UseFileScopedNamespaceAnalyzer : DiagnosticAnalyzer
 
         // If already file-scoped (C# 10 has FileScopedNamespaceDeclarationSyntax), this analyzer won't see it.
         // But keep a defensive check in case of syntax changes.
-        if (ns is FileScopedNamespaceDeclarationSyntax)
-            return;
 
         context.ReportDiagnostic(Diagnostic.Create(CSharp10Rules.UseFileScopedNamespaceRule, ns.Name.GetLocation()));
     }

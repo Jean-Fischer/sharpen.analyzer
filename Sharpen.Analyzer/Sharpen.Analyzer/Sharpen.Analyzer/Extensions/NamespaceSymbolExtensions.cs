@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace Sharpen.Engine.Extensions;
+namespace Sharpen.Analyzer.Extensions;
 
 internal static class NamespaceSymbolExtensions
 {

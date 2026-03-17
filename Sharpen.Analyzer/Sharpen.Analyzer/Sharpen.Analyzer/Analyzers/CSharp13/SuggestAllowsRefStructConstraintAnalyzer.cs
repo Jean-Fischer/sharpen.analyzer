@@ -111,7 +111,7 @@ public sealed class SuggestAllowsRefStructConstraintAnalyzer : DiagnosticAnalyze
             }
 
             // return type
-            if (node is MethodDeclarationSyntax method && method.ReturnType is not null)
+            if (node is MethodDeclarationSyntax method)
             {
                 if (method.ReturnType is RefTypeSyntax refType)
                 {
@@ -127,32 +127,24 @@ public sealed class SuggestAllowsRefStructConstraintAnalyzer : DiagnosticAnalyze
             // properties/fields
             foreach (var memberType in node.DescendantNodes().OfType<BasePropertyDeclarationSyntax>())
             {
-                if (memberType is PropertyDeclarationSyntax prop && prop.Type is not null)
+                if (memberType is PropertyDeclarationSyntax prop)
                     if (IsSpanOfTypeParameter(prop.Type, typeParamSymbol, semanticModel, cancellationToken))
                         return true;
 
-                if (memberType is IndexerDeclarationSyntax indexer && indexer.Type is not null)
-                    if (IsSpanOfTypeParameter(indexer.Type, typeParamSymbol, semanticModel, cancellationToken))
-                        return true;
+                if (memberType is not IndexerDeclarationSyntax indexer || indexer.Type is null) continue;
+                if (IsSpanOfTypeParameter(indexer.Type, typeParamSymbol, semanticModel, cancellationToken))
+                    return true;
             }
 
-            foreach (var field in node.DescendantNodes().OfType<FieldDeclarationSyntax>())
+            if (node.DescendantNodes().OfType<FieldDeclarationSyntax>().Any(field => IsSpanOfTypeParameter(field.Declaration.Type, typeParamSymbol, semanticModel, cancellationToken)))
             {
-                if (field.Declaration?.Type is null)
-                    continue;
-
-                if (IsSpanOfTypeParameter(field.Declaration.Type, typeParamSymbol, semanticModel, cancellationToken))
-                    return true;
+                return true;
             }
 
             // locals
-            foreach (var local in node.DescendantNodes().OfType<VariableDeclarationSyntax>())
+            if (node.DescendantNodes().OfType<VariableDeclarationSyntax>().Any(local => IsSpanOfTypeParameter(local.Type, typeParamSymbol, semanticModel, cancellationToken)))
             {
-                if (local.Type is null)
-                    continue;
-
-                if (IsSpanOfTypeParameter(local.Type, typeParamSymbol, semanticModel, cancellationToken))
-                    return true;
+                return true;
             }
         }
 

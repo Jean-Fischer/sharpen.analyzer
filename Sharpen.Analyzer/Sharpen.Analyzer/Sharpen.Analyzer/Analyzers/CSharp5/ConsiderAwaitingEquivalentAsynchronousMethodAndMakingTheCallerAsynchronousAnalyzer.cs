@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Sharpen.Engine.SharpenSuggestions.Common.AsyncAwaitAndAsyncStreams;
+using Sharpen.Analyzer.Common;
 
 namespace Sharpen.Analyzer.Analyzers.CSharp5;
 

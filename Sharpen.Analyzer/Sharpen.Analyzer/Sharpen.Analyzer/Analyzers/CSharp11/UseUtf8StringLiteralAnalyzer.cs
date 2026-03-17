@@ -52,7 +52,7 @@ public sealed class UseUtf8StringLiteralAnalyzer : DiagnosticAnalyzer
 
         var byteArray = bytes.Select(b => b!.Value).ToArray();
 
-        if (!TryDecodeAscii(byteArray, out _))
+        if (!TryDecodeAscii(byteArray))
             return;
 
         context.ReportDiagnostic(Diagnostic.Create(CSharp11Rules.UseUtf8StringLiteralRule,
@@ -98,7 +98,7 @@ public sealed class UseUtf8StringLiteralAnalyzer : DiagnosticAnalyzer
 
         // Only suggest for ASCII subset to keep it simple.
         var bytes = Encoding.UTF8.GetBytes(s);
-        if (!TryDecodeAscii(bytes, out _))
+        if (!TryDecodeAscii(bytes))
             return;
 
         context.ReportDiagnostic(Diagnostic.Create(CSharp11Rules.UseUtf8StringLiteralRule, invocation.GetLocation()));
@@ -118,21 +118,15 @@ public sealed class UseUtf8StringLiteralAnalyzer : DiagnosticAnalyzer
         return null;
     }
 
-    private static bool TryDecodeAscii(byte[] bytes, out string text)
+    private static bool TryDecodeAscii(byte[] bytes)
     {
-        text = string.Empty;
-
         // Require printable ASCII (plus common whitespace).
-        foreach (var b in bytes)
+        if (bytes.Where(b => b != 0x09 && b != 0x0A && b != 0x0D).Any(b => b is < 0x20 or > 0x7E))
         {
-            if (b == 0x09 || b == 0x0A || b == 0x0D)
-                continue;
-
-            if (b < 0x20 || b > 0x7E)
-                return false;
+            return false;
         }
 
-        text = Encoding.ASCII.GetString(bytes);
+        Encoding.ASCII.GetString(bytes);
         return true;
     }
 }

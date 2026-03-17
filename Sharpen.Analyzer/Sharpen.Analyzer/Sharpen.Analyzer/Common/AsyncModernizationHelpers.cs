@@ -91,10 +91,8 @@ public static class AsyncModernizationHelpers
 
     private static bool ReturnsKnownAwaitable(IMethodSymbol method)
     {
-        if (method.ReturnType == null) return false;
-
         var returnType = method.ReturnType;
-        if (returnType is INamedTypeSymbol named && named.IsGenericType) returnType = named.ConstructedFrom;
+        if (returnType is INamedTypeSymbol { IsGenericType: true } named) returnType = named.ConstructedFrom;
 
         var fullName = returnType.ToDisplayString();
         return fullName == "System.Threading.Tasks.Task" ||

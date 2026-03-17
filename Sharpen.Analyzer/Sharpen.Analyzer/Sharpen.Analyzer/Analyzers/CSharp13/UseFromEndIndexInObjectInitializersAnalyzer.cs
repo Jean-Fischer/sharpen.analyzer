@@ -45,8 +45,6 @@ public sealed class UseFromEndIndexInObjectInitializersAnalyzer : DiagnosticAnal
                 continue;
 
             var indexExpression = implicitElementAccess.ArgumentList.Arguments[0].Expression;
-            if (indexExpression is null)
-                continue;
 
             if (!IsLengthMinusOne(indexExpression))
                 continue;

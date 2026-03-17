@@ -120,8 +120,8 @@ public sealed class UseCSharp9PatternMatchingAnalyzer : DiagnosticAnalyzer
         // x < a || x > b
         if (binary.IsKind(SyntaxKind.LogicalAndExpression))
         {
-            if (TryGetComparison(binary.Left, out var leftExpr, out var leftOp, out var leftBound)
-                && TryGetComparison(binary.Right, out var rightExpr, out var rightOp, out var rightBound)
+            if (TryGetComparison(binary.Left, out var leftExpr, out var leftOp, out _)
+                && TryGetComparison(binary.Right, out var rightExpr, out var rightOp, out _)
                 && IsSideEffectFree(leftExpr)
                 && SyntaxFactory.AreEquivalent(leftExpr.WalkDownParentheses(), rightExpr.WalkDownParentheses())
                 && leftOp is SyntaxKind.GreaterThanOrEqualExpression

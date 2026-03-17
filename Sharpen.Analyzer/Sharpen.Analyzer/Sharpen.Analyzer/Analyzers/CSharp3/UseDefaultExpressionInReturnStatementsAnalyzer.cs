@@ -23,7 +23,7 @@ public sealed class UseDefaultExpressionInReturnStatementsAnalyzer : DiagnosticA
     {
         var defaultExpression = (DefaultExpressionSyntax)context.Node;
 
-        if (defaultExpression.Parent is not ReturnStatementSyntax returnStatement) return;
+        if (defaultExpression.Parent is not ReturnStatementSyntax) return;
 
         var defaultExpressionType = context.SemanticModel.GetTypeInfo(defaultExpression).Type;
         if (defaultExpressionType is null) return;

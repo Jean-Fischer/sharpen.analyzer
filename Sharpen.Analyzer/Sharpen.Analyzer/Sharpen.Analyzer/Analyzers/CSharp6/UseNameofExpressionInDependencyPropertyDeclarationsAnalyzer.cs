@@ -26,7 +26,7 @@ public sealed class UseNameofExpressionInDependencyPropertyDeclarationsAnalyzer 
     {
         var invocation = (InvocationExpressionSyntax)context.Node;
 
-        if (invocation.ArgumentList is null || invocation.ArgumentList.Arguments.Count == 0) return;
+        if (invocation.ArgumentList.Arguments.Count == 0) return;
 
         // We only care about the first argument (property name).
         var firstArgExpression = invocation.ArgumentList.Arguments[0].Expression;

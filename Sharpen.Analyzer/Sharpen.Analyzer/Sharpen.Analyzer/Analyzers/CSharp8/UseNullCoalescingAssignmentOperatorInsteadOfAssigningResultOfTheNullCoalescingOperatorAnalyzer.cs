@@ -39,11 +39,8 @@ public sealed class
         if (!ReferenceEquals(assignment.Right, coalesceExpression))
             return;
 
-        if (assignment.Left is null || coalesceExpression.Left is null)
-            return;
-
         // Ignore situations like: X = X ?? throw new Exception().
-        if (coalesceExpression.Right?.IsKind(SyntaxKind.ThrowExpression) == true)
+        if (coalesceExpression.Right.IsKind(SyntaxKind.ThrowExpression))
             return;
 
         // Don't offer suggestion if this is `X = X ?? ...` inside an object initializer like e.g. `new SomeClass { X = X ?? ... }`.
@@ -75,31 +72,31 @@ public sealed class
         if (expression.IsKind(SyntaxKind.ThisExpression) || expression.IsKind(SyntaxKind.BaseExpression))
             return true;
 
-        if (expression is IdentifierNameSyntax)
-            return IsSideEffectFreeSymbol(context, expression, isTopLevel);
-
-        if (expression is ParenthesizedExpressionSyntax parenthesized)
-            return IsSideEffectFree(context, parenthesized.Expression, isTopLevel);
-
-        if (expression is MemberAccessExpressionSyntax memberAccess)
-            return IsSideEffectFree(context, memberAccess.Expression, false) &&
-                   IsSideEffectFreeSymbol(context, memberAccess, isTopLevel);
-
-        if (expression is ConditionalAccessExpressionSyntax conditionalAccess)
+        switch (expression)
         {
-            // `a?.b` is represented as ConditionalAccessExpression(accessExpression, whenNotNull)
-            if (conditionalAccess.Expression is not { } accessExpression)
-                return false;
+            case IdentifierNameSyntax:
+                return IsSideEffectFreeSymbol(context, expression, isTopLevel);
+            case ParenthesizedExpressionSyntax parenthesized:
+                return IsSideEffectFree(context, parenthesized.Expression, isTopLevel);
+            case MemberAccessExpressionSyntax memberAccess:
+                return IsSideEffectFree(context, memberAccess.Expression, false) &&
+                       IsSideEffectFreeSymbol(context, memberAccess, isTopLevel);
+            case ConditionalAccessExpressionSyntax conditionalAccess:
+            {
+                // `a?.b` is represented as ConditionalAccessExpression(accessExpression, whenNotNull)
+                if (conditionalAccess.Expression is not { } accessExpression)
+                    return false;
 
-            if (conditionalAccess.WhenNotNull is not { } whenNotNull)
-                return false;
+                if (conditionalAccess.WhenNotNull is not { } whenNotNull)
+                    return false;
 
-            return IsSideEffectFree(context, accessExpression, false) &&
-                   IsSideEffectFree(context, whenNotNull, false);
+                return IsSideEffectFree(context, accessExpression, false) &&
+                       IsSideEffectFree(context, whenNotNull, false);
+            }
+            default:
+                // Something we don't explicitly handle. Assume this may have side effects.
+                return false;
         }
-
-        // Something we don't explicitly handle. Assume this may have side effects.
-        return false;
     }
 
     private static bool IsSideEffectFreeSymbol(SyntaxNodeAnalysisContext context, SyntaxNode node, bool isTopLevelNode)

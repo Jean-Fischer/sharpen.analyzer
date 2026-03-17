@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Sharpen.Engine.SharpenSuggestions.Common.AsyncAwaitAndAsyncStreams;
+using Sharpen.Analyzer.Common;
 
 namespace Sharpen.Analyzer.FixProvider.Common;
 

@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
-using Sharpen.Engine.Extensions;
+using Sharpen.Analyzer.Extensions;
 
-namespace Sharpen.Engine;
+namespace Sharpen.Analyzer.Common;
 
 internal abstract class KnownTypeInfo
 {
