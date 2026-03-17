@@ -23,12 +23,16 @@ public static partial class FixProviderSafetyMappingValidation
 
         // NOTE: We avoid compile-time references to fix provider types by resolving them by name at runtime.
         // This keeps the analyzer assembly independent from the fix-provider assembly.
+        //
+        // IMPORTANT: On some runners (notably CI with coverage), the fix-provider assembly may not be loaded yet.
+        // Provide the preferred assembly name so type resolution can bind deterministically.
+        const string fixProvidersAssemblyName = "Sharpen.Analyzer.FixProviders";
 
         // CSharp12: UseCollectionExpression
-        EnsureMapped(mapping, "Sharpen.Analyzer.UseCollectionExpressionCodeFixProvider");
+        EnsureMapped(mapping, "Sharpen.Analyzer.UseCollectionExpressionCodeFixProvider", fixProvidersAssemblyName);
 
         // CSharp13: PreferParamsCollections
-        EnsureMapped(mapping, "Sharpen.Analyzer.PreferParamsCollectionsCodeFixProvider");
+        EnsureMapped(mapping, "Sharpen.Analyzer.PreferParamsCollectionsCodeFixProvider", fixProvidersAssemblyName);
     }
 
     /// <summary>

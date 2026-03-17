@@ -53,17 +53,23 @@ public static class FixProviderSafetyMapping
     {
         var builder = ImmutableArray.CreateBuilder<(Type FixProviderType, Type SafetyCheckerType)>();
 
+        // IMPORTANT: On some runners (notably CI with coverage), the fix-provider assembly may not be loaded yet.
+        // Provide the preferred assembly name so type resolution can bind deterministically.
+        const string fixProvidersAssemblyName = "Sharpen.Analyzer.FixProviders";
+
         // CSharp12: UseCollectionExpression
         AddIfResolved(
             builder,
             "Sharpen.Analyzer.UseCollectionExpressionCodeFixProvider",
-            typeof(CollectionExpressionSafetyChecker));
+            typeof(CollectionExpressionSafetyChecker),
+            fixProvidersAssemblyName);
 
         // CSharp13: PreferParamsCollections
         AddIfResolved(
             builder,
             "Sharpen.Analyzer.PreferParamsCollectionsCodeFixProvider",
-            typeof(PreferParamsCollectionsSafetyChecker));
+            typeof(PreferParamsCollectionsSafetyChecker),
+            fixProvidersAssemblyName);
 
         // CSharp13: UseFromEndIndexInObjectInitializers
         AddIfResolved(
