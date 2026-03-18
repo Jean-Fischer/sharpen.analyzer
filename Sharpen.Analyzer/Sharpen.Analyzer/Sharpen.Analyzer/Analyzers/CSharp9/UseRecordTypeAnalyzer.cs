@@ -34,7 +34,7 @@ public sealed class UseRecordTypeAnalyzer : DiagnosticAnalyzer
             return;
 
         // Must not have a base class.
-        if (classDecl.BaseList != null && classDecl.BaseList.Types.Count > 0)
+        if (classDecl.BaseList?.Types.Any() == true)
             return;
 
         // Must not be partial (conservative).

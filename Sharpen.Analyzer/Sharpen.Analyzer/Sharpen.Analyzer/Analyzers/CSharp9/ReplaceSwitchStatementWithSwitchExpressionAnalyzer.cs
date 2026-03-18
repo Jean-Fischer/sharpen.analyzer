@@ -25,7 +25,7 @@ public sealed class ReplaceSwitchStatementWithSwitchExpressionAnalyzer : Diagnos
         var switchStatement = (SwitchStatementSyntax)context.Node;
 
         // We have to have at least one switch section (case or default).
-        if (switchStatement.Sections.Count <= 0) return;
+        if (!switchStatement.Sections.Any()) return;
 
         // Legacy behavior: do not support multiple labels per section.
         if (switchStatement.Sections.Any(section => section.Labels.Count != 1)) return;
@@ -44,11 +44,13 @@ public sealed class ReplaceSwitchStatementWithSwitchExpressionAnalyzer : Diagnos
         }
 
         if (AllSwitchSectionsAreReturnStatements(switchStatement.Sections))
+        {
             context.ReportDiagnostic(Diagnostic.Create(
                 isSurelyExhaustive
                     ? Rules.Rules.ReplaceSwitchStatementContainingOnlyReturnsWithSwitchExpressionRule
                     : Rules.Rules.ConsiderReplacingSwitchStatementContainingOnlyReturnsWithSwitchExpressionRule,
                 switchStatement.SwitchKeyword.GetLocation()));
+        }
     }
 
     private static bool AllSwitchSectionsAreAssignmentsToTheSameIdentifier(
@@ -58,6 +60,7 @@ public sealed class ReplaceSwitchStatementWithSwitchExpressionAnalyzer : Diagnos
         ISymbol? previousIdentifierSymbol = null;
 
         foreach (var switchSection in switchSections)
+        {
             switch (switchSection.Statements.Count)
             {
                 // We have only one statement which then must be exception throwing.
@@ -86,6 +89,7 @@ public sealed class ReplaceSwitchStatementWithSwitchExpressionAnalyzer : Diagnos
                 default:
                     return false;
             }
+        }
 
         return true;
     }

@@ -78,7 +78,6 @@ public static class SyntaxNodeExtensions
 
     // TODO-IG: Use these methods on the places where we now use nodes.Where(node => node.IsKind(...) ...).
 
-   
 
     public static bool IsLeftSideOfAssignExpression(this SyntaxNode node)
     {
@@ -88,7 +87,7 @@ public static class SyntaxNodeExtensions
 
     public static bool IsParentKind(this SyntaxNode? node, SyntaxKind kind)
     {
-        return node.Parent?.IsKind(kind) == true;
+        return node.Parent.IsKind(kind);
     }
 
     extension(SyntaxNode node)
@@ -96,7 +95,7 @@ public static class SyntaxNodeExtensions
         public bool IsObjectInitializerNamedAssignmentIdentifier(out SyntaxNode? initializedInstance)
         {
             initializedInstance = null;
- 
+
             if (node is not IdentifierNameSyntax identifier ||
                 !identifier.IsLeftSideOfAssignExpression() ||
                 !identifier.Parent.IsParentKind(SyntaxKind.ObjectInitializerExpression))
@@ -120,7 +119,11 @@ public static class SyntaxNodeExtensions
             // c = new C { P = 1 }
             if (objectInitializer.Parent is not ObjectCreationExpressionSyntax { Parent: AssignmentExpressionSyntax assignmentExpression } objectCreationOnRight ||
                 !assignmentExpression.IsKind(SyntaxKind.SimpleAssignmentExpression) ||
-                assignmentExpression.Right != objectCreationOnRight) return false;
+                assignmentExpression.Right != objectCreationOnRight)
+            {
+                return false;
+            }
+
             initializedInstance = assignmentExpression.Left;
             return true;
 

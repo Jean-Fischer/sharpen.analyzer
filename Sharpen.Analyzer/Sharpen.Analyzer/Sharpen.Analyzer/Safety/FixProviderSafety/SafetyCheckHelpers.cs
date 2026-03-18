@@ -8,7 +8,7 @@ internal static class SafetyCheckHelpers
     public static FixProviderSafetyResult Unsafe(string reasonId, string? message = null)
     {
         if (string.IsNullOrWhiteSpace(reasonId))
-            throw new ArgumentException(@"ReasonId must be non-empty.", nameof(reasonId));
+            throw new ArgumentException("ReasonId must be non-empty.", nameof(reasonId));
 
         // Default to Local stage: these helpers are used by per-fix-provider checkers.
         return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, reasonId, message);

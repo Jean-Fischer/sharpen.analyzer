@@ -75,7 +75,9 @@ public static class EquivalentAsynchronousMethodResolver
             if (!EquivalentAsynchronousMethodFinder.KnownAwaitableTypes.Any(awaitableType =>
                     awaitableType.IsVoidEquivalent &&
                     awaitableType.RepresentsType(potentialEquivalent.ReturnType)))
+            {
                 return false;
+            }
         }
         else
         {
@@ -109,7 +111,9 @@ public static class EquivalentAsynchronousMethodResolver
         var numberOfParameters = method.Parameters.Length;
         if (!(potentialEquivalent.Parameters.Length == numberOfParameters ||
               potentialEquivalent.Parameters.Length == numberOfParameters + 1))
+        {
             return false;
+        }
 
         for (var i = 0; i < numberOfParameters; i++)
         {
@@ -120,9 +124,11 @@ public static class EquivalentAsynchronousMethodResolver
         }
 
         if (potentialEquivalent.Parameters.Length == numberOfParameters + 1)
+        {
             if (!potentialEquivalent.Parameters[numberOfParameters].Type
                     .FullNameIsEqualTo("System.Threading", "CancellationToken"))
                 return false;
+        }
 
         return true;
     }
@@ -137,7 +143,7 @@ public static class EquivalentAsynchronousMethodResolver
         // If syntax tree is unexpected, be conservative and treat as within containing type.
         if (invokedInType == null) return true;
 
-        return SymbolEqualityComparer.Default.Equals(method.ContainingType, semanticModel.GetDeclaredSymbol(invokedInType)) == true;
+        return SymbolEqualityComparer.Default.Equals(method.ContainingType, semanticModel.GetDeclaredSymbol(invokedInType));
     }
 
     private static INamedTypeSymbol? GetCalledOnType(InvocationExpressionSyntax invocation, SemanticModel semanticModel)

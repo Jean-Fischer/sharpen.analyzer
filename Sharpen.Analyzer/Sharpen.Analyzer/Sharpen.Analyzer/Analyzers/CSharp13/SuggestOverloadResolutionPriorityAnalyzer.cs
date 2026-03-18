@@ -74,7 +74,7 @@ public sealed class SuggestOverloadResolutionPriorityAnalyzer : DiagnosticAnalyz
         SemanticModel semanticModel,
         CancellationToken cancellationToken)
     {
-        foreach (var last in from method in overloads where method.ParameterList.Parameters.Count != 0 select method.ParameterList.Parameters[method.ParameterList.Parameters.Count - 1] into last where last.Modifiers.Any(SyntaxKind.ParamsKeyword) select last)
+        foreach (var last in from method in overloads where method.ParameterList.Parameters.Any() select method.ParameterList.Parameters.Last() into last where last.Modifiers.Any(SyntaxKind.ParamsKeyword) select last)
         {
             if (last.Type is null)
                 continue;

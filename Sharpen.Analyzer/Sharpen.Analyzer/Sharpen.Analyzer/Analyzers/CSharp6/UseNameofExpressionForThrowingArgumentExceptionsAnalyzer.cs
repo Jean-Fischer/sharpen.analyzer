@@ -40,7 +40,10 @@ public sealed class UseNameofExpressionForThrowingArgumentExceptionsAnalyzer : D
         if (!IsSupportedArgumentExceptionType(createdType)) return;
 
         if (!TryGetParameterNameArgumentIndex(objectCreation, semanticModel, cancellationToken,
-                out var paramNameArgIndex)) return;
+                out var paramNameArgIndex))
+        {
+            return;
+        }
 
         if (paramNameArgIndex < 0 || paramNameArgIndex >= objectCreation.ArgumentList.Arguments.Count) return;
 
@@ -68,7 +71,9 @@ public sealed class UseNameofExpressionForThrowingArgumentExceptionsAnalyzer : D
             nameof(ArgumentException) or
             nameof(ArgumentNullException) or
             nameof(ArgumentOutOfRangeException)))
+        {
             return false;
+        }
 
         // Ensure it's System.*
         return createdType.ContainingNamespace?.ToDisplayString() == "System";
@@ -122,10 +127,14 @@ public sealed class UseNameofExpressionForThrowingArgumentExceptionsAnalyzer : D
         var parameters = Enumerable.Empty<IParameterSymbol>();
 
         if (enclosingSymbol is IMethodSymbol methodSymbol)
+        {
             parameters = methodSymbol.Parameters;
+        }
         else if (enclosingSymbol is IPropertySymbol propertySymbol)
+        {
             // Indexer accessors can throw; include indexer parameters.
             parameters = propertySymbol.Parameters;
+        }
 
         return parameters.Any(p => p.Name == paramName);
     }

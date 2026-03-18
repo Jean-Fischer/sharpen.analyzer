@@ -60,7 +60,7 @@ public sealed class UseUnboundGenericTypeInNameofAnalyzer : DiagnosticAnalyzer
         if (argExpression is not TypeSyntax typeSyntax) return;
         switch (typeSyntax)
         {
-            case GenericNameSyntax genericName when genericName.TypeArgumentList.Arguments.Count > 0:
+            case GenericNameSyntax genericName when genericName.TypeArgumentList.Arguments.Any():
             case QualifiedNameSyntax { Right: GenericNameSyntax { TypeArgumentList.Arguments.Count: > 0 } }:
                 context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseUnboundGenericTypeInNameofRule,
                     typeSyntax.GetLocation()));

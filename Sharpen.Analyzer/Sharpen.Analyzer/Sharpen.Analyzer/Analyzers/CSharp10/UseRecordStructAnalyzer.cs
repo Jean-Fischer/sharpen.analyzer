@@ -42,7 +42,7 @@ public sealed class UseRecordStructAnalyzer : DiagnosticAnalyzer
         if (decl.BaseList != null)
             return;
 
-        if (decl.Members.Count == 0)
+        if (!decl.Members.Any())
             return;
 
         var hasDisallowedMember = decl.Members.Any(m => m is MethodDeclarationSyntax

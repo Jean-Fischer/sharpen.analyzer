@@ -55,7 +55,9 @@ public sealed class UseInterpolatedStringAnalyzer : DiagnosticAnalyzer
 
         if (invocation.ArgumentList.Arguments[0].Expression is not LiteralExpressionSyntax literal ||
             !literal.IsKind(SyntaxKind.StringLiteralExpression))
+        {
             return;
+        }
 
         // Basic placeholder detection: {0}, {1:000}, etc.
         var text = literal.Token.ValueText;

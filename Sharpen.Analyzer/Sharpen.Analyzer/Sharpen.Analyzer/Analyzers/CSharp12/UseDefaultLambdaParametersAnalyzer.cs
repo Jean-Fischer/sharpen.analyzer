@@ -62,7 +62,7 @@ public sealed class UseDefaultLambdaParametersAnalyzer : DiagnosticAnalyzer
             return;
 
         // Parameterless lambdas have no parameters to annotate with defaults.
-        if (lambda.ParameterList.Parameters.Count == 0)
+        if (!lambda.ParameterList.Parameters.Any())
             return;
 
         // C# 12 default lambda parameters require explicit parameter types.

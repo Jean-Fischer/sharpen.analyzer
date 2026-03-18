@@ -39,7 +39,7 @@ public sealed class UseExtensionBlocksAnalyzer : DiagnosticAnalyzer
         var extensionMethods = classDeclaration.Members
             .Where(m => m is MethodDeclarationSyntax)
             .Cast<MethodDeclarationSyntax>()
-            .Where(m => m.ParameterList.Parameters.Count > 0)
+            .Where(m => m.ParameterList.Parameters.Any())
             .Where(m => m.ParameterList.Parameters[0].Modifiers.Any(SyntaxKind.ThisKeyword))
             .ToList();
 

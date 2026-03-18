@@ -38,7 +38,9 @@ public sealed class UseUtf8StringLiteralAnalyzer : DiagnosticAnalyzer
         // new byte[] { ... }
         if (arrayCreation.Type.ElementType is not PredefinedTypeSyntax predefined ||
             !predefined.Keyword.IsKind(SyntaxKind.ByteKeyword))
+        {
             return;
+        }
 
         if (arrayCreation.Initializer == null)
             return;
@@ -87,12 +89,16 @@ public sealed class UseUtf8StringLiteralAnalyzer : DiagnosticAnalyzer
         // Ensure receiver is Encoding.UTF8
         if (memberAccess.Expression is not MemberAccessExpressionSyntax receiver ||
             receiver.Name.Identifier.ValueText != "UTF8")
+        {
             return;
+        }
 
         var receiverSymbol = context.SemanticModel.GetSymbolInfo(receiver, context.CancellationToken).Symbol;
         if (receiverSymbol is not IPropertySymbol prop ||
             prop.ContainingType.ToDisplayString() != "System.Text.Encoding")
+        {
             return;
+        }
 
         // Only suggest for ASCII subset to keep it simple.
         var bytes = Encoding.UTF8.GetBytes(s);

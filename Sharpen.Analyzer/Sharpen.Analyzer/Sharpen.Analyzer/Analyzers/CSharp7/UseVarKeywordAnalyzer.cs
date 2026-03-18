@@ -42,8 +42,9 @@ public class UseVarKeywordAnalyzer : DiagnosticAnalyzer
 
         if (leftSideType == null || rightSideType == null || leftSideType is IErrorTypeSymbol ||
             rightSideType is IErrorTypeSymbol)
+        {
             return;
-
+        }
 
         if (!SymbolEqualityComparer.Default.Equals(leftSideType, rightSideType))
             return;

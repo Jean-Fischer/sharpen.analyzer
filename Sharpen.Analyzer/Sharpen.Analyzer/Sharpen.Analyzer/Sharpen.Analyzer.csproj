@@ -36,7 +36,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AsyncFixer">
+        <!-- <PackageReference Include="AsyncFixer">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -47,11 +47,11 @@
         <PackageReference Include="ErrorProne.NET.CoreAnalyzers">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="Meziantou.Analyzer">
+        </PackageReference> -->
+        <!-- <PackageReference Include="Meziantou.Analyzer">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
+        </PackageReference> -->
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -66,10 +66,6 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Roslynator.Formatting.Analyzers">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="StyleCop.Analyzers">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

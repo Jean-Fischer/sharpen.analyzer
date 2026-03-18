@@ -61,6 +61,6 @@ public sealed class UsePartialEventsAnalyzer : DiagnosticAnalyzer
             return false;
 
         var symbol = context.SemanticModel.GetSymbolInfo(invocation, context.CancellationToken).Symbol as IMethodSymbol;
-        return symbol is not null && symbol.IsPartialDefinition;
+        return symbol?.IsPartialDefinition == true;
     }
 }

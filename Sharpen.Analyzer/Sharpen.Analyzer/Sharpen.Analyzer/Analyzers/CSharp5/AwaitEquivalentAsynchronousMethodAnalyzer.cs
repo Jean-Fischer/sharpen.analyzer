@@ -32,7 +32,11 @@ public class AwaitEquivalentAsynchronousMethodAnalyzer : DiagnosticAnalyzer
                 invocation,
                 semanticModel,
                 EquivalentAsynchronousMethodFinder.CallerAsyncStatus.CallerMustBeAsync,
-                EquivalentAsynchronousMethodFinder.CallerYieldingStatus.Irrelevant)) return;
+                EquivalentAsynchronousMethodFinder.CallerYieldingStatus.Irrelevant))
+        {
+            return;
+        }
+
         var diagnostic = Diagnostic.Create(
             Rules.Rules.AwaitEquivalentAsynchronousMethodRule,
             invocation.GetLocation(),

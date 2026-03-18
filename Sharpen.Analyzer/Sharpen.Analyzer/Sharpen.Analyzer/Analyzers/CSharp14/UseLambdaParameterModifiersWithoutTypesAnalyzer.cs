@@ -41,7 +41,7 @@ public sealed class UseLambdaParameterModifiersWithoutTypesAnalyzer : Diagnostic
         {
             if (parameter.Type is null) continue;
 
-            if (parameter.Modifiers.Count == 0) continue;
+            if (!parameter.Modifiers.Any()) continue;
 
             hasCandidate = true;
             break;
@@ -66,7 +66,7 @@ public sealed class UseLambdaParameterModifiersWithoutTypesAnalyzer : Diagnostic
 
         // If any parameter type is already implicit (null), we don't suggest.
         // If any parameter has a modifier but no type, it's already in the desired form.
-        if (parameterList.Parameters.Any(parameter => parameter.Modifiers.Count > 0 && parameter.Type is null))
+        if (parameterList.Parameters.Any(parameter => parameter.Modifiers.Any() && parameter.Type is null))
         {
             return;
         }
