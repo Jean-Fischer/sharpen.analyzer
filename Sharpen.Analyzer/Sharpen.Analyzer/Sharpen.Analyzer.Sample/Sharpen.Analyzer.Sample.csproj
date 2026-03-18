@@ -12,7 +12,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Sharpen.Analyzer.FixProviders\Sharpen.Analyzer.FixProviders.csproj" />
+        <ProjectReference Include="..\Sharpen.Analyzer.FixProviders\Sharpen.Analyzer.FixProviders.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
         <ProjectReference Include="..\Sharpen.Analyzer\Sharpen.Analyzer.csproj"
                           OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
     </ItemGroup>
