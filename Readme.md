@@ -29,6 +29,18 @@ dotnet add package Sharpen.Analyzer.FixProviders
 
 Once the package is referenced, diagnostics are produced by Roslyn-based IDEs/editors and during `dotnet build` / `dotnet test`.
 
+### Bulk fixes (dotnet format)
+
+To apply Sharpen analyzers as **bulk fixes** (outside the IDE), you can use `dotnet format analyzers`.
+
+Example (run from the repo root):
+
+```bash
+dotnet format analyzers "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.Sample/Sharpen.Analyzer.Sample.csproj" --verbosity detailed --severity info
+```
+
+`--severity info` is important: many Sharpen rules are configured at `info` severity by default, and `dotnet format analyzers` will otherwise skip them.
+
 ### Safety gate (code fix suppression)
 
 Some code fixes are protected by a conservative “first-pass safety gate”. When a match is found but the transformation is deemed unsafe, the analyzer may still report the diagnostic, but the code fix will not be offered.
