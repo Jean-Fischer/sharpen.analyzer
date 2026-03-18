@@ -70,7 +70,9 @@ public sealed class UseNullConditionalAssignmentCodeFixProvider : SharpenCodeFix
                 out var checkedExpression,
                 out var memberAccess,
                 out var assignment))
+        {
             return document;
+        }
 
         // Build: x?.Member = rhs;
         //

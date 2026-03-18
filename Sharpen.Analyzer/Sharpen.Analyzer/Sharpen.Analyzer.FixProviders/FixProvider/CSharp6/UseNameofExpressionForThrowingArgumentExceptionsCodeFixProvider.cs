@@ -31,11 +31,10 @@ public sealed class UseNameofExpressionForThrowingArgumentExceptionsCodeFixProvi
         var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
         if (root is null) return;
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics[0];
         var diagnosticSpan = diagnostic.Location.SourceSpan;
 
-        var stringLiteral = root.FindNode(diagnosticSpan, getInnermostNodeForTie: true) as ExpressionSyntax;
-        if (stringLiteral is null) return;
+        if (!(root.FindNode(diagnosticSpan, getInnermostNodeForTie: true) is ExpressionSyntax stringLiteral)) return;
 
         context.RegisterCodeFix(
             CodeAction.Create(

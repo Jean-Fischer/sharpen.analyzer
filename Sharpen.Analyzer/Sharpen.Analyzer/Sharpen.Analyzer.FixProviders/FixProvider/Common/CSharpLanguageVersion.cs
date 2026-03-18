@@ -8,27 +8,27 @@ internal static class CSharpLanguageVersion
 {
     internal static bool IsCSharp9OrAbove(Compilation compilation)
     {
-        return compilation is not null && compilation.LanguageVersion() >= 9;
+        return compilation?.LanguageVersion() >= 9;
     }
 
     internal static bool IsCSharp10OrAbove(Compilation compilation)
     {
-        return compilation is not null && compilation.LanguageVersion() >= 10;
+        return compilation?.LanguageVersion() >= 10;
     }
 
     internal static bool IsCSharp11OrAbove(Compilation compilation)
     {
-        return compilation is not null && compilation.LanguageVersion() >= 11;
+        return compilation?.LanguageVersion() >= 11;
     }
 
     internal static bool IsCSharp12OrAbove(Compilation compilation)
     {
-        return compilation is not null && compilation.LanguageVersion() >= 12;
+        return compilation?.LanguageVersion() >= 12;
     }
 
     internal static bool IsCSharp13OrAbove(Compilation compilation)
     {
-        return compilation is not null && compilation.LanguageVersion() >= 13;
+        return compilation?.LanguageVersion() >= 13;
     }
 
     private static int LanguageVersion(this Compilation compilation)

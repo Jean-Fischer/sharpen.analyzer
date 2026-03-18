@@ -79,7 +79,9 @@ public sealed class UseFieldKeywordInPropertiesCodeFixProvider : SharpenCodeFixP
 
         if (!FieldBackedPropertyHelper.TryGetBackingFieldFromGetter(semanticModel, getAccessor, ct,
                 out var backingFieldSymbol) || backingFieldSymbol is null)
+        {
             return document;
+        }
 
         var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
 

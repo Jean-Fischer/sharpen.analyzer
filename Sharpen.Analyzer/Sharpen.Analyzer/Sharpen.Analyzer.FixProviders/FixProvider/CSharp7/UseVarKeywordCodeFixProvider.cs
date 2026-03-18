@@ -19,8 +19,7 @@ public sealed class UseVarKeywordCodeFixProvider : SharpenCodeFixProvider
 
     protected override Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
     {
-        var typeNode = root.FindNode(diagnostic.Location.SourceSpan) as TypeSyntax;
-        if (typeNode is null)
+        if (!(root.FindNode(diagnostic.Location.SourceSpan) is TypeSyntax typeNode))
             return Task.CompletedTask;
 
         RegisterCodeFix(

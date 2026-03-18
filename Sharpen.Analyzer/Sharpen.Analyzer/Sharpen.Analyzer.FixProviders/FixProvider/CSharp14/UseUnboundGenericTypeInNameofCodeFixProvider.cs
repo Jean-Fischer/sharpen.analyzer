@@ -56,8 +56,7 @@ public sealed class UseUnboundGenericTypeInNameofCodeFixProvider : CSharp13OrAbo
         if (root is null)
             return document;
 
-        var currentType = root.FindNode(typeSyntax.Span, getInnermostNodeForTie: true) as TypeSyntax;
-        if (currentType is null)
+        if (!(root.FindNode(typeSyntax.Span, getInnermostNodeForTie: true) is TypeSyntax currentType))
             return document;
 
         if (!TryCreateUnboundTypeSyntax(currentType, out var unboundType))

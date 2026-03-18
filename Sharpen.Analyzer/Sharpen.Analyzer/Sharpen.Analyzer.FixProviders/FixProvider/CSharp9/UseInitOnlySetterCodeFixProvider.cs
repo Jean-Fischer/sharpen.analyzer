@@ -33,7 +33,7 @@ public sealed class UseInitOnlySetterCodeFixProvider : CodeFixProvider
         if (root == null)
             return;
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics[0];
         var property = root.FindNode(diagnostic.Location.SourceSpan).FirstAncestorOrSelf<PropertyDeclarationSyntax>();
         if (property?.AccessorList == null)
             return;

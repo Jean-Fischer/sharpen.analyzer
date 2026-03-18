@@ -31,7 +31,7 @@ public sealed class UseDefaultLambdaParametersCodeFixProvider : CodeFixProvider
         if (root is null)
             return;
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics[0];
         var diagnosticSpan = diagnostic.Location.SourceSpan;
 
         var node = root.FindNode(diagnosticSpan, getInnermostNodeForTie: true);
@@ -153,51 +153,81 @@ public sealed class UseDefaultLambdaParametersCodeFixProvider : CodeFixProvider
             // For non-numeric constants, use generator to avoid formatting issues.
             // We'll replace below if needed.
             if (parameterSymbol.ExplicitDefaultValue is bool b)
+            {
                 defaultValueExpression =
-                    b
-                        ? SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression)
-                        : SyntaxFactory.LiteralExpression(SyntaxKind.FalseLiteralExpression);
+                                b
+                                    ? SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression)
+                                    : SyntaxFactory.LiteralExpression(SyntaxKind.FalseLiteralExpression);
+            }
             else if (parameterSymbol.ExplicitDefaultValue is string s)
+            {
                 defaultValueExpression =
-                    SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(s));
+                                SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(s));
+            }
             else if (parameterSymbol.ExplicitDefaultValue is char c)
+            {
                 defaultValueExpression =
-                    SyntaxFactory.LiteralExpression(SyntaxKind.CharacterLiteralExpression, SyntaxFactory.Literal(c));
+                                SyntaxFactory.LiteralExpression(SyntaxKind.CharacterLiteralExpression, SyntaxFactory.Literal(c));
+            }
             else if (parameterSymbol.ExplicitDefaultValue is int i)
+            {
                 defaultValueExpression =
-                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(i));
+                                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(i));
+            }
             else if (parameterSymbol.ExplicitDefaultValue is long l)
+            {
                 defaultValueExpression =
-                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(l));
+                                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(l));
+            }
             else if (parameterSymbol.ExplicitDefaultValue is double d)
+            {
                 defaultValueExpression =
-                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(d));
+                                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(d));
+            }
             else if (parameterSymbol.ExplicitDefaultValue is float f)
+            {
                 defaultValueExpression =
-                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(f));
+                                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(f));
+            }
             else if (parameterSymbol.ExplicitDefaultValue is decimal m)
+            {
                 defaultValueExpression =
-                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(m));
+                                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(m));
+            }
             else if (parameterSymbol.ExplicitDefaultValue is byte bt)
+            {
                 defaultValueExpression =
-                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(bt));
+                                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(bt));
+            }
             else if (parameterSymbol.ExplicitDefaultValue is sbyte sb)
+            {
                 defaultValueExpression =
-                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(sb));
+                                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(sb));
+            }
             else if (parameterSymbol.ExplicitDefaultValue is short sh)
+            {
                 defaultValueExpression =
-                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(sh));
+                                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(sh));
+            }
             else if (parameterSymbol.ExplicitDefaultValue is ushort ush)
+            {
                 defaultValueExpression =
-                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(ush));
+                                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(ush));
+            }
             else if (parameterSymbol.ExplicitDefaultValue is uint ui)
+            {
                 defaultValueExpression =
-                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(ui));
+                                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(ui));
+            }
             else if (parameterSymbol.ExplicitDefaultValue is ulong ul)
+            {
                 defaultValueExpression =
-                    SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(ul));
+                                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(ul));
+            }
             else
+            {
                 return null;
+            }
         }
 
         return parameterSyntax.WithDefault(

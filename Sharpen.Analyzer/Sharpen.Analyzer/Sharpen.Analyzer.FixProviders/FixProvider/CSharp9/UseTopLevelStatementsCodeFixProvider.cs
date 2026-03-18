@@ -33,7 +33,7 @@ public sealed class UseTopLevelStatementsCodeFixProvider : CodeFixProvider
         if (root == null)
             return;
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics[0];
         var programClass = root.FindNode(diagnostic.Location.SourceSpan).FirstAncestorOrSelf<ClassDeclarationSyntax>();
         if (programClass == null)
             return;
@@ -79,7 +79,7 @@ public sealed class UseTopLevelStatementsCodeFixProvider : CodeFixProvider
         var newCompilationUnit = compilationUnit.WithMembers(SyntaxFactory.List(newMembers.Concat(globalStatements)));
 
         // Preserve leading trivia from Program class by attaching it to the first lifted statement (if any).
-        if (statements.Count > 0)
+        if (statements.Any())
         {
             var firstGlobal = globalStatements[0];
             var withTrivia =

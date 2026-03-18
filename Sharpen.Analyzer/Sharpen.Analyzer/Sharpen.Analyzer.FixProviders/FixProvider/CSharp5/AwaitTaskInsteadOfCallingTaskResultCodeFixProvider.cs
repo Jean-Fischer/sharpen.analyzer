@@ -29,12 +29,11 @@ public sealed class AwaitTaskInsteadOfCallingTaskResultCodeFixProvider : CodeFix
         var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
         if (root is null) return;
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics[0];
         var node = root.FindNode(diagnostic.Location.SourceSpan);
 
         // Diagnostic is reported on the 'Result' identifier.
-        var identifier = node as IdentifierNameSyntax;
-        if (identifier is null) return;
+        if (!(node is IdentifierNameSyntax identifier)) return;
 
         if (identifier.Parent is not MemberAccessExpressionSyntax memberAccess) return;
 

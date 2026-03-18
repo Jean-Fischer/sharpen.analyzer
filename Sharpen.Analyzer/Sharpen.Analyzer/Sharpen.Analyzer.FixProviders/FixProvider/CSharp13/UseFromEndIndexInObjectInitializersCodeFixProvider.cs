@@ -26,8 +26,7 @@ public sealed class UseFromEndIndexInObjectInitializersCodeFixProvider : CSharp1
         var diagnosticSpan = diagnostic.Location.SourceSpan;
 
         // Diagnostic is reported on the index expression.
-        var indexExpression = root.FindNode(diagnosticSpan, getInnermostNodeForTie: true) as ExpressionSyntax;
-        if (indexExpression is null)
+        if (!(root.FindNode(diagnosticSpan, getInnermostNodeForTie: true) is ExpressionSyntax indexExpression))
             return;
 
         // In object initializers, the indexer assignment uses ImplicitElementAccessSyntax.
@@ -35,13 +34,17 @@ public sealed class UseFromEndIndexInObjectInitializersCodeFixProvider : CSharp1
         // so walk up until we reach the full `<expr>.Length - 1` expression.
         while (indexExpression.Parent is ExpressionSyntax parentExpression &&
                indexExpression.Parent is not ArgumentSyntax)
+        {
             indexExpression = parentExpression;
+        }
 
         if (indexExpression.Parent is not ArgumentSyntax
             {
                 Parent: BracketedArgumentListSyntax { Parent: ImplicitElementAccessSyntax }
             })
+        {
             return;
+        }
 
         if (!IsLengthMinusOne(indexExpression))
             return;

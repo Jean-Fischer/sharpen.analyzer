@@ -56,9 +56,7 @@ public sealed class UseImplicitSpanConversionsCodeFixProvider : CSharp13OrAboveS
         if (root is null)
             return document;
 
-        var currentInvocation =
-            root.FindNode(asSpanInvocation.Span, getInnermostNodeForTie: true) as InvocationExpressionSyntax;
-        if (currentInvocation is null)
+        if (!(root.FindNode(asSpanInvocation.Span, getInnermostNodeForTie: true) is InvocationExpressionSyntax currentInvocation))
             return document;
 
         if (currentInvocation.Expression is not MemberAccessExpressionSyntax memberAccess)

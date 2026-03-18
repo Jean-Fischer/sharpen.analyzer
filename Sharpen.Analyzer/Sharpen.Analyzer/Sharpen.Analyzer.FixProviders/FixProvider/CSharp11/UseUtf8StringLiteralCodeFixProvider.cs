@@ -43,7 +43,7 @@ public sealed class UseUtf8StringLiteralCodeFixProvider : CodeFixProvider
         if (semanticModel == null)
             return;
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics[0];
         var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 
         // Only offer fix when the expression is assigned to a ReadOnlySpan<byte> (or compatible) local.

@@ -93,10 +93,12 @@ public sealed class UseCSharp9PatternMatchingCodeFixProvider : CSharp9OrAboveSha
             && SyntaxFactory.AreEquivalent(leftExpr2.WalkDownParentheses(), rightExpr2.WalkDownParentheses())
             && leftOp2 is SyntaxKind.LessThanExpression
             && rightOp2 is SyntaxKind.GreaterThanExpression)
+        {
             // NOTE: Relational patterns require a constant on the RHS. In the general case (a/b are variables),
             // rewriting to pattern matching would produce code that doesn't compile (CS0150).
             // So we intentionally do NOT offer a code fix for this form.
             return null;
+        }
 
         return null;
     }

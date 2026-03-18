@@ -31,7 +31,7 @@ public sealed class UseListPatternCodeFixProvider : CodeFixProvider
         if (root == null)
             return;
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics[0];
         var ifStatement = root.FindNode(diagnostic.Location.SourceSpan).FirstAncestorOrSelf<IfStatementSyntax>();
         if (ifStatement == null)
             return;
@@ -62,7 +62,9 @@ public sealed class UseListPatternCodeFixProvider : CodeFixProvider
         if (!binary.IsKind(SyntaxKind.GreaterThanExpression)
             && !binary.IsKind(SyntaxKind.NotEqualsExpression)
             && !binary.IsKind(SyntaxKind.LessThanExpression))
+        {
             return false;
+        }
 
         // x.Length > 0
         if (binary.Left is MemberAccessExpressionSyntax leftMember

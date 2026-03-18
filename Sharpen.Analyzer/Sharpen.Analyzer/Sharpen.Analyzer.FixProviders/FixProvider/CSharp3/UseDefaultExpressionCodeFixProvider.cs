@@ -31,7 +31,7 @@ public sealed class UseDefaultExpressionCodeFixProvider : CodeFixProvider
         var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
         if (root is null) return;
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics[0];
         var diagnosticSpan = diagnostic.Location.SourceSpan;
 
         // Some analyzers report diagnostics on a token location (e.g. the 'return' keyword), while others

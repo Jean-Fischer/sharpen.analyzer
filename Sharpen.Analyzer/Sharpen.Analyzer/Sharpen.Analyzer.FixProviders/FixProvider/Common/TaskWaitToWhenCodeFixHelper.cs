@@ -28,7 +28,7 @@ internal static class TaskWaitToWhenCodeFixHelper
         var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
         if (root is null) return;
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics[0];
         var node = root.FindNode(diagnostic.Location.SourceSpan);
 
         if (node is not InvocationExpressionSyntax invocation) return;
@@ -37,7 +37,7 @@ internal static class TaskWaitToWhenCodeFixHelper
         if (invocation.Parent is not ExpressionStatementSyntax) return;
 
         // For Task.WaitAll/WaitAny we support any args; for instance Wait() we only support parameterless.
-        if (whenMethodName is null && invocation.ArgumentList.Arguments.Count != 0) return;
+        if (whenMethodName is null && invocation.ArgumentList.Arguments.Any()) return;
 
         var semanticModel =
             await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
