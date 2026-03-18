@@ -41,10 +41,10 @@ public sealed class SuggestOverloadResolutionPriorityAnalyzer : DiagnosticAnalyz
 
         var methods = typeDecl.Members
             .OfType<MethodDeclarationSyntax>()
-            .Where(m => m.Identifier.ValueText.Length > 0)
+            .Where(m => m.Identifier.ValueText.Length > 0 && !HasOverloadResolutionPriorityAttribute(m))
             // If the attribute is already present on any overload, don't keep reporting.
             // This keeps the code fix idempotent in a single iteration.
-            .Where(m => !HasOverloadResolutionPriorityAttribute(m))
+
             .ToList();
 
         if (methods.Count < 2)

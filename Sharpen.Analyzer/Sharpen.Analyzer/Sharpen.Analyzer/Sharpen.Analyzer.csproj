@@ -44,10 +44,10 @@
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <!-- <PackageReference Include="ErrorProne.NET.CoreAnalyzers">
+        <PackageReference Include="ErrorProne.NET.CoreAnalyzers">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>  -->
+        </PackageReference> 
          <!-- <PackageReference Include="Meziantou.Analyzer">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

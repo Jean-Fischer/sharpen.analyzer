@@ -47,10 +47,8 @@ public sealed class ExtensionBlocksSafetyChecker : IFixProviderSafetyChecker
 
         // Ensure we can find at least 2 extension methods.
         var extensionMethods = classDeclaration.Members
-            .Where(m => m is MethodDeclarationSyntax)
-            .Cast<MethodDeclarationSyntax>()
-            .Where(m => m.ParameterList.Parameters.Any())
-            .Where(m => m.ParameterList.Parameters[0].Modifiers.Any(SyntaxKind.ThisKeyword))
+            .OfType<MethodDeclarationSyntax>()
+            .Where(m => m.ParameterList.Parameters.Any() && m.ParameterList.Parameters[0].Modifiers.Any(SyntaxKind.ThisKeyword))
             .ToList();
 
         if (extensionMethods.Count < 2)
