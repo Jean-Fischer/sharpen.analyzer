@@ -122,7 +122,7 @@ public sealed class UseUtf8StringLiteralAnalyzer : DiagnosticAnalyzer
     private static bool TryDecodeAscii(byte[] bytes)
     {
         // Require printable ASCII (plus common whitespace).
-        if (bytes.Where(b => b != 0x09 && b != 0x0A && b != 0x0D).Any(b => b is < 0x20 or > 0x7E))
+        if (bytes.Any(b => b != 0x09 && b != 0x0A && b != 0x0D && b is < 0x20 or > 0x7E))
         {
             return false;
         }

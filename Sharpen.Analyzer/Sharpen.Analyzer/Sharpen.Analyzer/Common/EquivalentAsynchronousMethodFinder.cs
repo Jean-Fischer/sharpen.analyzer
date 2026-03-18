@@ -11,7 +11,7 @@ namespace Sharpen.Analyzer.Common;
 //          specific client. Bad.
 
 /// <summary>
-/// 
+///
 /// </summary>
 /// <remarks>
 ///     We can have different finders. Hardcoded one, one based on dependencies etc.
@@ -387,7 +387,9 @@ internal abstract class EquivalentAsynchronousMethodFinder
             {
                 if (!potentialEquivalent.Parameters[numberOfParameters].Type
                         .FullNameIsEqualTo("System.Threading", "CancellationToken"))
+                {
                     return false;
+                }
             }
 
             return true;

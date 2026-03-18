@@ -127,7 +127,9 @@ public static class EquivalentAsynchronousMethodResolver
         {
             if (!potentialEquivalent.Parameters[numberOfParameters].Type
                     .FullNameIsEqualTo("System.Threading", "CancellationToken"))
+            {
                 return false;
+            }
         }
 
         return true;

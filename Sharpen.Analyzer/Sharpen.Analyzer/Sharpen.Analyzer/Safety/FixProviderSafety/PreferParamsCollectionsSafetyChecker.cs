@@ -122,11 +122,13 @@ public sealed class PreferParamsCollectionsSafetyChecker : IFixProviderSafetyChe
                     if (invokedSymbol?.ContainingType?.ToDisplayString() == "System.Array")
                     {
                         foreach (var arg in invocation.ArgumentList.Arguments)
+                        {
                             if (IsParameterReference(arg.Expression, parameterSymbol, semanticModel, ct))
                             {
                                 forbidden.Add($"System.Array:{invokedSymbol.Name}");
                                 break;
                             }
+                        }
                     }
                 }
             }
