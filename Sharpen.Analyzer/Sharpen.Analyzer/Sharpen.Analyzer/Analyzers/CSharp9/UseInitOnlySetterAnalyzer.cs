@@ -13,7 +13,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp9;
 public sealed class UseInitOnlySetterAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.UseInitOnlySetterRule);
+        ImmutableArray.Create(Rules.GeneralRules.UseInitOnlySetterRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -75,7 +75,7 @@ public sealed class UseInitOnlySetterAnalyzer : DiagnosticAnalyzer
             return;
 
         context.ReportDiagnostic(
-            Diagnostic.Create(Rules.Rules.UseInitOnlySetterRule, property.Identifier.GetLocation()));
+            Diagnostic.Create(Rules.GeneralRules.UseInitOnlySetterRule, property.Identifier.GetLocation()));
     }
 
     private static bool IsAssignedOutsideConstructor(

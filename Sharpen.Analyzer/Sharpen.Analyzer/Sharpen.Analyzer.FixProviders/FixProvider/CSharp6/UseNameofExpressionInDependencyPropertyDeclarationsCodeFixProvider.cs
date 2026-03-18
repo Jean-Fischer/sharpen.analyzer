@@ -19,7 +19,7 @@ namespace Sharpen.Analyzer.FixProvider.CSharp6;
 public sealed class UseNameofExpressionInDependencyPropertyDeclarationsCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.Rules.UseNameofExpressionInDependencyPropertyDeclarationsRule.Id);
+        ImmutableArray.Create(Rules.GeneralRules.UseNameofExpressionInDependencyPropertyDeclarationsRule.Id);
 
     public override FixAllProvider GetFixAllProvider()
     {

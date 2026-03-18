@@ -11,7 +11,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp5;
 public class AwaitEquivalentAsynchronousMethodAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.AwaitEquivalentAsynchronousMethodRule);
+        ImmutableArray.Create(Rules.GeneralRules.AwaitEquivalentAsynchronousMethodRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -38,7 +38,7 @@ public class AwaitEquivalentAsynchronousMethodAnalyzer : DiagnosticAnalyzer
         }
 
         var diagnostic = Diagnostic.Create(
-            Rules.Rules.AwaitEquivalentAsynchronousMethodRule,
+            Rules.GeneralRules.AwaitEquivalentAsynchronousMethodRule,
             invocation.GetLocation(),
             invocation.Expression.ToString()
         );

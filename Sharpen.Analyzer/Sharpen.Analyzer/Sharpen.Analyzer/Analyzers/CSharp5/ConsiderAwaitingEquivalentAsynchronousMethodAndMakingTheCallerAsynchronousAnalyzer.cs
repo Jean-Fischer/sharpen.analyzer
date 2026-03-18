@@ -13,7 +13,7 @@ public sealed class
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(
-            Rules.Rules.ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousRule);
+            Rules.GeneralRules.ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -39,7 +39,7 @@ public sealed class
         }
 
         var diagnostic = Diagnostic.Create(
-            Rules.Rules.ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousRule,
+            Rules.GeneralRules.ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousRule,
             invocation.GetLocation(),
             invocation.Expression.ToString());
 

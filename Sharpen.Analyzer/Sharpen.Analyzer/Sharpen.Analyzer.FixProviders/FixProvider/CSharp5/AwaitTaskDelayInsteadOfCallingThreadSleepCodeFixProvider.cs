@@ -12,7 +12,7 @@ namespace Sharpen.Analyzer.FixProvider.CSharp5;
 public sealed class AwaitTaskDelayInsteadOfCallingThreadSleepCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.Rules.AwaitTaskDelayInsteadOfCallingThreadSleepRule.Id);
+        ImmutableArray.Create(Rules.GeneralRules.AwaitTaskDelayInsteadOfCallingThreadSleepRule.Id);
 
     public override FixAllProvider GetFixAllProvider()
     {

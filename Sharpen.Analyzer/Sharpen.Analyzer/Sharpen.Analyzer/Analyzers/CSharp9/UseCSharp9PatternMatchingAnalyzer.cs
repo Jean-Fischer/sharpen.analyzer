@@ -11,7 +11,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp9;
 public sealed class UseCSharp9PatternMatchingAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.UseCSharp9PatternMatchingRule);
+        ImmutableArray.Create(Rules.GeneralRules.UseCSharp9PatternMatchingRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -76,7 +76,7 @@ public sealed class UseCSharp9PatternMatchingAnalyzer : DiagnosticAnalyzer
             && binary.Right.IsKind(SyntaxKind.NullLiteralExpression)
             && IsSideEffectFree(binary.Left))
         {
-            context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseCSharp9PatternMatchingRule,
+            context.ReportDiagnostic(Diagnostic.Create(Rules.GeneralRules.UseCSharp9PatternMatchingRule,
                 binary.GetLocation()));
         }
     }
@@ -99,7 +99,7 @@ public sealed class UseCSharp9PatternMatchingAnalyzer : DiagnosticAnalyzer
             && isExpr.IsKind(SyntaxKind.IsExpression)
             && IsSideEffectFree(isExpr.Left))
         {
-            context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseCSharp9PatternMatchingRule,
+            context.ReportDiagnostic(Diagnostic.Create(Rules.GeneralRules.UseCSharp9PatternMatchingRule,
                 prefix.GetLocation()));
         }
     }
@@ -127,7 +127,7 @@ public sealed class UseCSharp9PatternMatchingAnalyzer : DiagnosticAnalyzer
                 && leftOp is SyntaxKind.GreaterThanOrEqualExpression
                 && rightOp is SyntaxKind.LessThanOrEqualExpression)
             {
-                context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseCSharp9PatternMatchingRule,
+                context.ReportDiagnostic(Diagnostic.Create(Rules.GeneralRules.UseCSharp9PatternMatchingRule,
                     binary.GetLocation()));
             }
         }
@@ -143,7 +143,7 @@ public sealed class UseCSharp9PatternMatchingAnalyzer : DiagnosticAnalyzer
                 && leftBound.WalkDownParentheses() is LiteralExpressionSyntax
                 && rightBound.WalkDownParentheses() is LiteralExpressionSyntax)
             {
-                context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseCSharp9PatternMatchingRule,
+                context.ReportDiagnostic(Diagnostic.Create(Rules.GeneralRules.UseCSharp9PatternMatchingRule,
                     binary.GetLocation()));
             }
         }

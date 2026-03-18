@@ -14,7 +14,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp6;
 public sealed class UseNameofExpressionForThrowingArgumentExceptionsAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.UseNameofExpressionForThrowingArgumentExceptionsRule);
+        ImmutableArray.Create(Rules.GeneralRules.UseNameofExpressionForThrowingArgumentExceptionsRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -58,7 +58,7 @@ public sealed class UseNameofExpressionForThrowingArgumentExceptionsAnalyzer : D
 
         context.ReportDiagnostic(
             Diagnostic.Create(
-                Rules.Rules.UseNameofExpressionForThrowingArgumentExceptionsRule,
+                Rules.GeneralRules.UseNameofExpressionForThrowingArgumentExceptionsRule,
                 paramNameExpression.GetLocation()));
     }
 

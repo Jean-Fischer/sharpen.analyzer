@@ -11,7 +11,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp6;
 public sealed class UseExpressionBodyForGetOnlyPropertiesAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.UseExpressionBodyForGetOnlyPropertiesRule);
+        ImmutableArray.Create(Rules.GeneralRules.UseExpressionBodyForGetOnlyPropertiesRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -36,7 +36,7 @@ public sealed class UseExpressionBodyForGetOnlyPropertiesAnalyzer : DiagnosticAn
 
         if (!CSharp6SyntaxHelpers.TryGetSingleReturnExpressionFromGetter(getter, out _)) return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseExpressionBodyForGetOnlyPropertiesRule,
+        context.ReportDiagnostic(Diagnostic.Create(Rules.GeneralRules.UseExpressionBodyForGetOnlyPropertiesRule,
             property.Identifier.GetLocation()));
     }
 }

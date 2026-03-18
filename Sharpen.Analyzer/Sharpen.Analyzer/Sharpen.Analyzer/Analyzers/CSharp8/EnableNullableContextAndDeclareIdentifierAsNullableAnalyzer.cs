@@ -12,7 +12,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp8;
 public sealed class EnableNullableContextAndDeclareIdentifierAsNullableAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule);
+        ImmutableArray.Create(Rules.GeneralRules.EnableNullableContextAndDeclareIdentifierAsNullableRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -63,7 +63,7 @@ public sealed class EnableNullableContextAndDeclareIdentifierAsNullableAnalyzer 
             // for the code-fix test harness. The code fix provider will resolve the symbol and update the
             // declaration type.
             context.ReportDiagnostic(Diagnostic.Create(
-                Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule,
+                Rules.GeneralRules.EnableNullableContextAndDeclareIdentifierAsNullableRule,
                 context.Node.GetLocation()));
         }
     }

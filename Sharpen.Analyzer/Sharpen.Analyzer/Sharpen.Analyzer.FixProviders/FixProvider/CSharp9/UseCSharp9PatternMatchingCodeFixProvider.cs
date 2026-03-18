@@ -14,7 +14,7 @@ namespace Sharpen.Analyzer.FixProvider.CSharp9;
 public sealed class UseCSharp9PatternMatchingCodeFixProvider : CSharp9OrAboveSharpenCodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.Rules.UseCSharp9PatternMatchingRule.Id);
+        ImmutableArray.Create(Rules.GeneralRules.UseCSharp9PatternMatchingRule.Id);
 
     protected override Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
     {

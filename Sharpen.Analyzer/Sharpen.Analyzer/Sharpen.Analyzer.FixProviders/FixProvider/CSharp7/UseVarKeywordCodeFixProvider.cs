@@ -15,7 +15,7 @@ namespace Sharpen.Analyzer.FixProvider.CSharp7;
 public sealed class UseVarKeywordCodeFixProvider : SharpenCodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.Rules.UseVarKeywordRule.Id);
+        ImmutableArray.Create(Rules.GeneralRules.UseVarKeywordRule.Id);
 
     protected override Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
     {

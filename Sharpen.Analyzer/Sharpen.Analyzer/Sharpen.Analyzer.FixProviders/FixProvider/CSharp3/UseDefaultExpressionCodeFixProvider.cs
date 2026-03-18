@@ -17,9 +17,9 @@ namespace Sharpen.Analyzer.FixProvider.CSharp3;
 public sealed class UseDefaultExpressionCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(
-        Rules.Rules.UseDefaultExpressionInReturnStatementsRule.Id,
-        Rules.Rules.UseDefaultExpressionInOptionalMethodParametersRule.Id,
-        Rules.Rules.UseDefaultExpressionInOptionalConstructorParametersRule.Id);
+        Rules.GeneralRules.UseDefaultExpressionInReturnStatementsRule.Id,
+        Rules.GeneralRules.UseDefaultExpressionInOptionalMethodParametersRule.Id,
+        Rules.GeneralRules.UseDefaultExpressionInOptionalConstructorParametersRule.Id);
 
     public override FixAllProvider GetFixAllProvider()
     {

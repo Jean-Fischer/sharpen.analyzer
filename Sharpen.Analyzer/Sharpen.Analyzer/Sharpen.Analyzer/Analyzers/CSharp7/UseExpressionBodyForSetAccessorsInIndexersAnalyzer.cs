@@ -10,7 +10,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp7;
 public sealed class UseExpressionBodyForSetAccessorsInIndexersAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.UseExpressionBodyForSetAccessorsInIndexersRule);
+        ImmutableArray.Create(Rules.GeneralRules.UseExpressionBodyForSetAccessorsInIndexersRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -34,7 +34,7 @@ public sealed class UseExpressionBodyForSetAccessorsInIndexersAnalyzer : Diagnos
 
         if (accessor.Body.Statements[0] is not ExpressionStatementSyntax) return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseExpressionBodyForSetAccessorsInIndexersRule,
+        context.ReportDiagnostic(Diagnostic.Create(Rules.GeneralRules.UseExpressionBodyForSetAccessorsInIndexersRule,
             accessor.Keyword.GetLocation()));
     }
 }

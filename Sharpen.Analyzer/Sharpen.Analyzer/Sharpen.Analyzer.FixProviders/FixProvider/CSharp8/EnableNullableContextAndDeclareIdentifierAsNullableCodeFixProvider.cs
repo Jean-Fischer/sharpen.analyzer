@@ -18,7 +18,7 @@ namespace Sharpen.Analyzer.FixProvider.CSharp8;
 public sealed class EnableNullableContextAndDeclareIdentifierAsNullableCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule.Id);
+        ImmutableArray.Create(Rules.GeneralRules.EnableNullableContextAndDeclareIdentifierAsNullableRule.Id);
 
     public override FixAllProvider GetFixAllProvider()
     {

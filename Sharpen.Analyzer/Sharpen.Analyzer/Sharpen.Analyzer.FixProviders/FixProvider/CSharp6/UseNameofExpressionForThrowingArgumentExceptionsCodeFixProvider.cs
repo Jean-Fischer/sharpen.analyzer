@@ -19,7 +19,7 @@ namespace Sharpen.Analyzer.FixProvider.CSharp6;
 public sealed class UseNameofExpressionForThrowingArgumentExceptionsCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.Rules.UseNameofExpressionForThrowingArgumentExceptionsRule.Id);
+        ImmutableArray.Create(Rules.GeneralRules.UseNameofExpressionForThrowingArgumentExceptionsRule.Id);
 
     public override FixAllProvider GetFixAllProvider()
     {

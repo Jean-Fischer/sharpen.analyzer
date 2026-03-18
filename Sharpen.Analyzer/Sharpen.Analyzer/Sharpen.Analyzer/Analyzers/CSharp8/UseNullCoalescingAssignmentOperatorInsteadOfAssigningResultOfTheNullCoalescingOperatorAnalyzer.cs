@@ -13,8 +13,8 @@ public sealed class
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(
-            Rules.Rules.UseNullCoalescingAssignmentOperatorInsteadOfAssigningResultOfTheNullCoalescingOperatorRule,
-            Rules.Rules
+            Rules.GeneralRules.UseNullCoalescingAssignmentOperatorInsteadOfAssigningResultOfTheNullCoalescingOperatorRule,
+            Rules.GeneralRules
                 .ConsiderUsingNullCoalescingAssignmentOperatorInsteadOfAssigningResultOfTheNullCoalescingOperatorRule);
 
     public override void Initialize(AnalysisContext context)
@@ -59,8 +59,8 @@ public sealed class
         var isSideEffectFree = IsSideEffectFree(context, assignment.Left, true);
 
         var rule = isSideEffectFree
-            ? Rules.Rules.UseNullCoalescingAssignmentOperatorInsteadOfAssigningResultOfTheNullCoalescingOperatorRule
-            : Rules.Rules
+            ? Rules.GeneralRules.UseNullCoalescingAssignmentOperatorInsteadOfAssigningResultOfTheNullCoalescingOperatorRule
+            : Rules.GeneralRules
                 .ConsiderUsingNullCoalescingAssignmentOperatorInsteadOfAssigningResultOfTheNullCoalescingOperatorRule;
 
         context.ReportDiagnostic(Diagnostic.Create(rule, assignment.GetLocation()));

@@ -22,7 +22,7 @@ class C
 }";
 
         // New behavior: diagnostic is reported on the triggering node (assignment), not on the declaration.
-        var expected = Verifier.Diagnostic(Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
+        var expected = Verifier.Diagnostic(GeneralRules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
             .WithSpan(8, 9, 8, 18);
 
         await Verifier.VerifyAnalyzerAsync(code, expected);

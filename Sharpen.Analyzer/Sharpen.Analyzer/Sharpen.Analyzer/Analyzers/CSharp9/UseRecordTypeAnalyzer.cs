@@ -12,7 +12,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp9;
 public sealed class UseRecordTypeAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.UseRecordTypeRule);
+        ImmutableArray.Create(Rules.GeneralRules.UseRecordTypeRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -61,7 +61,7 @@ public sealed class UseRecordTypeAnalyzer : DiagnosticAnalyzer
         if (!classDecl.Members.OfType<PropertyDeclarationSyntax>().Any())
             return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseRecordTypeRule, classDecl.Identifier.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(Rules.GeneralRules.UseRecordTypeRule, classDecl.Identifier.GetLocation()));
     }
 
     private static bool IsAutoProperty(PropertyDeclarationSyntax property)

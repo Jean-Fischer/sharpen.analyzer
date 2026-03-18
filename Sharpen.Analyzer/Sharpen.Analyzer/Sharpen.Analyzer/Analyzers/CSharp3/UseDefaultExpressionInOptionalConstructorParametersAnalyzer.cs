@@ -10,7 +10,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp3;
 public sealed class UseDefaultExpressionInOptionalConstructorParametersAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.UseDefaultExpressionInOptionalConstructorParametersRule);
+        ImmutableArray.Create(Rules.GeneralRules.UseDefaultExpressionInOptionalConstructorParametersRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -35,7 +35,7 @@ public sealed class UseDefaultExpressionInOptionalConstructorParametersAnalyzer 
             if (!SymbolEqualityComparer.Default.Equals(defaultExpressionType, parameterType)) continue;
 
             context.ReportDiagnostic(Diagnostic.Create(
-                Rules.Rules.UseDefaultExpressionInOptionalConstructorParametersRule,
+                Rules.GeneralRules.UseDefaultExpressionInOptionalConstructorParametersRule,
                 defaultExpression.Keyword.GetLocation(),
                 parameterType.ToDisplayString()));
         }

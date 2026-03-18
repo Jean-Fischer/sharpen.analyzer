@@ -11,7 +11,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp9;
 public sealed class UseTopLevelStatementsAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.UseTopLevelStatementsRule);
+        ImmutableArray.Create(Rules.GeneralRules.UseTopLevelStatementsRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -94,7 +94,7 @@ public sealed class UseTopLevelStatementsAnalyzer : DiagnosticAnalyzer
         if (root.DescendantNodes().OfType<IdentifierNameSyntax>().Any(i => i.Identifier.ValueText == "Program"))
             return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTopLevelStatementsRule,
+        context.ReportDiagnostic(Diagnostic.Create(Rules.GeneralRules.UseTopLevelStatementsRule,
             programClass.Identifier.GetLocation()));
     }
 }

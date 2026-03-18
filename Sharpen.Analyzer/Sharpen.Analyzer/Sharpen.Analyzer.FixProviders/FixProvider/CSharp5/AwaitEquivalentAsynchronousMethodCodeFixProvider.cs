@@ -15,7 +15,7 @@ namespace Sharpen.Analyzer;
 public class AwaitEquivalentAsynchronousMethodCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.Rules.AwaitEquivalentAsynchronousMethodRule.Id);
+        ImmutableArray.Create(Rules.GeneralRules.AwaitEquivalentAsynchronousMethodRule.Id);
 
     public override FixAllProvider GetFixAllProvider()
     {

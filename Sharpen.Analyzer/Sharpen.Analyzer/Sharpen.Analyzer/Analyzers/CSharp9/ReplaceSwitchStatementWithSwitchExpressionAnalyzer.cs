@@ -11,7 +11,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp9;
 public sealed class ReplaceSwitchStatementWithSwitchExpressionAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.ReplaceSwitchStatementWithSwitchExpressionRule);
+        ImmutableArray.Create(Rules.GeneralRules.ReplaceSwitchStatementWithSwitchExpressionRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -37,8 +37,8 @@ public sealed class ReplaceSwitchStatementWithSwitchExpressionAnalyzer : Diagnos
         {
             context.ReportDiagnostic(Diagnostic.Create(
                 isSurelyExhaustive
-                    ? Rules.Rules.ReplaceSwitchStatementContainingOnlyAssignmentsWithSwitchExpressionRule
-                    : Rules.Rules.ConsiderReplacingSwitchStatementContainingOnlyAssignmentsWithSwitchExpressionRule,
+                    ? Rules.GeneralRules.ReplaceSwitchStatementContainingOnlyAssignmentsWithSwitchExpressionRule
+                    : Rules.GeneralRules.ConsiderReplacingSwitchStatementContainingOnlyAssignmentsWithSwitchExpressionRule,
                 switchStatement.SwitchKeyword.GetLocation()));
             return;
         }
@@ -47,8 +47,8 @@ public sealed class ReplaceSwitchStatementWithSwitchExpressionAnalyzer : Diagnos
         {
             context.ReportDiagnostic(Diagnostic.Create(
                 isSurelyExhaustive
-                    ? Rules.Rules.ReplaceSwitchStatementContainingOnlyReturnsWithSwitchExpressionRule
-                    : Rules.Rules.ConsiderReplacingSwitchStatementContainingOnlyReturnsWithSwitchExpressionRule,
+                    ? Rules.GeneralRules.ReplaceSwitchStatementContainingOnlyReturnsWithSwitchExpressionRule
+                    : Rules.GeneralRules.ConsiderReplacingSwitchStatementContainingOnlyReturnsWithSwitchExpressionRule,
                 switchStatement.SwitchKeyword.GetLocation()));
         }
     }

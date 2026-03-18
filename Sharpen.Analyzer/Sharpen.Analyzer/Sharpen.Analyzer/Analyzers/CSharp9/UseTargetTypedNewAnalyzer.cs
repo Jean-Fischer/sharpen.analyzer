@@ -10,7 +10,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp9;
 public sealed class UseTargetTypedNewAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.UseTargetTypedNewRule);
+        ImmutableArray.Create(Rules.GeneralRules.UseTargetTypedNewRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -55,7 +55,7 @@ public sealed class UseTargetTypedNewAnalyzer : DiagnosticAnalyzer
                     if (declaredType != null && createdType != null &&
                         SymbolEqualityComparer.Default.Equals(declaredType, createdType))
                         {
-                            context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule,
+                            context.ReportDiagnostic(Diagnostic.Create(Rules.GeneralRules.UseTargetTypedNewRule,
                             objectCreation.GetLocation()));
                         }
 
@@ -69,7 +69,7 @@ public sealed class UseTargetTypedNewAnalyzer : DiagnosticAnalyzer
                     if (declaredType != null && createdType != null &&
                         SymbolEqualityComparer.Default.Equals(declaredType, createdType))
                         {
-                            context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule,
+                            context.ReportDiagnostic(Diagnostic.Create(Rules.GeneralRules.UseTargetTypedNewRule,
                             objectCreation.GetLocation()));
                         }
 
@@ -83,7 +83,7 @@ public sealed class UseTargetTypedNewAnalyzer : DiagnosticAnalyzer
                     if (declaredType != null && createdType != null &&
                         SymbolEqualityComparer.Default.Equals(declaredType, createdType))
                         {
-                            context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule,
+                            context.ReportDiagnostic(Diagnostic.Create(Rules.GeneralRules.UseTargetTypedNewRule,
                             objectCreation.GetLocation()));
                         }
 
@@ -101,7 +101,7 @@ public sealed class UseTargetTypedNewAnalyzer : DiagnosticAnalyzer
 
             if (leftType != null && rightType != null && SymbolEqualityComparer.Default.Equals(leftType, rightType))
             {
-                context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule,
+                context.ReportDiagnostic(Diagnostic.Create(Rules.GeneralRules.UseTargetTypedNewRule,
                     objectCreation.GetLocation()));
                 return;
             }
@@ -116,7 +116,7 @@ public sealed class UseTargetTypedNewAnalyzer : DiagnosticAnalyzer
 
             if (createdType != null && SymbolEqualityComparer.Default.Equals(returnType, createdType))
             {
-                context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseTargetTypedNewRule,
+                context.ReportDiagnostic(Diagnostic.Create(Rules.GeneralRules.UseTargetTypedNewRule,
                     objectCreation.GetLocation()));
             }
         }

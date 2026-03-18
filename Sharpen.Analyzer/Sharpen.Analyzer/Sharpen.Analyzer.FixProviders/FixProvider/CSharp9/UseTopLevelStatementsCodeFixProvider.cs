@@ -17,7 +17,7 @@ namespace Sharpen.Analyzer.FixProvider.CSharp9;
 public sealed class UseTopLevelStatementsCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.Rules.UseTopLevelStatementsRule.Id);
+        ImmutableArray.Create(Rules.GeneralRules.UseTopLevelStatementsRule.Id);
 
     public override FixAllProvider GetFixAllProvider()
     {

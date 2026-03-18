@@ -8,7 +8,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp8;
 public sealed class UseIndexFromTheEndAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.UseIndexFromTheEndRule);
+        ImmutableArray.Create(Rules.GeneralRules.UseIndexFromTheEndRule);
 
     public override void Initialize(AnalysisContext context)
     {

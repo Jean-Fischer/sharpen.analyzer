@@ -12,7 +12,7 @@ namespace Sharpen.Analyzer.FixProvider.CSharp5;
 public sealed class AwaitTaskWhenAnyInsteadOfCallingTaskWaitAnyCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.Rules.AwaitTaskWhenAnyInsteadOfCallingTaskWaitAnyRule.Id);
+        ImmutableArray.Create(Rules.GeneralRules.AwaitTaskWhenAnyInsteadOfCallingTaskWaitAnyRule.Id);
 
     public override FixAllProvider GetFixAllProvider()
     {

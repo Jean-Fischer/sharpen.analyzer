@@ -11,7 +11,7 @@ namespace Sharpen.Analyzer.FixProvider.CSharp7;
 public sealed class
     UseExpressionBodyForSetAccessorsInIndexersCodeFixProvider : ExpressionBodiedAccessorCodeFixProviderBase
 {
-    protected override string DiagnosticId => Rules.Rules.UseExpressionBodyForSetAccessorsInIndexersRule.Id;
+    protected override string DiagnosticId => Rules.GeneralRules.UseExpressionBodyForSetAccessorsInIndexersRule.Id;
 
     protected override string Title => "Use expression-bodied set accessor";
 
