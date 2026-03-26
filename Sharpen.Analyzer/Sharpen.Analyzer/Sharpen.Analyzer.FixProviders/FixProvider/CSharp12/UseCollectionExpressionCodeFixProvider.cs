@@ -34,7 +34,7 @@ public sealed class UseCollectionExpressionCodeFixProvider : CodeFixProvider
         if (root is null)
             return;
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics[0];
         var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 
         // We report on the array creation expression itself.

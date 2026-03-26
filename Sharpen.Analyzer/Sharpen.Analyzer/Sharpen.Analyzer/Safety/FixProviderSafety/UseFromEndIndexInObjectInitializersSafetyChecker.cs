@@ -29,7 +29,9 @@ public sealed class UseFromEndIndexInObjectInitializersSafetyChecker : IFixProvi
             {
                 Parent: BracketedArgumentListSyntax { Parent: ImplicitElementAccessSyntax }
             })
+        {
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "implicit-element-access-not-found");
+        }
 
         // Conservative: only allow when the `.Length` target is an array.
         // This ensures `^` indexing is supported and semantics are well-defined.

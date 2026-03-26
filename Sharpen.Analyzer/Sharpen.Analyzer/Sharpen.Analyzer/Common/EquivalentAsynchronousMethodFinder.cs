@@ -10,6 +10,9 @@ namespace Sharpen.Analyzer.Common;
 //          but also checks the "environment" to see if it fits requirements of just a one
 //          specific client. Bad.
 
+/// <summary>
+///
+/// </summary>
 /// <remarks>
 ///     We can have different finders. Hardcoded one, one based on dependencies etc.
 ///     This base class encapsulates the common and exact search logic.
@@ -319,7 +322,9 @@ internal abstract class EquivalentAsynchronousMethodFinder
                         awaitableType.IsVoidEquivalent
                         &&
                         awaitableType.RepresentsType(potentialEquivalent.ReturnType)))
+                {
                     return false;
+                }
             }
             else // The method does not return void.
             {
@@ -366,7 +371,9 @@ internal abstract class EquivalentAsynchronousMethodFinder
             var numberOfParameters = method.Parameters.Length;
             if (!(potentialEquivalent.Parameters.Length == numberOfParameters ||
                   potentialEquivalent.Parameters.Length == numberOfParameters + 1))
+            {
                 return false;
+            }
 
             for (var i = 0; i < numberOfParameters; i++)
             {
@@ -377,9 +384,13 @@ internal abstract class EquivalentAsynchronousMethodFinder
             }
 
             if (potentialEquivalent.Parameters.Length == numberOfParameters + 1)
+            {
                 if (!potentialEquivalent.Parameters[numberOfParameters].Type
                         .FullNameIsEqualTo("System.Threading", "CancellationToken"))
+                {
                     return false;
+                }
+            }
 
             return true;
         }

@@ -23,7 +23,7 @@ class C
     }
 }";
 
-        var expected = Verifier.Diagnostic(Rules.Rules.AwaitTaskWhenAnyInsteadOfCallingTaskWaitAnyRule)
+        var expected = Verifier.Diagnostic(Rules.GeneralRules.AwaitTaskWhenAnyInsteadOfCallingTaskWaitAnyRule)
             .WithSpan(8, 9, 8, 28);
 
         await Verifier.VerifyAnalyzerAsync(test, expected);
@@ -54,7 +54,7 @@ class C
     }
 }";
 
-        var expected = Verifier.Diagnostic(Rules.Rules.AwaitTaskWhenAnyInsteadOfCallingTaskWaitAnyRule)
+        var expected = Verifier.Diagnostic(Rules.GeneralRules.AwaitTaskWhenAnyInsteadOfCallingTaskWaitAnyRule)
             .WithSpan(8, 9, 8, 28);
 
         await Verifier.VerifyCodeFixAsync(test, expected, fixedCode);
@@ -74,7 +74,7 @@ class C
     }
 }";
 
-        var expected = Verifier.Diagnostic(Rules.Rules.AwaitTaskWhenAnyInsteadOfCallingTaskWaitAnyRule)
+        var expected = Verifier.Diagnostic(Rules.GeneralRules.AwaitTaskWhenAnyInsteadOfCallingTaskWaitAnyRule)
             .WithSpan(8, 16, 8, 35);
 
         await Verifier.VerifyAnalyzerAsync(test, expected);

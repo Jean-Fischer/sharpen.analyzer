@@ -78,7 +78,9 @@ public static class AsyncModernizationHelpers
                     i.GetMembers(symbol.Name).OfType<IMethodSymbol>().Any(m =>
                         SymbolEqualityComparer.Default.Equals(
                             symbol.ContainingType.FindImplementationForInterfaceMember(m), symbol))) == true)
+            {
                 return false;
+            }
 
             return !symbol.IsAsync;
         }

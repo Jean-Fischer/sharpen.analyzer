@@ -37,7 +37,10 @@ public sealed class UseFieldKeywordInPropertiesAnalyzer : DiagnosticAnalyzer
         if (getAccessor is null || setAccessor is null) return;
 
         if (!TryGetBackingFieldFromGetter(context, getAccessor, out var backingFieldSymbol) ||
-            backingFieldSymbol is null) return;
+            backingFieldSymbol is null)
+        {
+            return;
+        }
 
         if (!IsSimpleSetterAssigningField(context, setAccessor, backingFieldSymbol)) return;
 
@@ -101,7 +104,9 @@ public sealed class UseFieldKeywordInPropertiesAnalyzer : DiagnosticAnalyzer
 
         if (assignedExpression is not AssignmentExpressionSyntax assignment ||
             !assignment.IsKind(SyntaxKind.SimpleAssignmentExpression))
+        {
             return false;
+        }
 
         var leftSymbol = context.SemanticModel.GetSymbolInfo(assignment.Left, context.CancellationToken).Symbol;
         if (!SymbolEqualityComparer.Default.Equals(leftSymbol, backingFieldSymbol)) return false;

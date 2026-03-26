@@ -41,7 +41,7 @@ public sealed class UseInterpolatedStringCodeFixProvider : CodeFixProvider
         if (root == null)
             return;
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics[0];
         var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 
         var semanticModel = await context.Document
@@ -73,13 +73,15 @@ public sealed class UseInterpolatedStringCodeFixProvider : CodeFixProvider
         }
 
         var add = node.FirstAncestorOrSelf<BinaryExpressionSyntax>();
-        if (add != null && add.IsKind(SyntaxKind.AddExpression))
+        if (add?.IsKind(SyntaxKind.AddExpression) == true)
+        {
             context.RegisterCodeFix(
                 CodeAction.Create(
                     "Use interpolated string",
                     c => FixConcatenationAsync(context.Document, add, c),
                     "UseInterpolatedString_Concat"),
                 diagnostic);
+        }
     }
 
     private static async Task<bool> IsCSharp10OrAboveAsync(Document document, CancellationToken ct)
@@ -210,6 +212,7 @@ public sealed class UseInterpolatedStringCodeFixProvider : CodeFixProvider
         sb.Append("$\"");
 
         foreach (var part in parts)
+        {
             if (part is LiteralExpressionSyntax lit && lit.IsKind(SyntaxKind.StringLiteralExpression))
             {
                 var text = lit.Token.ValueText;
@@ -221,6 +224,7 @@ public sealed class UseInterpolatedStringCodeFixProvider : CodeFixProvider
                 sb.Append(part);
                 sb.Append("}");
             }
+        }
 
         sb.Append("\"");
 

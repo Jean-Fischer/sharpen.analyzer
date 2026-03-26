@@ -38,7 +38,9 @@ public sealed class PreferParamsCollectionsSafetyChecker : IFixProviderSafetyChe
         // Only allow non-public APIs.
         if (methodSymbol.DeclaredAccessibility is Accessibility.Public or Accessibility.Protected
             or Accessibility.ProtectedOrInternal)
+        {
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "public-or-protected");
+        }
 
         var parameterSymbol = semanticModel.GetDeclaredSymbol(parameter, cancellationToken);
         if (parameterSymbol is null)
@@ -61,8 +63,10 @@ public sealed class PreferParamsCollectionsSafetyChecker : IFixProviderSafetyChe
 
         var forbidden = FindForbiddenArraySemantics(method, parameterSymbol, semanticModel, cancellationToken);
         if (forbidden.Count > 0)
+        {
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "array-semantics",
                 string.Join(", ", forbidden));
+        }
 
         // NOTE: We do not attempt to prove "no external call sites" here because the safety checker
         // runs per-document. The fix provider updates in-solution references; external callers are
@@ -85,20 +89,25 @@ public sealed class PreferParamsCollectionsSafetyChecker : IFixProviderSafetyChe
         {
             // values.Length
             if (node is MemberAccessExpressionSyntax memberAccess)
+            {
                 if (IsParameterReference(memberAccess.Expression, parameterSymbol, semanticModel, ct))
                 {
                     var name = memberAccess.Name.Identifier.ValueText;
                     if (name is "Length" or "LongLength" or "Rank")
                         forbidden.Add($"member:{name}");
                 }
+            }
 
             // values[i]
             if (node is ElementAccessExpressionSyntax elementAccess)
+            {
                 if (IsParameterReference(elementAccess.Expression, parameterSymbol, semanticModel, ct))
                     forbidden.Add("indexing");
+            }
 
             // values.GetLength(...)
             if (node is InvocationExpressionSyntax invocation)
+            {
                 if (invocation.Expression is MemberAccessExpressionSyntax invokedMember)
                 {
                     if (IsParameterReference(invokedMember.Expression, parameterSymbol, semanticModel, ct))
@@ -111,13 +120,18 @@ public sealed class PreferParamsCollectionsSafetyChecker : IFixProviderSafetyChe
                     // Array.*(values, ...)
                     var invokedSymbol = semanticModel.GetSymbolInfo(invocation, ct).Symbol as IMethodSymbol;
                     if (invokedSymbol?.ContainingType?.ToDisplayString() == "System.Array")
+                    {
                         foreach (var arg in invocation.ArgumentList.Arguments)
+                        {
                             if (IsParameterReference(arg.Expression, parameterSymbol, semanticModel, ct))
                             {
                                 forbidden.Add($"System.Array:{invokedSymbol.Name}");
                                 break;
                             }
+                        }
+                    }
                 }
+            }
         }
 
         return forbidden;

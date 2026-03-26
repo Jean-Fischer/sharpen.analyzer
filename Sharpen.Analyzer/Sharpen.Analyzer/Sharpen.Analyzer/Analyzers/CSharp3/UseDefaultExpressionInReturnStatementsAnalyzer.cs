@@ -10,7 +10,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp3;
 public sealed class UseDefaultExpressionInReturnStatementsAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.UseDefaultExpressionInReturnStatementsRule);
+        ImmutableArray.Create(Rules.GeneralRules.UseDefaultExpressionInReturnStatementsRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -34,7 +34,7 @@ public sealed class UseDefaultExpressionInReturnStatementsAnalyzer : DiagnosticA
         if (!SymbolEqualityComparer.Default.Equals(defaultExpressionType, enclosingReturnType)) return;
 
         context.ReportDiagnostic(Diagnostic.Create(
-            Rules.Rules.UseDefaultExpressionInReturnStatementsRule,
+            Rules.GeneralRules.UseDefaultExpressionInReturnStatementsRule,
             defaultExpression.GetLocation(),
             defaultExpressionType.ToDisplayString()));
     }

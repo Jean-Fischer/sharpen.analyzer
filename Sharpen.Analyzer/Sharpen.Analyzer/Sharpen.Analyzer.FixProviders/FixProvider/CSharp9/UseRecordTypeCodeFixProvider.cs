@@ -17,7 +17,7 @@ namespace Sharpen.Analyzer.FixProvider.CSharp9;
 public sealed class UseRecordTypeCodeFixProvider : SharpenCodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.Rules.UseRecordTypeRule.Id);
+        ImmutableArray.Create(Rules.GeneralRules.UseRecordTypeRule.Id);
 
     protected override async Task<bool> ShouldRegisterFixesAsync(Document document, CancellationToken ct)
     {

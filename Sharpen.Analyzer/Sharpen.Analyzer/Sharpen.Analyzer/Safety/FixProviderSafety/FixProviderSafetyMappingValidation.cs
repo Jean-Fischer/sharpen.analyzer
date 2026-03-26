@@ -49,8 +49,10 @@ public static partial class FixProviderSafetyMappingValidation
 
         var seen = new HashSet<Type>();
         foreach (var entry in keyValuePairs)
+        {
             if (!seen.Add(entry.Key))
                 throw new InvalidOperationException($"Duplicate fix provider type in mapping: {entry.Key.FullName}");
+        }
     }
 
     public static void ValidateAllKnownFixProvidersAreMapped(IReadOnlyDictionary<Type, Type> mapping)

@@ -24,7 +24,7 @@ public abstract class SharpenCodeFixProvider : CodeFixProvider
         if (root is null)
             return;
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics[0];
         await RegisterCodeFixesAsync(context, root, diagnostic).ConfigureAwait(false);
     }
 

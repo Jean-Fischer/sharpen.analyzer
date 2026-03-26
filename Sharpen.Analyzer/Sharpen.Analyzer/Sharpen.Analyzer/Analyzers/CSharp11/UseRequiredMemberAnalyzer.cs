@@ -41,7 +41,9 @@ public sealed class UseRequiredMemberAnalyzer : DiagnosticAnalyzer
         var accessors = property.AccessorList.Accessors;
         if (!accessors.Any(a =>
                 a.IsKind(SyntaxKind.SetAccessorDeclaration) || a.IsKind(SyntaxKind.InitAccessorDeclaration)))
+        {
             return;
+        }
 
         // Must not have an initializer.
         if (property.Initializer != null)

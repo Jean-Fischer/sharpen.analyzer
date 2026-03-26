@@ -27,7 +27,9 @@ public sealed class UseFileScopedNamespaceAnalyzer : DiagnosticAnalyzer
         // SyntaxTreeAnalysisContext doesn't expose Compilation; use parse options for language version gating.
         if (context.Tree.Options is not CSharpParseOptions parseOptions ||
             parseOptions.LanguageVersion < LanguageVersion.CSharp10)
+        {
             return;
+        }
 
         var root = context.Tree.GetRoot(context.CancellationToken);
 

@@ -12,7 +12,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp6;
 public sealed class UseNameofExpressionInDependencyPropertyDeclarationsAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.UseNameofExpressionInDependencyPropertyDeclarationsRule);
+        ImmutableArray.Create(Rules.GeneralRules.UseNameofExpressionInDependencyPropertyDeclarationsRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -26,7 +26,7 @@ public sealed class UseNameofExpressionInDependencyPropertyDeclarationsAnalyzer 
     {
         var invocation = (InvocationExpressionSyntax)context.Node;
 
-        if (invocation.ArgumentList.Arguments.Count == 0) return;
+        if (!invocation.ArgumentList.Arguments.Any()) return;
 
         // We only care about the first argument (property name).
         var firstArgExpression = invocation.ArgumentList.Arguments[0].Expression;
@@ -54,7 +54,7 @@ public sealed class UseNameofExpressionInDependencyPropertyDeclarationsAnalyzer 
 
         context.ReportDiagnostic(
             Diagnostic.Create(
-                Rules.Rules.UseNameofExpressionInDependencyPropertyDeclarationsRule,
+                Rules.GeneralRules.UseNameofExpressionInDependencyPropertyDeclarationsRule,
                 firstArgExpression.GetLocation()));
     }
 

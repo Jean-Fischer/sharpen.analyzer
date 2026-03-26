@@ -43,7 +43,9 @@ public sealed class SuggestOverloadResolutionPriorityCodeFixProvider : CSharp13O
         // Avoid adding duplicates if the user runs the fix multiple times.
         if (method.AttributeLists.SelectMany(a => a.Attributes)
             .Any(a => a.Name.ToString().Contains("OverloadResolutionPriority")))
+        {
             return document;
+        }
 
         var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
 

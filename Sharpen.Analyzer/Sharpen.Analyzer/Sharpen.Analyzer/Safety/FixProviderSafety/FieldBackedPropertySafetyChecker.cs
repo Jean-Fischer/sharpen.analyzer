@@ -42,7 +42,9 @@ public sealed class FieldBackedPropertySafetyChecker : IFixProviderSafetyChecker
 
         if (!FieldBackedPropertyHelper.TryGetBackingFieldFromGetter(semanticModel, getAccessor, cancellationToken,
                 out var backingFieldSymbol) || backingFieldSymbol is null)
+        {
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "backing-field-not-found");
+        }
 
         if (backingFieldSymbol.DeclaredAccessibility != Accessibility.Private)
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "field-not-private");
@@ -63,7 +65,9 @@ public sealed class FieldBackedPropertySafetyChecker : IFixProviderSafetyChecker
         // This is a best-effort check within the current syntax tree; cross-file/partial checks are not possible here.
         if (!IsFieldReferencedOnlyWithinPropertyAccessors(root, semanticModel, property, backingFieldSymbol,
                 cancellationToken))
+        {
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "field-referenced-elsewhere");
+        }
 
         return FixProviderSafetyResult.Safe();
     }
@@ -97,7 +101,9 @@ public sealed class FieldBackedPropertySafetyChecker : IFixProviderSafetyChecker
 
         if (assignedExpression is not AssignmentExpressionSyntax assignment ||
             !assignment.IsKind(SyntaxKind.SimpleAssignmentExpression))
+        {
             return false;
+        }
 
         var leftSymbol = semanticModel.GetSymbolInfo(assignment.Left, ct).Symbol;
         if (!SymbolEqualityComparer.Default.Equals(leftSymbol, backingFieldSymbol))

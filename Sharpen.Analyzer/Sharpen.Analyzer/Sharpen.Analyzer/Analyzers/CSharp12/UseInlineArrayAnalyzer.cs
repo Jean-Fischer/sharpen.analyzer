@@ -31,14 +31,16 @@ public sealed class UseInlineArrayAnalyzer : DiagnosticAnalyzer
         // If already has InlineArray attribute, don't report.
         if (@struct.AttributeLists.SelectMany(a => a.Attributes)
             .Any(a => a.Name.ToString().EndsWith("InlineArray", StringComparison.Ordinal)))
+        {
             return;
+        }
 
         // Must be a plain struct with only fields.
         if (@struct.Members.Any(m => m is not FieldDeclarationSyntax))
             return;
 
         // No attributes (keep conservative; layout/other attributes can affect semantics).
-        if (@struct.AttributeLists.Count > 0)
+        if (@struct.AttributeLists.Any())
             return;
 
         var fields = @struct.Members.OfType<FieldDeclarationSyntax>().ToArray();

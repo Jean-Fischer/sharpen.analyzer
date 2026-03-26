@@ -17,9 +17,9 @@ namespace Sharpen.Analyzer.FixProvider.CSharp3;
 public sealed class UseDefaultExpressionCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(
-        Rules.Rules.UseDefaultExpressionInReturnStatementsRule.Id,
-        Rules.Rules.UseDefaultExpressionInOptionalMethodParametersRule.Id,
-        Rules.Rules.UseDefaultExpressionInOptionalConstructorParametersRule.Id);
+        Rules.GeneralRules.UseDefaultExpressionInReturnStatementsRule.Id,
+        Rules.GeneralRules.UseDefaultExpressionInOptionalMethodParametersRule.Id,
+        Rules.GeneralRules.UseDefaultExpressionInOptionalConstructorParametersRule.Id);
 
     public override FixAllProvider GetFixAllProvider()
     {
@@ -31,7 +31,7 @@ public sealed class UseDefaultExpressionCodeFixProvider : CodeFixProvider
         var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
         if (root is null) return;
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics[0];
         var diagnosticSpan = diagnostic.Location.SourceSpan;
 
         // Some analyzers report diagnostics on a token location (e.g. the 'return' keyword), while others

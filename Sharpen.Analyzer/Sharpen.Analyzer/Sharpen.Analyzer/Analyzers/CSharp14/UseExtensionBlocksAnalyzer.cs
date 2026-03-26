@@ -37,10 +37,8 @@ public sealed class UseExtensionBlocksAnalyzer : DiagnosticAnalyzer
         // Only consider same-file methods in the class declaration.
         // We keep this informational and conservative.
         var extensionMethods = classDeclaration.Members
-            .Where(m => m is MethodDeclarationSyntax)
-            .Cast<MethodDeclarationSyntax>()
-            .Where(m => m.ParameterList.Parameters.Count > 0)
-            .Where(m => m.ParameterList.Parameters[0].Modifiers.Any(SyntaxKind.ThisKeyword))
+            .OfType<MethodDeclarationSyntax>()
+            .Where(m => m.ParameterList.Parameters.Any() && m.ParameterList.Parameters[0].Modifiers.Any(SyntaxKind.ThisKeyword))
             .ToList();
 
         if (extensionMethods.Count < 2)

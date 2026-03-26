@@ -38,7 +38,7 @@ public sealed class UseRawStringLiteralCodeFixProvider : CodeFixProvider
         if (root == null)
             return;
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics[0];
         var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
         if (node is not LiteralExpressionSyntax literal)
             return;
@@ -53,7 +53,9 @@ public sealed class UseRawStringLiteralCodeFixProvider : CodeFixProvider
 
         if (literal.Token.IsKind(SyntaxKind.MultiLineRawStringLiteralToken)
             || literal.Token.IsKind(SyntaxKind.SingleLineRawStringLiteralToken))
+        {
             return;
+        }
 
         if (literal.Token.ValueText is not string valueText)
             return;

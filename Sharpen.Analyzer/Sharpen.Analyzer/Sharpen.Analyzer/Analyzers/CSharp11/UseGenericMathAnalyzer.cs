@@ -89,7 +89,9 @@ public sealed class UseGenericMathAnalyzer : DiagnosticAnalyzer
             // INumber<TSelf> where TSelf is the type parameter itself.
             if (named.TypeArguments.Length == 1 &&
                 SymbolEqualityComparer.Default.Equals(named.TypeArguments[0], typeParam))
+            {
                 return true;
+            }
         }
 
         return false;

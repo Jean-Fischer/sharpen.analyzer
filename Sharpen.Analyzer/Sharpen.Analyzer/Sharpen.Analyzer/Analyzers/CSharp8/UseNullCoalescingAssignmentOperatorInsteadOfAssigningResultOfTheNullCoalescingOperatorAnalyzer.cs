@@ -13,8 +13,8 @@ public sealed class
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(
-            Rules.Rules.UseNullCoalescingAssignmentOperatorInsteadOfAssigningResultOfTheNullCoalescingOperatorRule,
-            Rules.Rules
+            Rules.GeneralRules.UseNullCoalescingAssignmentOperatorInsteadOfAssigningResultOfTheNullCoalescingOperatorRule,
+            Rules.GeneralRules
                 .ConsiderUsingNullCoalescingAssignmentOperatorInsteadOfAssigningResultOfTheNullCoalescingOperatorRule);
 
     public override void Initialize(AnalysisContext context)
@@ -49,7 +49,9 @@ public sealed class
             {
                 Parent: InitializerExpressionSyntax { Parent: ObjectCreationExpressionSyntax }
             })
+        {
             return;
+        }
 
         if (!SyntaxNodeFacts.AreEquivalent(assignment.Left, coalesceExpression.Left))
             return;
@@ -57,8 +59,8 @@ public sealed class
         var isSideEffectFree = IsSideEffectFree(context, assignment.Left, true);
 
         var rule = isSideEffectFree
-            ? Rules.Rules.UseNullCoalescingAssignmentOperatorInsteadOfAssigningResultOfTheNullCoalescingOperatorRule
-            : Rules.Rules
+            ? Rules.GeneralRules.UseNullCoalescingAssignmentOperatorInsteadOfAssigningResultOfTheNullCoalescingOperatorRule
+            : Rules.GeneralRules
                 .ConsiderUsingNullCoalescingAssignmentOperatorInsteadOfAssigningResultOfTheNullCoalescingOperatorRule;
 
         context.ReportDiagnostic(Diagnostic.Create(rule, assignment.GetLocation()));
@@ -103,8 +105,10 @@ public sealed class
     {
         var symbolInfo = context.SemanticModel.GetSymbolInfo(node, context.CancellationToken);
         if (symbolInfo.CandidateSymbols.Length > 0 || symbolInfo.Symbol is null)
+        {
             // Couldn't bind successfully, assume that this might have side-effects.
             return false;
+        }
 
         var symbol = symbolInfo.Symbol;
         return symbol.Kind switch

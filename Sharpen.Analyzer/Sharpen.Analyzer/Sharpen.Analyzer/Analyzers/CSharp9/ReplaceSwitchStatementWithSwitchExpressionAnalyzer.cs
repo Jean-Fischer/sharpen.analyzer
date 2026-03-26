@@ -11,7 +11,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp9;
 public sealed class ReplaceSwitchStatementWithSwitchExpressionAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.ReplaceSwitchStatementWithSwitchExpressionRule);
+        ImmutableArray.Create(Rules.GeneralRules.ReplaceSwitchStatementWithSwitchExpressionRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -25,7 +25,7 @@ public sealed class ReplaceSwitchStatementWithSwitchExpressionAnalyzer : Diagnos
         var switchStatement = (SwitchStatementSyntax)context.Node;
 
         // We have to have at least one switch section (case or default).
-        if (switchStatement.Sections.Count <= 0) return;
+        if (!switchStatement.Sections.Any()) return;
 
         // Legacy behavior: do not support multiple labels per section.
         if (switchStatement.Sections.Any(section => section.Labels.Count != 1)) return;
@@ -37,18 +37,20 @@ public sealed class ReplaceSwitchStatementWithSwitchExpressionAnalyzer : Diagnos
         {
             context.ReportDiagnostic(Diagnostic.Create(
                 isSurelyExhaustive
-                    ? Rules.Rules.ReplaceSwitchStatementContainingOnlyAssignmentsWithSwitchExpressionRule
-                    : Rules.Rules.ConsiderReplacingSwitchStatementContainingOnlyAssignmentsWithSwitchExpressionRule,
+                    ? Rules.GeneralRules.ReplaceSwitchStatementContainingOnlyAssignmentsWithSwitchExpressionRule
+                    : Rules.GeneralRules.ConsiderReplacingSwitchStatementContainingOnlyAssignmentsWithSwitchExpressionRule,
                 switchStatement.SwitchKeyword.GetLocation()));
             return;
         }
 
         if (AllSwitchSectionsAreReturnStatements(switchStatement.Sections))
+        {
             context.ReportDiagnostic(Diagnostic.Create(
                 isSurelyExhaustive
-                    ? Rules.Rules.ReplaceSwitchStatementContainingOnlyReturnsWithSwitchExpressionRule
-                    : Rules.Rules.ConsiderReplacingSwitchStatementContainingOnlyReturnsWithSwitchExpressionRule,
+                    ? Rules.GeneralRules.ReplaceSwitchStatementContainingOnlyReturnsWithSwitchExpressionRule
+                    : Rules.GeneralRules.ConsiderReplacingSwitchStatementContainingOnlyReturnsWithSwitchExpressionRule,
                 switchStatement.SwitchKeyword.GetLocation()));
+        }
     }
 
     private static bool AllSwitchSectionsAreAssignmentsToTheSameIdentifier(
@@ -58,6 +60,7 @@ public sealed class ReplaceSwitchStatementWithSwitchExpressionAnalyzer : Diagnos
         ISymbol? previousIdentifierSymbol = null;
 
         foreach (var switchSection in switchSections)
+        {
             switch (switchSection.Statements.Count)
             {
                 // We have only one statement which then must be exception throwing.
@@ -86,6 +89,7 @@ public sealed class ReplaceSwitchStatementWithSwitchExpressionAnalyzer : Diagnos
                 default:
                     return false;
             }
+        }
 
         return true;
     }

@@ -39,12 +39,14 @@ public sealed class UseExtendedPropertyPatternCodeFixProvider : CSharp10OrAboveS
         }
 
         if (node is BinaryExpressionSyntax equalsExpr && equalsExpr.IsKind(SyntaxKind.EqualsExpression))
+        {
             RegisterCodeFix(
                 context,
                 diagnostic,
                 "Use nested property pattern",
                 "UseNestedPropertyPattern",
                 c => ApplyNullConditionalFixAsync(context.Document, equalsExpr, c));
+        }
 
         return Task.CompletedTask;
     }
@@ -83,9 +85,11 @@ public sealed class UseExtendedPropertyPatternCodeFixProvider : CSharp10OrAboveS
                 constant);
 
             if (rightBinary.IsKind(SyntaxKind.NotEqualsExpression))
+            {
                 subpattern = SyntaxFactory.Subpattern(
                     SyntaxFactory.NameColon(SyntaxFactory.IdentifierName(propName)),
                     SyntaxFactory.UnaryPattern(SyntaxFactory.Token(SyntaxKind.NotKeyword), constant));
+            }
         }
 
         var propertyPattern = SyntaxFactory.PropertyPatternClause(

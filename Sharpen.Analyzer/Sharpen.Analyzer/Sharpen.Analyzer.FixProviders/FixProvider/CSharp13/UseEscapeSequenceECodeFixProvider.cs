@@ -23,9 +23,7 @@ public sealed class UseEscapeSequenceECodeFixProvider : CSharp13OrAboveSharpenCo
 
     protected override async Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
     {
-        var literal =
-            root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true) as LiteralExpressionSyntax;
-        if (literal is null)
+        if (!(root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true) is LiteralExpressionSyntax literal))
             return;
 
         var semanticModel =

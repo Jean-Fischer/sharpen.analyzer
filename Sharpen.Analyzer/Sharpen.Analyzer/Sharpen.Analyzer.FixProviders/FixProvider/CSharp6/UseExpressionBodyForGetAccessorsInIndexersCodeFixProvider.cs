@@ -11,7 +11,7 @@ namespace Sharpen.Analyzer.FixProvider.CSharp6;
 public sealed class
     UseExpressionBodyForGetAccessorsInIndexersCodeFixProvider : ExpressionBodiedAccessorCodeFixProviderBase
 {
-    protected override string DiagnosticId => Rules.Rules.UseExpressionBodyForGetAccessorsInIndexersRule.Id;
+    protected override string DiagnosticId => Rules.GeneralRules.UseExpressionBodyForGetAccessorsInIndexersRule.Id;
 
     protected override string Title => "Use expression-bodied get accessor";
 

@@ -54,7 +54,9 @@ public sealed class UseExtendedPropertyPatternAnalyzer : DiagnosticAnalyzer
             or SyntaxKind.GreaterThanOrEqualExpression
             or SyntaxKind.LessThanExpression
             or SyntaxKind.LessThanOrEqualExpression))
+        {
             return;
+        }
 
         if (rightBinary.Left is not MemberAccessExpressionSyntax memberAccess)
             return;

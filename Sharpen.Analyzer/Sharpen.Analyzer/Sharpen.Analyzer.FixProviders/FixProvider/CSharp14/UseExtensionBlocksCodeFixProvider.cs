@@ -67,7 +67,7 @@ public sealed class UseExtensionBlocksCodeFixProvider : SharpenCodeFixProvider
         var extensionMethods = currentClass.Members
             .Where(m => m is MethodDeclarationSyntax)
             .Cast<MethodDeclarationSyntax>()
-            .Where(m => m.ParameterList.Parameters.Count > 0)
+            .Where(m => m.ParameterList.Parameters.Any())
             .Where(m => m.ParameterList.Parameters[0].Modifiers.Any(SyntaxKind.ThisKeyword))
             .ToList();
 
@@ -113,7 +113,7 @@ public sealed class UseExtensionBlocksCodeFixProvider : SharpenCodeFixProvider
         var editorMethods = editorClass.Members
             .Where(m => m is MethodDeclarationSyntax)
             .Cast<MethodDeclarationSyntax>()
-            .Where(m => m.ParameterList.Parameters.Count > 0)
+            .Where(m => m.ParameterList.Parameters.Any())
             .Where(m => m.ParameterList.Parameters[0].Modifiers.Any(SyntaxKind.ThisKeyword))
             .ToList();
 

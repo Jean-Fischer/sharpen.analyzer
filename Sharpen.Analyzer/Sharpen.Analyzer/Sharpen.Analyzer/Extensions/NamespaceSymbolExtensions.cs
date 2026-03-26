@@ -45,7 +45,10 @@ internal static class NamespaceSymbolExtensions
                 fullNameStartingIndex -= currentNamespace.Name.Length;
 
                 if (string.CompareOrdinal(currentNamespace.Name, 0, namespaceName, fullNameStartingIndex,
-                        currentNamespace.Name.Length) != 0) return false;
+                        currentNamespace.Name.Length) != 0)
+                {
+                    return false;
+                }
 
                 currentNamespace = currentNamespace.ContainingNamespace;
 
