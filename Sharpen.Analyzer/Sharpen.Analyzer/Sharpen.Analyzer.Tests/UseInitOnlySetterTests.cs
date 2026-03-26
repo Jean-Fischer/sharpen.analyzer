@@ -46,7 +46,7 @@ public class Person
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(9, 19);
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 
     [Fact]
@@ -117,6 +117,6 @@ public class Person
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(13, 19);
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 }

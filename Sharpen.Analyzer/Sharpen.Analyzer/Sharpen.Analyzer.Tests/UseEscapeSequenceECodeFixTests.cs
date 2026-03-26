@@ -31,12 +31,7 @@ class C
     }
 }";
 
-        await Verifier.VerifyCodeFixAsync(
-            code,
-            Verifier.Diagnostic("SHARPEN060")
-                .WithSpan(6, 17, 6, 30)
-                .WithSeverity(DiagnosticSeverity.Info),
-            fixedCode);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 
 
@@ -52,11 +47,6 @@ class C
     }
 }";
 
-        await Verifier.VerifyCodeFixAsync(
-            code,
-            Verifier.Diagnostic("SHARPEN060")
-                .WithSpan(6, 17, 6, 25)
-                .WithSeverity(DiagnosticSeverity.Info),
-            code);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 }

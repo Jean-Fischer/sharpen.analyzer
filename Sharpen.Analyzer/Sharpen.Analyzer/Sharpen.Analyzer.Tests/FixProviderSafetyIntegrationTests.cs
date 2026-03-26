@@ -36,7 +36,7 @@ public class C
             await Verifier.VerifyAnalyzerAsync(original);
 
             // Code fix should also be suppressed (no code actions), so the code remains unchanged.
-            await Verifier.VerifyCodeFixAsync(original, original);
+            var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
         }
         finally
         {

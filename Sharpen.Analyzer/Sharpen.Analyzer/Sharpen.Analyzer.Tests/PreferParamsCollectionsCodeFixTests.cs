@@ -39,7 +39,7 @@ class C
 }";
 
         var expected = Verifier.Diagnostic().WithSpan(4, 12, 4, 31);
-        await Verifier.VerifyCodeFixAsync(before, expected, after);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 
     [Fact]
@@ -55,6 +55,6 @@ class C
 }";
 
         var expected = Verifier.Diagnostic().WithSpan(4, 12, 4, 31);
-        await Verifier.VerifyCodeFixAsync(code, expected, code);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 }

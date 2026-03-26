@@ -37,7 +37,7 @@ public class C
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(8, 24);
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 
     [Fact]
@@ -62,7 +62,7 @@ public class C
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(6, 36);
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public class C
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(9, 14);
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 
     [Fact]
@@ -126,7 +126,7 @@ public class C
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(8, 16);
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 
     [Fact]

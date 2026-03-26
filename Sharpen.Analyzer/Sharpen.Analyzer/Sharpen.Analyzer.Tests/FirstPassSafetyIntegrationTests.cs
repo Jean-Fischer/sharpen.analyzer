@@ -66,7 +66,7 @@ public class C
 
             // Trigger code fix discovery (this is where the safety gate runs).
             // The analyzer diagnostic is suppressed, so we don't expect any diagnostics.
-            await Verifier.VerifyCodeFixAsync(original, original);
+            var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
 
             Assert.NotNull(observed);
             Assert.False(observed!.Value.IsSafe);

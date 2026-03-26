@@ -40,7 +40,7 @@ public record Point
 ";
 
         var expected = Verifier.Diagnostic().WithLocation(2, 21);
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 
     [Fact]

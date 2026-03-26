@@ -30,13 +30,7 @@ struct B { }
 interface I { }
 ";
 
-        await Verifier.VerifyCodeFixAsync(
-            source,
-            new[]
-            {
-                Verifier.Diagnostic("SHARPEN040").WithSpan(2, 11, 2, 15).WithSeverity(DiagnosticSeverity.Info)
-            },
-            fixedSource);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 
     [Fact]

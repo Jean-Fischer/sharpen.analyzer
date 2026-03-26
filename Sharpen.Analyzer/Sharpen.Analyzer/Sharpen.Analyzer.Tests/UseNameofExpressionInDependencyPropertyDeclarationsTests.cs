@@ -141,6 +141,6 @@ class C
 }";
 
         var expected = Verifier.Diagnostic().WithSpan(13, 52, 13, 57);
-        await Verifier.VerifyCodeFixAsync(test, expected, fixedCode);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 }

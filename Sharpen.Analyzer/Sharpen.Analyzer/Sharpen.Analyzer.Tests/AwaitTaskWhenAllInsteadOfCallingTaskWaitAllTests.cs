@@ -1,4 +1,7 @@
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp.Testing;
+using Microsoft.CodeAnalysis.Testing;
+using Sharpen.Analyzer.Tests.Infrastructure;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer,
@@ -58,5 +61,42 @@ class C
             .WithSpan(8, 9, 8, 28);
 
         await Verifier.VerifyCodeFixAsync(test, expected, fixedCode);
+    }
+
+    [Fact]
+    public async Task Code_fix_is_idempotent()
+    {
+        var test = new CSharpCodeFixTest<
+            Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer,
+            Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider,
+            DefaultVerifier>
+        {
+            TestCode = @"
+using System.Threading.Tasks;
+
+class C
+{
+    async Task M(Task[] tasks)
+    {
+        Task.WaitAll(tasks);
+    }
+}",
+            FixedCode = @"
+using System.Threading.Tasks;
+
+class C
+{
+    async Task M(Task[] tasks)
+    {
+        await Task.WhenAll(tasks);
+    }
+}",
+        };
+
+        test.ExpectedDiagnostics.Add(
+            Verifier.Diagnostic(Rules.GeneralRules.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllRule)
+                .WithSpan(8, 9, 8, 28));
+
+        await test.VerifyCodeFixIsIdempotentAsync();
     }
 }

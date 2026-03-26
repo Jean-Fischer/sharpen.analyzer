@@ -57,7 +57,7 @@ class C
         var expected = Verifier.Diagnostic(Rules.Rules.AwaitTaskWhenAnyInsteadOfCallingTaskWaitAnyRule)
             .WithSpan(8, 9, 8, 28);
 
-        await Verifier.VerifyCodeFixAsync(test, expected, fixedCode);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 
     [Fact]

@@ -48,7 +48,7 @@ class C
         var expected = Verifier.Diagnostic(CSharp13Rules.UseFromEndIndexInObjectInitializersRule)
             .WithLocation(7, 26);
 
-        await Verifier.VerifyCodeFixAsync(code, expected, fixedCode);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 
     [Fact]

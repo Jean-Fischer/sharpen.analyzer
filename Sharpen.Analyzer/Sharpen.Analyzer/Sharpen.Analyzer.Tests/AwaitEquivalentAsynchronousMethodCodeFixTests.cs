@@ -55,7 +55,7 @@ public class Example
 }";
 
         var expected = Verifier.Diagnostic().WithSpan(10, 9, 10, 27).WithArguments("reader.ReadToEnd");
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 
     [Fact]
@@ -109,7 +109,7 @@ public class Example
 }";
 
         var expected = Verifier.Diagnostic().WithSpan(10, 17, 10, 35).WithArguments("reader.ReadToEnd");
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 
     [Fact]
@@ -142,7 +142,7 @@ public class Example
 }";
 
         var expected = Verifier.Diagnostic().WithSpan(10, 16, 10, 34).WithArguments("reader.ReadToEnd");
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 
     [Fact]

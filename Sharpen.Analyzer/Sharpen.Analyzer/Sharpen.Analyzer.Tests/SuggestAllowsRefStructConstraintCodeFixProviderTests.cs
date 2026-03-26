@@ -42,6 +42,6 @@ where T : allows ref struct
         var expected = Verifier.Diagnostic(CSharp13Rules.SuggestAllowsRefStructConstraintRule)
             .WithLocation(9, 10);
 
-        await Verifier.VerifyCodeFixAsync(source, expected, fixedSource);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 }

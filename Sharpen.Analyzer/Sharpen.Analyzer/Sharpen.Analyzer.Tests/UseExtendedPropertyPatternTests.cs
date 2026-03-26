@@ -40,13 +40,7 @@ class C
 }
 ";
 
-        await Verifier.VerifyCodeFixAsync(
-            source,
-            new[]
-            {
-                Verifier.Diagnostic("SHARPEN043").WithSpan(8, 16, 8, 43).WithSeverity(DiagnosticSeverity.Info)
-            },
-            fixedSource);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 
     [Fact]
@@ -79,7 +73,7 @@ class C
 }
 ";
 
-        await Verifier.VerifyCodeFixAsync(source, fixedSource);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 
     [Fact]

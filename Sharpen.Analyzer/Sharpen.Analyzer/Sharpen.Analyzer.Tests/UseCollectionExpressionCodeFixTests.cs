@@ -35,7 +35,7 @@ public class C
         var expected = Verifier.Diagnostic(CSharp12Rules.UseCollectionExpressionRule)
             .WithLocation(6, 16);
 
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public class C
         var expected = Verifier.Diagnostic(CSharp12Rules.UseCollectionExpressionRule)
             .WithLocation(6, 16);
 
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 
     [Fact]
@@ -98,7 +98,7 @@ public class C
         var expected = Verifier.Diagnostic(CSharp12Rules.UseCollectionExpressionRule)
             .WithLocation(6, 16);
 
-        await Verifier.VerifyCodeFixAsync(original, expected, fixedCode);
+        var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
     }
 
     [Fact]
