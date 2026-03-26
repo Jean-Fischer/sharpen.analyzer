@@ -19,7 +19,7 @@ namespace Sharpen.Analyzer.FixProvider.CSharp6;
 public sealed class UseNameofExpressionInDependencyPropertyDeclarationsCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.Rules.UseNameofExpressionInDependencyPropertyDeclarationsRule.Id);
+        ImmutableArray.Create(Rules.GeneralRules.UseNameofExpressionInDependencyPropertyDeclarationsRule.Id);
 
     public override FixAllProvider GetFixAllProvider()
     {
@@ -31,11 +31,10 @@ public sealed class UseNameofExpressionInDependencyPropertyDeclarationsCodeFixPr
         var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
         if (root is null) return;
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics[0];
         var diagnosticSpan = diagnostic.Location.SourceSpan;
 
-        var stringLiteralExpression = root.FindNode(diagnosticSpan, getInnermostNodeForTie: true) as ExpressionSyntax;
-        if (stringLiteralExpression is null) return;
+        if (!(root.FindNode(diagnosticSpan, getInnermostNodeForTie: true) is ExpressionSyntax stringLiteralExpression)) return;
 
         context.RegisterCodeFix(
             CodeAction.Create(

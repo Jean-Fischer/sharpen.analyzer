@@ -30,15 +30,17 @@ public sealed class SuggestAllowsRefStructConstraintAnalyzer : DiagnosticAnalyze
     {
         var method = (MethodDeclarationSyntax)context.Node;
 
-        if (method.TypeParameterList is null || method.TypeParameterList.Parameters.Count == 0)
+        if (method.TypeParameterList?.Parameters.Any() != true)
             return;
 
-        if (method.ConstraintClauses.Count > 0)
+        if (method.ConstraintClauses.Any())
             return;
 
         if (method.Modifiers.Any(SyntaxKind.PartialKeyword))
+        {
             // Avoid suggesting on partial methods where constraints may be split across parts.
             return;
+        }
 
         // Heuristic: if the method uses any of its type parameters in a byref-like position,
         // it may benefit from allowing ref struct type arguments.
@@ -54,15 +56,17 @@ public sealed class SuggestAllowsRefStructConstraintAnalyzer : DiagnosticAnalyze
     {
         var typeDecl = (TypeDeclarationSyntax)context.Node;
 
-        if (typeDecl.TypeParameterList is null || typeDecl.TypeParameterList.Parameters.Count == 0)
+        if (typeDecl.TypeParameterList?.Parameters.Any() != true)
             return;
 
-        if (typeDecl.ConstraintClauses.Count > 0)
+        if (typeDecl.ConstraintClauses.Any())
             return;
 
         if (typeDecl.Modifiers.Any(SyntaxKind.PartialKeyword))
+        {
             // Avoid suggesting on partial types where constraints may be split across parts.
             return;
+        }
 
         if (!UsesTypeParameterInByRefLikePosition(typeDecl, context.SemanticModel, context.CancellationToken))
             return;
@@ -128,8 +132,10 @@ public sealed class SuggestAllowsRefStructConstraintAnalyzer : DiagnosticAnalyze
             foreach (var memberType in node.DescendantNodes().OfType<BasePropertyDeclarationSyntax>())
             {
                 if (memberType is PropertyDeclarationSyntax prop)
+                {
                     if (IsSpanOfTypeParameter(prop.Type, typeParamSymbol, semanticModel, cancellationToken))
                         return true;
+                }
 
                 if (memberType is not IndexerDeclarationSyntax indexer || indexer.Type is null) continue;
                 if (IsSpanOfTypeParameter(indexer.Type, typeParamSymbol, semanticModel, cancellationToken))

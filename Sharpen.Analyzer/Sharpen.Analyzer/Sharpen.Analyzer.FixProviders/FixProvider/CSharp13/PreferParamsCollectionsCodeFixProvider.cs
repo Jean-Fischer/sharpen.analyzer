@@ -104,7 +104,8 @@ public sealed class PreferParamsCollectionsCodeFixProvider : CSharp13OrAboveShar
             await SymbolFinder.FindReferencesAsync(methodSymbol, updatedSolution, ct).ConfigureAwait(false);
 
         foreach (var reference in references)
-        foreach (var location in reference.Locations)
+        {
+            foreach (var location in reference.Locations)
         {
             var refDocument = updatedSolution.GetDocument(location.Document.Id);
             if (refDocument is null)
@@ -123,18 +124,19 @@ public sealed class PreferParamsCollectionsCodeFixProvider : CSharp13OrAboveShar
             if (refSemanticModel is null)
                 continue;
 
-            var invokedSymbol = refSemanticModel.GetSymbolInfo(invocation, ct).Symbol as IMethodSymbol;
-            if (invokedSymbol is null)
-                continue;
+                if (!(refSemanticModel.GetSymbolInfo(invocation, ct).Symbol is IMethodSymbol invokedSymbol))
+                    continue;
 
-            // Only update invocations that bind to the same method.
-            if (!SymbolEqualityComparer.Default.Equals(invokedSymbol.OriginalDefinition,
+                // Only update invocations that bind to the same method.
+                if (!SymbolEqualityComparer.Default.Equals(invokedSymbol.OriginalDefinition,
                     methodSymbol.OriginalDefinition))
-                continue;
+                {
+                    continue;
+                }
 
-            // If the call already passes an array explicitly, leave it (ReadOnlySpan<T> can be created from array implicitly).
-            // If the call uses expanded params arguments, wrap them into an array creation.
-            var args = invocation.ArgumentList.Arguments;
+                // If the call already passes an array explicitly, leave it (ReadOnlySpan<T> can be created from array implicitly).
+                // If the call uses expanded params arguments, wrap them into an array creation.
+                var args = invocation.ArgumentList.Arguments;
             var paramIndex = parameterSymbol.Ordinal;
             if (args.Count <= paramIndex)
                 continue;
@@ -167,6 +169,7 @@ public sealed class PreferParamsCollectionsCodeFixProvider : CSharp13OrAboveShar
             var refEditor = await DocumentEditor.CreateAsync(refDocument, ct).ConfigureAwait(false);
             refEditor.ReplaceNode(invocation, newInvocation);
             updatedSolution = refEditor.GetChangedDocument().Project.Solution;
+        }
         }
 
         return updatedSolution.GetDocument(document.Id) ?? updatedDocument;

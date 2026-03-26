@@ -90,11 +90,15 @@ public sealed class PartialPropertiesIndexersRefactoringCodeFixProvider : CodeFi
         var modifiers = member.Modifiers;
         var insertIndex = 0;
         for (var i = 0; i < modifiers.Count; i++)
+        {
             if (modifiers[i].IsKind(SyntaxKind.PublicKeyword)
                 || modifiers[i].IsKind(SyntaxKind.PrivateKeyword)
                 || modifiers[i].IsKind(SyntaxKind.InternalKeyword)
                 || modifiers[i].IsKind(SyntaxKind.ProtectedKeyword))
+            {
                 insertIndex = i + 1;
+            }
+        }
 
         modifiers = modifiers.Insert(insertIndex, SyntaxFactory.Token(SyntaxKind.PartialKeyword));
         return member.WithModifiers(modifiers);
@@ -117,10 +121,12 @@ public sealed class PartialPropertiesIndexersRefactoringCodeFixProvider : CodeFi
 
         // Ensure the implementing part is a full declaration (not a semicolon-only property).
         if (implementing is PropertyDeclarationSyntax prop)
+        {
             implementing = prop
                 .WithInitializer(null)
                 .WithSemicolonToken(default)
                 .WithExpressionBody(null);
+        }
 
         return implementing;
     }

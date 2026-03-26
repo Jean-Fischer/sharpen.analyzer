@@ -39,18 +39,20 @@ public sealed class SuggestAllowsRefStructConstraintCodeFixProvider : CSharp13Or
 
         var typeDecl = node.FirstAncestorOrSelf<TypeDeclarationSyntax>();
         if (typeDecl is not null)
+        {
             context.RegisterCodeFix(
                 CodeAction.Create(
                     "Add 'allows ref struct' constraint (requires review)",
                     ct => AddAllowsRefStructConstraintAsync(context.Document, typeDecl, ct),
                     "AddAllowsRefStructConstraint"),
                 diagnostic);
+        }
     }
 
     private static async Task<Document> AddAllowsRefStructConstraintAsync(Document document,
         MethodDeclarationSyntax method, CancellationToken ct)
     {
-        if (method.TypeParameterList is null || method.TypeParameterList.Parameters.Count == 0)
+        if (method.TypeParameterList?.Parameters.Any() != true)
             return document;
 
         var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
@@ -69,7 +71,7 @@ public sealed class SuggestAllowsRefStructConstraintCodeFixProvider : CSharp13Or
     private static async Task<Document> AddAllowsRefStructConstraintAsync(Document document,
         TypeDeclarationSyntax typeDecl, CancellationToken ct)
     {
-        if (typeDecl.TypeParameterList is null || typeDecl.TypeParameterList.Parameters.Count == 0)
+        if (typeDecl.TypeParameterList?.Parameters.Any() != true)
             return document;
 
         var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);

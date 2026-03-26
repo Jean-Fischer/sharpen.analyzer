@@ -33,8 +33,10 @@ public sealed class UseEscapeSequenceEAnalyzer : DiagnosticAnalyzer
 
         if (text.Contains("\\u001b") || text.Contains("\\u001B") ||
             text.Contains("\\x1b") || text.Contains("\\x1B"))
+        {
             context.ReportDiagnostic(Diagnostic.Create(
                 CSharp13Rules.UseEscapeSequenceERule,
                 literal.GetLocation()));
+        }
     }
 }

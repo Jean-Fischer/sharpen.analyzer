@@ -17,7 +17,7 @@ namespace Sharpen.Analyzer.FixProvider.CSharp9;
 public sealed class UseInitOnlySetterCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.Rules.UseInitOnlySetterRule.Id);
+        ImmutableArray.Create(Rules.GeneralRules.UseInitOnlySetterRule.Id);
 
     public override FixAllProvider GetFixAllProvider()
     {
@@ -33,7 +33,7 @@ public sealed class UseInitOnlySetterCodeFixProvider : CodeFixProvider
         if (root == null)
             return;
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics[0];
         var property = root.FindNode(diagnostic.Location.SourceSpan).FirstAncestorOrSelf<PropertyDeclarationSyntax>();
         if (property?.AccessorList == null)
             return;

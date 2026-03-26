@@ -20,9 +20,8 @@ internal static class ThreadSleepToTaskDelayCodeFixHelper
         var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
         if (root is null) return;
 
-        var diagnostic = context.Diagnostics.First();
-        var invocation = root.FindNode(diagnostic.Location.SourceSpan) as InvocationExpressionSyntax;
-        if (invocation is null) return;
+        var diagnostic = context.Diagnostics[0];
+        if (!(root.FindNode(diagnostic.Location.SourceSpan) is InvocationExpressionSyntax invocation)) return;
 
         var semanticModel =
             await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);

@@ -80,7 +80,7 @@ public sealed class PartialPropertiesIndexersRefactoringAnalyzer : DiagnosticAna
 
         // Must be in a partial type
         var containingType = property.FirstAncestorOrSelf<TypeDeclarationSyntax>();
-        if (containingType is null || !containingType.Modifiers.Any(SyntaxKind.PartialKeyword)) return false;
+        if (containingType?.Modifiers.Any(SyntaxKind.PartialKeyword) != true) return false;
 
         if (containingType is InterfaceDeclarationSyntax) return false;
 

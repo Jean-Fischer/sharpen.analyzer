@@ -74,7 +74,11 @@ public sealed class UseListPatternAnalyzer : DiagnosticAnalyzer
         if (condition.Right is not MemberAccessExpressionSyntax rightMember
             || rightMember.Name.Identifier.ValueText != "Length"
             || condition.Left is not LiteralExpressionSyntax leftLiteral
-            || leftLiteral.Token.ValueText != "0") return false;
+            || leftLiteral.Token.ValueText != "0")
+        {
+            return false;
+        }
+
         target = rightMember.Expression;
         return true;
 
@@ -116,7 +120,9 @@ public sealed class UseListPatternAnalyzer : DiagnosticAnalyzer
 
             if (elementTargetSymbol != null && targetSymbol != null &&
                 SymbolEqualityComparer.Default.Equals(elementTargetSymbol, targetSymbol))
+            {
                 return true;
+            }
         }
 
         return false;

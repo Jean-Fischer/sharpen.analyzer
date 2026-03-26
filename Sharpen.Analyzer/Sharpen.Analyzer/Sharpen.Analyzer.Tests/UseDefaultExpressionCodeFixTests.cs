@@ -38,7 +38,7 @@ class C
     }
 }";
 
-        var expected = VerifierReturn.Diagnostic(Rules.Rules.UseDefaultExpressionInReturnStatementsRule)
+        var expected = VerifierReturn.Diagnostic(Rules.GeneralRules.UseDefaultExpressionInReturnStatementsRule)
             .WithSpan(6, 16, 6, 28)
             .WithArguments("int");
 
@@ -60,7 +60,7 @@ class C
     void M(int x = default) { }
 }";
 
-        var expected = VerifierMethod.Diagnostic(Rules.Rules.UseDefaultExpressionInOptionalMethodParametersRule)
+        var expected = VerifierMethod.Diagnostic(Rules.GeneralRules.UseDefaultExpressionInOptionalMethodParametersRule)
             .WithSpan(4, 20, 4, 27)
             .WithArguments("int");
 
@@ -82,7 +82,7 @@ class C
     public C(int x = default) { }
 }";
 
-        var expected = VerifierCtor.Diagnostic(Rules.Rules.UseDefaultExpressionInOptionalConstructorParametersRule)
+        var expected = VerifierCtor.Diagnostic(Rules.GeneralRules.UseDefaultExpressionInOptionalConstructorParametersRule)
             .WithSpan(4, 22, 4, 29)
             .WithArguments("int");
 

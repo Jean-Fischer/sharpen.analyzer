@@ -41,10 +41,10 @@ public sealed class SuggestOverloadResolutionPriorityAnalyzer : DiagnosticAnalyz
 
         var methods = typeDecl.Members
             .OfType<MethodDeclarationSyntax>()
-            .Where(m => m.Identifier.ValueText.Length > 0)
+            .Where(m => m.Identifier.ValueText.Length > 0 && !HasOverloadResolutionPriorityAttribute(m))
             // If the attribute is already present on any overload, don't keep reporting.
             // This keeps the code fix idempotent in a single iteration.
-            .Where(m => !HasOverloadResolutionPriorityAttribute(m))
+
             .ToList();
 
         if (methods.Count < 2)
@@ -74,7 +74,7 @@ public sealed class SuggestOverloadResolutionPriorityAnalyzer : DiagnosticAnalyz
         SemanticModel semanticModel,
         CancellationToken cancellationToken)
     {
-        foreach (var last in from method in overloads where method.ParameterList.Parameters.Count != 0 select method.ParameterList.Parameters[method.ParameterList.Parameters.Count - 1] into last where last.Modifiers.Any(SyntaxKind.ParamsKeyword) select last)
+        foreach (var last in from method in overloads where method.ParameterList.Parameters.Any() select method.ParameterList.Parameters.Last() into last where last.Modifiers.Any(SyntaxKind.ParamsKeyword) select last)
         {
             if (last.Type is null)
                 continue;

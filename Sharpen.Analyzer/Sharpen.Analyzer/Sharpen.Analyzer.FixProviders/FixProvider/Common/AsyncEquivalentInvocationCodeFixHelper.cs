@@ -38,9 +38,8 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
             .ConfigureAwait(false);
         if (root is null) return;
 
-        var diagnostic = context.Diagnostics.First();
-        var invocation = root.FindNode(diagnostic.Location.SourceSpan) as InvocationExpressionSyntax;
-        if (invocation is null) return;
+        var diagnostic = context.Diagnostics[0];
+        if (!(root.FindNode(diagnostic.Location.SourceSpan) is InvocationExpressionSyntax invocation)) return;
 
         context.RegisterCodeFix(
             CodeAction.Create(
@@ -80,8 +79,10 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
         string asyncMethodName)
     {
         if (invocation.Expression is MemberAccessExpressionSyntax memberAccess)
+        {
             return invocation.WithExpression(
                 memberAccess.WithName(SyntaxFactory.IdentifierName(asyncMethodName)));
+        }
 
         if (invocation.Expression is IdentifierNameSyntax)
             return invocation.WithExpression(SyntaxFactory.IdentifierName(asyncMethodName));
@@ -108,29 +109,37 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
 
         // Expression statement: `X();` -> `await XAsync();`
         if (originalInvocation.Parent is ExpressionStatementSyntax)
+        {
             return SyntaxFactory.AwaitExpression(rewrittenInvocation)
                 .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
                 .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
+        }
 
         // Assignment RHS: `x = X();` -> `x = await XAsync();`
         if (originalInvocation.Parent is AssignmentExpressionSyntax assignment &&
             assignment.Right == originalInvocation)
+        {
             return SyntaxFactory.AwaitExpression(rewrittenInvocation)
                 .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
                 .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
+        }
 
         // Variable initializer: `var x = X();` -> `var x = await XAsync();`
         if (originalInvocation.Parent is EqualsValueClauseSyntax equalsValue &&
             equalsValue.Value == originalInvocation)
+        {
             return SyntaxFactory.AwaitExpression(rewrittenInvocation)
                 .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
                 .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
+        }
 
         // Return statement: `return X();` -> `return await XAsync();`
         if (originalInvocation.Parent is ReturnStatementSyntax)
+        {
             return SyntaxFactory.AwaitExpression(rewrittenInvocation)
                 .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
                 .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
+        }
 
         // Guardrails: unknown context, don't add await.
         return rewrittenInvocation;

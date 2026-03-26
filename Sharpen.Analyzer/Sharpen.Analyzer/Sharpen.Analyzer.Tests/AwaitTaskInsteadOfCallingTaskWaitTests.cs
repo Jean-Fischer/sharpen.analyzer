@@ -23,7 +23,7 @@ class C
     }
 }";
 
-        var expected = Verifier.Diagnostic(Rules.Rules.AwaitTaskInsteadOfCallingTaskWaitRule)
+        var expected = Verifier.Diagnostic(Rules.GeneralRules.AwaitTaskInsteadOfCallingTaskWaitRule)
             .WithSpan(8, 9, 8, 20);
 
         await Verifier.VerifyAnalyzerAsync(test, expected);
@@ -72,7 +72,7 @@ class C
     }
 }";
 
-        var expected = Verifier.Diagnostic(Rules.Rules.AwaitTaskInsteadOfCallingTaskWaitRule)
+        var expected = Verifier.Diagnostic(Rules.GeneralRules.AwaitTaskInsteadOfCallingTaskWaitRule)
             .WithSpan(8, 9, 8, 20);
 
         var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
@@ -92,7 +92,7 @@ class C
     }
 }";
 
-        var expected = Verifier.Diagnostic(Rules.Rules.AwaitTaskInsteadOfCallingTaskWaitRule)
+        var expected = Verifier.Diagnostic(Rules.GeneralRules.AwaitTaskInsteadOfCallingTaskWaitRule)
             .WithSpan(8, 9, 8, 21);
 
         await Verifier.VerifyAnalyzerAsync(test, expected);

@@ -57,7 +57,7 @@ public sealed class UsePrimaryConstructorAnalyzer : DiagnosticAnalyzer
             return;
 
         var parameters = ctor.ParameterList.Parameters;
-        if (parameters.Count == 0)
+        if (!parameters.Any())
             return;
 
         // Each statement must be: <member> = <parameter>;

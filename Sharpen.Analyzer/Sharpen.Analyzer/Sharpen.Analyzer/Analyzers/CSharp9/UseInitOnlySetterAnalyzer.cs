@@ -13,7 +13,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp9;
 public sealed class UseInitOnlySetterAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.UseInitOnlySetterRule);
+        ImmutableArray.Create(Rules.GeneralRules.UseInitOnlySetterRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -35,7 +35,7 @@ public sealed class UseInitOnlySetterAnalyzer : DiagnosticAnalyzer
             return;
 
         var accessors = property.AccessorList.Accessors;
-        if (accessors.Count == 0)
+        if (!accessors.Any())
             return;
 
         var setAccessor = accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.SetAccessorDeclaration));
@@ -75,7 +75,7 @@ public sealed class UseInitOnlySetterAnalyzer : DiagnosticAnalyzer
             return;
 
         context.ReportDiagnostic(
-            Diagnostic.Create(Rules.Rules.UseInitOnlySetterRule, property.Identifier.GetLocation()));
+            Diagnostic.Create(Rules.GeneralRules.UseInitOnlySetterRule, property.Identifier.GetLocation()));
     }
 
     private static bool IsAssignedOutsideConstructor(
@@ -83,6 +83,6 @@ public sealed class UseInitOnlySetterAnalyzer : DiagnosticAnalyzer
         IPropertySymbol propertySymbol,
         TypeDeclarationSyntax containingType)
     {
-        return (from assignment in containingType.DescendantNodes().OfType<AssignmentExpressionSyntax>() let leftSymbol = CSharpExtensions.GetSymbolInfo(context.SemanticModel, (ExpressionSyntax)assignment.Left, context.CancellationToken).Symbol where SymbolEqualityComparer.Default.Equals(leftSymbol, propertySymbol) select assignment).Any(assignment => assignment.FirstAncestorOrSelf<ConstructorDeclarationSyntax>() == null);
+        return (from assignment in containingType.DescendantNodes().OfType<AssignmentExpressionSyntax>() let leftSymbol = context.SemanticModel.GetSymbolInfo((ExpressionSyntax)assignment.Left, context.CancellationToken).Symbol where SymbolEqualityComparer.Default.Equals(leftSymbol, propertySymbol) select assignment).Any(assignment => assignment.FirstAncestorOrSelf<ConstructorDeclarationSyntax>() == null);
     }
 }

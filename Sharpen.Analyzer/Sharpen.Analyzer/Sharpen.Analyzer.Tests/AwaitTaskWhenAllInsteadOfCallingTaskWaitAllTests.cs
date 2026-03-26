@@ -26,7 +26,7 @@ class C
     }
 }";
 
-        var expected = Verifier.Diagnostic(Rules.Rules.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllRule)
+        var expected = Verifier.Diagnostic(Rules.GeneralRules.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllRule)
             .WithSpan(8, 9, 8, 28);
 
         await Verifier.VerifyAnalyzerAsync(test, expected);
@@ -57,7 +57,7 @@ class C
     }
 }";
 
-        var expected = Verifier.Diagnostic(Rules.Rules.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllRule)
+        var expected = Verifier.Diagnostic(Rules.GeneralRules.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllRule)
             .WithSpan(8, 9, 8, 28);
 
         await Verifier.VerifyCodeFixAsync(test, expected, fixedCode);

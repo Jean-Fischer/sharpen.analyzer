@@ -43,8 +43,10 @@ public static class FixProviderSafetyMapping
 
         var dict = ToDictionary();
         if (!dict.TryGetValue(fixProviderType, out var checkerType))
+        {
             throw new InvalidOperationException(
                 $"No safety checker mapping found for fix provider: {fixProviderType.FullName}");
+        }
 
         return checkerType;
     }

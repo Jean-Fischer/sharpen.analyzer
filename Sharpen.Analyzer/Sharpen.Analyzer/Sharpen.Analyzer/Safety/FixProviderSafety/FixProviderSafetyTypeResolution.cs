@@ -22,6 +22,7 @@ internal static class FixProviderSafetyTypeResolution
         }
 
         if (preferredAssemblyName is not null)
+        {
             // Fallback: scan all already-loaded assemblies.
             foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
             {
@@ -29,6 +30,7 @@ internal static class FixProviderSafetyTypeResolution
                 if (t is not null)
                     return t;
             }
+        }
 
         // If the fix provider assembly isn't loaded yet, try to force-load it in a safe way.
         //

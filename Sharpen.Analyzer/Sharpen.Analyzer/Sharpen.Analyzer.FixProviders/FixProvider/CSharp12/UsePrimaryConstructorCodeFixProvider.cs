@@ -37,7 +37,7 @@ public sealed class UsePrimaryConstructorCodeFixProvider : CodeFixProvider
         if (root is null)
             return;
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics[0];
         var ctor = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true)
             .FirstAncestorOrSelf<ConstructorDeclarationSyntax>();
         if (ctor is null)
@@ -79,7 +79,7 @@ public sealed class UsePrimaryConstructorCodeFixProvider : CodeFixProvider
             return document;
 
         var parameters = currentCtor.ParameterList.Parameters;
-        if (parameters.Count == 0)
+        if (!parameters.Any())
             return document;
 
         // Build mapping: member symbol -> parameter syntax.
@@ -100,7 +100,7 @@ public sealed class UsePrimaryConstructorCodeFixProvider : CodeFixProvider
                 ParameterName = (a.Right as IdentifierNameSyntax)?.Identifier.ValueText
             })
             .Where(x => x.Member is IFieldSymbol or IPropertySymbol && x.ParameterName is not null)
-            .ToDictionary(x => x.Member!, x => x.ParameterName!);
+            .ToDictionary(x => x.Member!, x => x.ParameterName!, SymbolEqualityComparer.Default);
 
         if (memberToParameter.Count != parameters.Count)
             return document;

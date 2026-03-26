@@ -12,7 +12,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp7;
 public sealed class UseOutVariablesInObjectCreationsAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.UseOutVariablesInObjectCreationsRule);
+        ImmutableArray.Create(Rules.GeneralRules.UseOutVariablesInObjectCreationsRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -31,7 +31,7 @@ public sealed class UseOutVariablesInObjectCreationsAnalyzer : DiagnosticAnalyze
 
         foreach (var argument in from argument in argumentList.Arguments where argument.RefOrOutKeyword.IsKind(SyntaxKind.OutKeyword) where argument.Expression.IsKind(SyntaxKind.IdentifierName) where OutVariableCandidateHelper.IsCandidate(context.SemanticModel, argument, false) select argument)
         {
-            context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseOutVariablesInObjectCreationsRule,
+            context.ReportDiagnostic(Diagnostic.Create(Rules.GeneralRules.UseOutVariablesInObjectCreationsRule,
                 argument.RefOrOutKeyword.GetLocation()));
         }
     }

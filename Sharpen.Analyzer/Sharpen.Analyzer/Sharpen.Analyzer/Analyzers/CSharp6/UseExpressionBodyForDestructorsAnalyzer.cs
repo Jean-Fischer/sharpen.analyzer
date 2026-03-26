@@ -10,7 +10,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp6;
 public sealed class UseExpressionBodyForDestructorsAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.UseExpressionBodyForDestructorsRule);
+        ImmutableArray.Create(Rules.GeneralRules.UseExpressionBodyForDestructorsRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -32,7 +32,7 @@ public sealed class UseExpressionBodyForDestructorsAnalyzer : DiagnosticAnalyzer
 
         if (!dtor.Body.Statements[0].IsKind(SyntaxKind.ExpressionStatement)) return;
 
-        context.ReportDiagnostic(Diagnostic.Create(Rules.Rules.UseExpressionBodyForDestructorsRule,
+        context.ReportDiagnostic(Diagnostic.Create(Rules.GeneralRules.UseExpressionBodyForDestructorsRule,
             dtor.TildeToken.GetLocation()));
     }
 }

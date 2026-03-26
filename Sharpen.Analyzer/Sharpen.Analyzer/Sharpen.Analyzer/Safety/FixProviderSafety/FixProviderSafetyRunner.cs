@@ -55,11 +55,13 @@ public static class FixProviderSafetyRunner
         // 2) Local stage
         var localSafety = checker.IsSafe(syntaxTree, semanticModel, diagnostic, cancellationToken);
         if (!localSafety.IsSafe)
+        {
             return FixProviderSafetyEvaluation.Unsafe(
                 FixProviderSafetyResult.Unsafe(
                     FixProviderSafetyStage.Local,
                     localSafety.ReasonId ?? "fix-provider-unsafe",
                     localSafety.Message));
+        }
 
         return FixProviderSafetyEvaluation.Safe();
     }

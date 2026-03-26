@@ -29,7 +29,7 @@ public sealed class PartialPropertiesIndexersRefactoringSafetyChecker : IFixProv
 
         // Must be in a partial type.
         var containingType = propertyOrIndexer.FirstAncestorOrSelf<TypeDeclarationSyntax>();
-        if (containingType is null || !containingType.Modifiers.Any(SyntaxKind.PartialKeyword))
+        if (containingType?.Modifiers.Any(SyntaxKind.PartialKeyword) != true)
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "not-in-partial-type");
 
         // Must not already be partial.
@@ -52,8 +52,10 @@ public sealed class PartialPropertiesIndexersRefactoringSafetyChecker : IFixProv
 
         // Conservative: only auto accessors (no bodies, no expression bodies).
         foreach (var accessor in propertyOrIndexer.AccessorList.Accessors)
+        {
             if (accessor.Body is not null || accessor.ExpressionBody is not null)
                 return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "non-auto-accessor");
+        }
 
         // Ensure symbol exists (avoid broken code).
         var symbol = semanticModel.GetDeclaredSymbol(propertyOrIndexer, cancellationToken);
@@ -64,7 +66,7 @@ public sealed class PartialPropertiesIndexersRefactoringSafetyChecker : IFixProv
         // - Must have at least one accessor
         // - Must not be an explicit interface implementation (partial members can't be explicit)
         // - Must not be in an interface (partial properties/indexers are for classes/structs/records)
-        if (propertyOrIndexer.AccessorList.Accessors.Count == 0)
+        if (!propertyOrIndexer.AccessorList.Accessors.Any())
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "no-accessors");
 
         if (propertyOrIndexer is PropertyDeclarationSyntax { ExplicitInterfaceSpecifier: not null } or IndexerDeclarationSyntax { ExplicitInterfaceSpecifier: not null })

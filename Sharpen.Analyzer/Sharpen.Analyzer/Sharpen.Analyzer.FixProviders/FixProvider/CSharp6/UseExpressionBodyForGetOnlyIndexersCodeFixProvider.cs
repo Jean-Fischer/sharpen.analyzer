@@ -17,7 +17,7 @@ namespace Sharpen.Analyzer.FixProvider.CSharp6;
 public sealed class UseExpressionBodyForGetOnlyIndexersCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.Rules.UseExpressionBodyForGetOnlyIndexersRule.Id);
+        ImmutableArray.Create(Rules.GeneralRules.UseExpressionBodyForGetOnlyIndexersRule.Id);
 
     public override FixAllProvider GetFixAllProvider()
     {

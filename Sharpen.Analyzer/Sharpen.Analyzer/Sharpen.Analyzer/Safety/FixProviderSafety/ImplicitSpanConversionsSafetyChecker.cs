@@ -28,7 +28,7 @@ public sealed class ImplicitSpanConversionsSafetyChecker : IFixProviderSafetyChe
         if (asSpanInvocation.Expression is not MemberAccessExpressionSyntax { Name.Identifier.ValueText: "AsSpan" })
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "not-as-span");
 
-        if (asSpanInvocation.ArgumentList.Arguments.Count != 0)
+        if (asSpanInvocation.ArgumentList.Arguments.Any())
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "as-span-has-args");
 
         if (asSpanInvocation.Parent is not ArgumentSyntax argument)
@@ -43,7 +43,9 @@ public sealed class ImplicitSpanConversionsSafetyChecker : IFixProviderSafetyChe
         // Ensure the AsSpan call is the BCL MemoryExtensions.AsSpan.
         if (semanticModel.GetSymbolInfo(asSpanInvocation, cancellationToken).Symbol is not IMethodSymbol asSpanSymbol || asSpanSymbol.Name != "AsSpan" ||
             asSpanSymbol.ContainingType?.ToDisplayString() != "System.MemoryExtensions")
+        {
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "not-bcl-as-span");
+        }
 
         // Ensure removing AsSpan does not change overload resolution.
         if (semanticModel.GetSymbolInfo(outerInvocation, cancellationToken).Symbol is not IMethodSymbol beforeSymbol)
@@ -58,7 +60,9 @@ public sealed class ImplicitSpanConversionsSafetyChecker : IFixProviderSafetyChe
                 outerInvocation.SpanStart,
                 newOuterInvocation,
                 SpeculativeBindingOption.BindAsExpression).Symbol is not IMethodSymbol speculativeSymbol)
+        {
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "speculative-symbol-null");
+        }
 
         if (!SymbolEqualityComparer.Default.Equals(beforeSymbol, speculativeSymbol))
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "overload-changed");

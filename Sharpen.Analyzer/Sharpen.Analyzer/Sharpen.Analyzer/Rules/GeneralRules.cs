@@ -2,7 +2,7 @@
 
 namespace Sharpen.Analyzer.Rules;
 
-public static class Rules
+public static class GeneralRules
 {
     // C# 3
     public static readonly DiagnosticDescriptor UseVarKeywordRule = new(

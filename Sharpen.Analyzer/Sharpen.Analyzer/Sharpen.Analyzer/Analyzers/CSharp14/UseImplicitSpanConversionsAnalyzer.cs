@@ -38,9 +38,11 @@ public sealed class UseImplicitSpanConversionsAnalyzer : DiagnosticAnalyzer
             {
                 Name.Identifier.ValueText: "AsSpan"
             } memberAccess)
+        {
             return;
+        }
 
-        if (invocation.ArgumentList.Arguments.Count != 0)
+        if (invocation.ArgumentList.Arguments.Any())
             return;
 
         // Only consider when the invocation is used as an argument in another invocation.
@@ -77,7 +79,9 @@ public sealed class UseImplicitSpanConversionsAnalyzer : DiagnosticAnalyzer
                 outerInvocation.SpanStart,
                 newOuterInvocation,
                 SpeculativeBindingOption.BindAsExpression).Symbol is not IMethodSymbol speculativeSymbol)
+        {
             return;
+        }
 
         if (!SymbolEqualityComparer.Default.Equals(beforeSymbol, speculativeSymbol))
             return;

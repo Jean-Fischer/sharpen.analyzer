@@ -34,7 +34,7 @@ class C
     }
 }";
 
-        var expected = Verifier.Diagnostic(Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
+        var expected = Verifier.Diagnostic(Rules.GeneralRules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
             .WithSpan(8, 9, 8, 18);
 
         var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
@@ -61,7 +61,7 @@ class C
     }
 }";
 
-        var expected = Verifier.Diagnostic(Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
+        var expected = Verifier.Diagnostic(Rules.GeneralRules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
             .WithSpan(6, 16, 6, 24);
 
         var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
@@ -82,7 +82,7 @@ class C
     public string? P { get; set; } = null;
 }";
 
-        var expected = Verifier.Diagnostic(Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
+        var expected = Verifier.Diagnostic(Rules.GeneralRules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
             .WithSpan(4, 5, 4, 42);
 
         var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
@@ -103,7 +103,7 @@ class C
     void M(string? s = null) { }
 }";
 
-        var expected = Verifier.Diagnostic(Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
+        var expected = Verifier.Diagnostic(Rules.GeneralRules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
             .WithSpan(4, 12, 4, 27);
 
         var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
@@ -134,7 +134,7 @@ class C
     }
 }";
 
-        var expected = Verifier.Diagnostic(Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
+        var expected = Verifier.Diagnostic(Rules.GeneralRules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
             .WithSpan(8, 9, 8, 18);
 
         var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();
@@ -166,7 +166,7 @@ class C
     }
 }";
 
-        var expected = Verifier.Diagnostic(Rules.Rules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
+        var expected = Verifier.Diagnostic(Rules.GeneralRules.EnableNullableContextAndDeclareIdentifierAsNullableRule)
             .WithSpan(8, 9, 8, 18);
 
         var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixTest<Sharpen.Analyzer.Analyzers.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllAnalyzer, Sharpen.Analyzer.FixProvider.CSharp5.AwaitTaskWhenAllInsteadOfCallingTaskWaitAllCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>();

@@ -36,7 +36,9 @@ public sealed class UseRawStringLiteralAnalyzer : DiagnosticAnalyzer
         // Raw string literals are already the target form.
         if (literal.Token.IsKind(SyntaxKind.MultiLineRawStringLiteralToken)
             || literal.Token.IsKind(SyntaxKind.SingleLineRawStringLiteralToken))
+        {
             return;
+        }
 
         // Skip interpolated strings (not a LiteralExpressionSyntax anyway, but keep defensive).
         if (literal.IsKind(SyntaxKind.InterpolatedStringExpression))
@@ -61,7 +63,9 @@ public sealed class UseRawStringLiteralAnalyzer : DiagnosticAnalyzer
         if (tokenText.StartsWith("@\"", StringComparison.Ordinal) &&
             (tokenText.IndexOf("\r", StringComparison.Ordinal) >= 0 ||
              tokenText.IndexOf("\n", StringComparison.Ordinal) >= 0))
+        {
             return true;
+        }
 
         // Escape density heuristic: count common escape sequences in the token text.
         // This is intentionally simple and conservative.

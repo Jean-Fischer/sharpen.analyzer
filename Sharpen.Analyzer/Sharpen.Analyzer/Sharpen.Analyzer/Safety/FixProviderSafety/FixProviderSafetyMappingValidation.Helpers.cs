@@ -16,11 +16,15 @@ public static partial class FixProviderSafetyMappingValidation
     {
         var fixProviderType = FixProviderSafetyTypeResolution.ResolveType(fixProviderFullName, preferredAssemblyName);
         if (fixProviderType is null)
+        {
             throw new InvalidOperationException(
                 $"Fix provider type could not be resolved (assembly not loaded?): {fixProviderFullName}");
+        }
 
         if (!mapping.ContainsKey(fixProviderType))
+        {
             throw new InvalidOperationException(
                 $"Missing safety checker mapping for fix provider: {fixProviderType.FullName}");
+        }
     }
 }

@@ -15,12 +15,11 @@ namespace Sharpen.Analyzer.FixProvider.CSharp7;
 public sealed class UseVarKeywordCodeFixProvider : SharpenCodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.Rules.UseVarKeywordRule.Id);
+        ImmutableArray.Create(Rules.GeneralRules.UseVarKeywordRule.Id);
 
     protected override Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
     {
-        var typeNode = root.FindNode(diagnostic.Location.SourceSpan) as TypeSyntax;
-        if (typeNode is null)
+        if (!(root.FindNode(diagnostic.Location.SourceSpan) is TypeSyntax typeNode))
             return Task.CompletedTask;
 
         RegisterCodeFix(

@@ -10,7 +10,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp7;
 public class UseVarKeywordAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.UseVarKeywordRule);
+        ImmutableArray.Create(Rules.GeneralRules.UseVarKeywordRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -42,14 +42,15 @@ public class UseVarKeywordAnalyzer : DiagnosticAnalyzer
 
         if (leftSideType == null || rightSideType == null || leftSideType is IErrorTypeSymbol ||
             rightSideType is IErrorTypeSymbol)
+        {
             return;
-
+        }
 
         if (!SymbolEqualityComparer.Default.Equals(leftSideType, rightSideType))
             return;
 
         var diagnostic = Diagnostic.Create(
-            Rules.Rules.UseVarKeywordRule,
+            Rules.GeneralRules.UseVarKeywordRule,
             declaration.Type.GetLocation(),
             leftSideType.ToDisplayString()
         );

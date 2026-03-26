@@ -28,7 +28,9 @@ public sealed class NullConditionalAssignmentSafetyChecker : IFixProviderSafetyC
 
         if (!NullConditionalAssignmentPattern.TryGetNullCheckedExpression(ifStatement.Condition,
                 out var checkedExpression))
+        {
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "condition-not-null-check");
+        }
 
         if (!NullConditionalAssignmentPattern.TryGetSingleStatement(ifStatement.Statement, out var singleStatement))
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "not-single-statement");
@@ -45,7 +47,9 @@ public sealed class NullConditionalAssignmentSafetyChecker : IFixProviderSafetyC
         if (!SyntaxFactory.AreEquivalent(
                 NullConditionalAssignmentPattern.StripParentheses(checkedExpression),
                 NullConditionalAssignmentPattern.StripParentheses(memberAccess.Expression)))
+        {
             return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "receiver-mismatch");
+        }
 
         return FixProviderSafetyResult.Safe();
     }

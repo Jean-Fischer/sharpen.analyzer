@@ -30,7 +30,9 @@ public sealed class UseNullConditionalAssignmentAnalyzer : DiagnosticAnalyzer
                 out _,
                 out _,
                 out _))
+        {
             return;
+        }
 
         // Only support simple member access: x.Member = rhs;
         // (No element access, no conditional access, no compound assignments.)

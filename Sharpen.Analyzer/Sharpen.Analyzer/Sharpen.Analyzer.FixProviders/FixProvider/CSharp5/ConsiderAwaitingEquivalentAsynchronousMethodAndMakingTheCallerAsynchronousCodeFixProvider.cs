@@ -14,7 +14,7 @@ public sealed class
     ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousCodeFixProvider : CodeFixProvider
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
-        ImmutableArray.Create(Rules.Rules.ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousRule
+        ImmutableArray.Create(Rules.GeneralRules.ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousRule
             .Id);
 
     public override FixAllProvider GetFixAllProvider()

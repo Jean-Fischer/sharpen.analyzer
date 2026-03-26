@@ -33,7 +33,7 @@ public sealed class UseInlineArrayCodeFixProvider : CodeFixProvider
         if (root is null)
             return;
 
-        var diagnostic = context.Diagnostics.First();
+        var diagnostic = context.Diagnostics[0];
         var diagnosticSpan = diagnostic.Location.SourceSpan;
 
         var node = root.FindNode(diagnosticSpan, getInnermostNodeForTie: true);

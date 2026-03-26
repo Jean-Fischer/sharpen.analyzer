@@ -11,7 +11,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp8;
 public sealed class ReplaceUsingStatementWithUsingDeclarationAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.ReplaceUsingStatementWithUsingDeclarationRule);
+        ImmutableArray.Create(Rules.GeneralRules.ReplaceUsingStatementWithUsingDeclarationRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -59,7 +59,7 @@ public sealed class ReplaceUsingStatementWithUsingDeclarationAnalyzer : Diagnost
         if (!UsingValueDoesNotLeakToFollowingStatements(parentStatements, index)) return;
 
         var diagnostic = Diagnostic.Create(
-            Rules.Rules.ReplaceUsingStatementWithUsingDeclarationRule,
+            Rules.GeneralRules.ReplaceUsingStatementWithUsingDeclarationRule,
             outermostUsing.UsingKeyword.GetLocation());
 
         context.ReportDiagnostic(diagnostic);

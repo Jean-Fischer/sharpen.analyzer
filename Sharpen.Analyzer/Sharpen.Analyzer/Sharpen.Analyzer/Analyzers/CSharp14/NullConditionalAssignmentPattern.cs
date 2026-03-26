@@ -44,7 +44,11 @@ public static class NullConditionalAssignmentPattern
 
         // Support: x != null
         if (condition is not BinaryExpressionSyntax binary ||
-            binary.Kind() != SyntaxKind.NotEqualsExpression) return false;
+            binary.Kind() != SyntaxKind.NotEqualsExpression)
+        {
+            return false;
+        }
+
         if (IsNullLiteral(binary.Right))
         {
             checkedExpression = binary.Left;

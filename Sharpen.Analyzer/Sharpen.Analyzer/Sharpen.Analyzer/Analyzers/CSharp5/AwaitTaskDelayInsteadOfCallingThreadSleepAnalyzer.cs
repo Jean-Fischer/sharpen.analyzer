@@ -11,7 +11,7 @@ namespace Sharpen.Analyzer.Analyzers.CSharp5;
 public sealed class AwaitTaskDelayInsteadOfCallingThreadSleepAnalyzer : DiagnosticAnalyzer
 {
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-        ImmutableArray.Create(Rules.Rules.AwaitTaskDelayInsteadOfCallingThreadSleepRule);
+        ImmutableArray.Create(Rules.GeneralRules.AwaitTaskDelayInsteadOfCallingThreadSleepRule);
 
     public override void Initialize(AnalysisContext context)
     {
@@ -30,7 +30,7 @@ public sealed class AwaitTaskDelayInsteadOfCallingThreadSleepAnalyzer : Diagnost
         if (!AsyncModernizationHelpers.CanMakeContainingCallableAsync(invocation, context.SemanticModel)) return;
 
         var diagnostic = Diagnostic.Create(
-            Rules.Rules.AwaitTaskDelayInsteadOfCallingThreadSleepRule,
+            Rules.GeneralRules.AwaitTaskDelayInsteadOfCallingThreadSleepRule,
             invocation.GetLocation());
 
         context.ReportDiagnostic(diagnostic);
