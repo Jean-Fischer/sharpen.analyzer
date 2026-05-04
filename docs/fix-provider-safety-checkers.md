@@ -1,5 +1,7 @@
 # Fix provider safety checkers
 
+This page is advanced reference material for maintainers and users who want implementation details about Sharpen's safety pipeline.
+
 This project uses a **unified safety pipeline** to ensure we only suggest transformations that are safe.
 
 The pipeline is executed by [`FixProviderSafetyRunner`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/FixProviderSafetyRunner.cs) and has two stages:
