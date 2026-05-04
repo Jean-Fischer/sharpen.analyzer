@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp13.UseEscapeSequenceEAnalyzer,
-    Sharpen.Analyzer.UseEscapeSequenceECodeFixProvider,
+    Sharpen.Analyzer.FixProvider.CSharp13.UseEscapeSequenceECodeFixProvider,
     Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;

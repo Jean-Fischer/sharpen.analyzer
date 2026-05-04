@@ -12,7 +12,7 @@ using Sharpen.Analyzer.Rules;
 using Sharpen.Analyzer.Safety.FixProviderSafety;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
-namespace Sharpen.Analyzer;
+namespace Sharpen.Analyzer.FixProvider.CSharp13;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseFromEndIndexInObjectInitializersCodeFixProvider))]
 [Shared]

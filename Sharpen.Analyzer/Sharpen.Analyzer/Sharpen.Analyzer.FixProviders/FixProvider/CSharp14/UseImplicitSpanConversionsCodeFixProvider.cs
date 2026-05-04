@@ -10,7 +10,7 @@ using Sharpen.Analyzer.FixProvider.Common;
 using Sharpen.Analyzer.Rules;
 using Sharpen.Analyzer.Safety.FixProviderSafety;
 
-namespace Sharpen.Analyzer;
+namespace Sharpen.Analyzer.FixProvider.CSharp14;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseImplicitSpanConversionsCodeFixProvider))]
 [Shared]

@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Sharpen.Analyzer.FixProvider.Common;
 
-namespace Sharpen.Analyzer;
+namespace Sharpen.Analyzer.FixProvider.CSharp5;
 
 [ExportCodeFixProvider(LanguageNames.CSharp,
     Name = nameof(ConsiderAwaitingEquivalentAsynchronousMethodAndMakingTheCallerAsynchronousCodeFixProvider))]

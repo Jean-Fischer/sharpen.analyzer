@@ -33,28 +33,6 @@ internal abstract class EquivalentAsynchronousMethodFinder
         CallerMustNotYield
     }
 
-    private const string AsyncSuffix = "Async";
-
-    public static readonly KnownAwaitableTypeInfo[] KnownAwaitableTypes =
-    {
-        new("Task", "System.Threading.Tasks", KnownAwaitableTypeInfo.ReturnTypeWrappingKind.WrapsReturnType, true),
-        new("ValueTask", "System.Threading.Tasks", KnownAwaitableTypeInfo.ReturnTypeWrappingKind.WrapsReturnType, true),
-        new("IAsyncEnumerable", "System.Collections.Generic",
-            KnownAwaitableTypeInfo.ReturnTypeWrappingKind.WrapsReturnTypeTypeParameter, true)
-        // TODO-SETTINGS: Allow users to define their own known awaitable types.
-        // TODO: Later on we can check for arbitrary types that implement the GetAwaiter() method.
-    };
-
-    private static readonly MethodToIgnore[] KnownMethodsToIgnore =
-    {
-        // Why do we ignore Add() and AddRange()? See here:
-        // https://docs.microsoft.com/en-us/dotnet/api/microsoft.entityframeworkcore.dbset-1.addasync?view=efcore-2.1
-        // "This method is async only to allow special value generators [...]. For all other cases the non async method should be used."
-        new("DbSet", "Microsoft.EntityFrameworkCore", "Add"),
-        new("DbSet", "Microsoft.EntityFrameworkCore", "AddRange")
-        // TODO-SETTINGS: Allow users to define their own known methods to ignore.
-    };
-
     /// <summary>
     ///     Returns true if an equivalent asynchronous method of the method used in
     ///     the <paramref name="invocation" /> exists and is at the same time a
@@ -78,7 +56,7 @@ internal abstract class EquivalentAsynchronousMethodFinder
 
         if (!(semanticModel.GetSymbolInfo(invocation).Symbol is IMethodSymbol method)) return false;
 
-        if (KnownMethodsToIgnore.Any(methodToIgnore => methodToIgnore.RepresentsMethod(method))) return false;
+        if (EquivalentAsynchronousMethodMetadata.IsIgnoredMethod(method)) return false;
 
         // So far we do not suggest turning lambdas and anonymous methods
         // into async. So we will at the moment just ignore that case.
@@ -140,14 +118,25 @@ internal abstract class EquivalentAsynchronousMethodFinder
         // on which the synchronous method is called (if there are such).
 
         // Let's check the method containing type first.
-        if (TypeContainsAsynchronousEquivalentOf(semanticModel, method.ContainingType, method, invocation)) return true;
+        if (EquivalentAsynchronousMethodLookup.TypeContainsAsynchronousEquivalent(
+                semanticModel,
+                method.ContainingType,
+                method,
+                invocation))
+        {
+            return true;
+        }
 
         // Let's now check the type on which the method is called,
         // if there is such.
         var calledOnType = GetCalledOnType();
         if (calledOnType == null || SymbolEqualityComparer.Default.Equals(calledOnType, method.ContainingType)) return false;
 
-        return TypeContainsAsynchronousEquivalentOf(semanticModel, calledOnType, method, invocation);
+        return EquivalentAsynchronousMethodLookup.TypeContainsAsynchronousEquivalent(
+            semanticModel,
+            calledOnType,
+            method,
+            invocation);
 
         bool MethodIsInvokedWithinACallerNodeThatCanBeMarkedAsAsync()
         {
@@ -255,7 +244,10 @@ internal abstract class EquivalentAsynchronousMethodFinder
 
             bool CallerMethodDoesNotAlreadyHaveAsynchronousEquivalent()
             {
-                return !TypeContainsAsynchronousEquivalentOf(semanticModel, callerSymbol.ContainingType, callerSymbol);
+                return !EquivalentAsynchronousMethodLookup.TypeContainsAsynchronousEquivalent(
+                    semanticModel,
+                    callerSymbol.ContainingType,
+                    callerSymbol);
             }
         }
 
@@ -281,183 +273,4 @@ internal abstract class EquivalentAsynchronousMethodFinder
 
     protected abstract bool InvokedMethodPotentiallyHasAsynchronousEquivalent(InvocationExpressionSyntax invocation);
 
-    private static bool TypeContainsAsynchronousEquivalentOf(SemanticModel semanticModel, INamedTypeSymbol? type,
-        IMethodSymbol? method, InvocationExpressionSyntax? invocation = null)
-    {
-        if (type == null) return false;
-        if (method == null) return false;
-
-        var asynchronousEquivalentMethodName = method.Name + AsyncSuffix;
-
-        // If the invocation is not defined, we are not searching for eventual
-        // extension methods, but only on the methods on the type.
-        // In that case we have to directly look at the members on the
-        // type by using the GetMembers() method.
-        // Why? Because if the type is declared in two or more partials
-        // the LookupSymbol() without position provided (0) will not
-        // return the symbols declared in other partials.
-        var potentialAsynchronousEquivalents =
-            (invocation == null
-                ? type
-                    .GetMembers(asynchronousEquivalentMethodName)
-                : semanticModel
-                    .LookupSymbols(invocation.Expression?.SpanStart ?? 0, type, asynchronousEquivalentMethodName,
-                        true)
-            )
-            .OfType<IMethodSymbol>()
-            .ToArray();
-
-        return potentialAsynchronousEquivalents.Any(IsAsynchronousEquivalent);
-
-        bool IsAsynchronousEquivalent(IMethodSymbol potentialEquivalent)
-        {
-            // We insist that the async method returns an awaitable object.
-            if (potentialEquivalent.ReturnsVoid) return false;
-
-            // If the method returns void its async equivalent must return
-            // any of the known awaitable types that can be void equivalents.
-            if (method.ReturnsVoid)
-            {
-                if (!KnownAwaitableTypes.Any(awaitableType =>
-                        awaitableType.IsVoidEquivalent
-                        &&
-                        awaitableType.RepresentsType(potentialEquivalent.ReturnType)))
-                {
-                    return false;
-                }
-            }
-            else // The method does not return void.
-            {
-                // If the method returns non-void its async equivalent must
-                // either return generic awaitable type parametrized exactly with the
-                // method return type or a generic awaitable type parametrized exactly with the
-                // type of the generic type parameter of the method return type.
-
-                if (!(potentialEquivalent.ReturnType is INamedTypeSymbol potentialEquivalentReturnType))
-                    return false;
-
-                if (potentialEquivalentReturnType.Arity != 1)
-                    return false;
-
-                // Ok, the potential equivalent returns a generic type with exactly
-                // one parameter. First we have to see if this generic return type
-                // is one of the known awaitable types.
-                var returnedKnownAwaitableType = KnownAwaitableTypes.FirstOrDefault(awaitableType =>
-                    awaitableType.RepresentsType(potentialEquivalentReturnType.ConstructedFrom));
-                if (returnedKnownAwaitableType == null) return false;
-
-                // And now we have to check if that generic returned awaitable type is
-                // parameterized with the proper type.
-                if (returnedKnownAwaitableType.WrapsReturnType())
-                {
-                    if (!SymbolEqualityComparer.Default.Equals(method.ReturnType, potentialEquivalentReturnType.TypeArguments[0]))
-                        return false;
-                }
-                else // The returned awaitable type wraps the type parameter of the original generic returned type.
-                {
-                    // The method must return generic type with exactly one type parameter.
-                    if (method.ReturnType is not INamedTypeSymbol { Arity: 1 } methodReturnType)
-                        return false;
-
-                    if (!SymbolEqualityComparer.Default.Equals(methodReturnType.TypeArguments[0], potentialEquivalentReturnType.TypeArguments[0]))
-                        return false;
-                }
-            }
-
-            // Async equivalent must have exactly the same method parameters
-            // (type and name) with only a single exception - an additional
-            // CancellationToken can be there as the last argument.
-            // TODO: Add support for the IProgress additional argument.
-            var numberOfParameters = method.Parameters.Length;
-            if (!(potentialEquivalent.Parameters.Length == numberOfParameters ||
-                  potentialEquivalent.Parameters.Length == numberOfParameters + 1))
-            {
-                return false;
-            }
-
-            for (var i = 0; i < numberOfParameters; i++)
-            {
-                if (!SymbolEqualityComparer.Default.Equals(method.Parameters[i].Type, potentialEquivalent.Parameters[i].Type))
-                    return false;
-                if (method.Parameters[i].Name != potentialEquivalent.Parameters[i].Name)
-                    return false;
-            }
-
-            if (potentialEquivalent.Parameters.Length == numberOfParameters + 1)
-            {
-                if (!potentialEquivalent.Parameters[numberOfParameters].Type
-                        .FullNameIsEqualTo("System.Threading", "CancellationToken"))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-    }
-
-    internal class KnownAwaitableTypeInfo(
-        string typeName,
-        string typeNamespace,
-        KnownAwaitableTypeInfo.ReturnTypeWrappingKind wrappingKind,
-        bool isVoidEquivalent)
-        : KnownTypeInfo(typeName, typeNamespace)
-    {
-        public enum ReturnTypeWrappingKind
-        {
-            /// <summary>
-            ///     Denotes that the known awaitable type in its generic
-            ///     form takes the original return type as its generic
-            ///     type parameter.
-            ///     E.g. if the original method returns int its async
-            ///     equivalent can return Task&lt;int&gt;. Thus, Task
-            ///     wraps the return type of the original method.
-            /// </summary>
-            WrapsReturnType,
-
-            /// <summary>
-            ///     Denotes that the known awaitable type in its generic
-            ///     form takes the type parameter of the original generic return type
-            ///     as its generic type parameter.
-            ///     E.g. if the original method returns IEnumerable&lt;int&gt; its async
-            ///     equivalent can return IAsyncEnumerable&lt;int&gt;. Thus, IAsyncEnumerable
-            ///     wraps the type parameter of the return type of the original method.
-            /// </summary>
-            WrapsReturnTypeTypeParameter
-        }
-
-        /// <summary>
-        ///     True if the type in its non-generic form is expected to
-        ///     be return if the original non-async method was returning void.
-        /// </summary>
-        public bool IsVoidEquivalent { get; } = isVoidEquivalent;
-
-        public bool WrapsReturnType()
-        {
-            return wrappingKind == ReturnTypeWrappingKind.WrapsReturnType;
-        }
-    }
-
-    // This is a bit of misuse of the KnownTypeInfo, I would say. Hmmm.
-    // But it's practical and fits into the scheme.
-    // TODO-IG: Remove the ugly part that all the methods on a type are ignored
-    //          if the MethodName is null. At the moment, this is not needed at
-    //          all. And if it is once needed, introduce a proper abstraction
-    //          for that case.
-    private class MethodToIgnore(string typeName, string typeNamespace, string? methodName = null)
-        : KnownTypeInfo(typeName, typeNamespace)
-    {
-        /// <summary>
-        ///     Name of the method whose asynchronous equivalent exists,
-        ///     but should be ignored. If null, all the methods on the type
-        ///     should be ignored.
-        /// </summary>
-        private string MethodName { get; } = methodName;
-
-        public bool RepresentsMethod(IMethodSymbol method)
-        {
-            return RepresentsType(method.ContainingType) &&
-                   (MethodName == method.Name);
-        }
-    }
 }

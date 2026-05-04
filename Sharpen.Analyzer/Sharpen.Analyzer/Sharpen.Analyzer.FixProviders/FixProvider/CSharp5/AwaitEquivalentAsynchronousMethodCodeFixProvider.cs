@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Sharpen.Analyzer.FixProvider.Common;
 
-namespace Sharpen.Analyzer;
+namespace Sharpen.Analyzer.FixProvider.CSharp5;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(AwaitEquivalentAsynchronousMethodCodeFixProvider))]
 [Shared]
