@@ -20,67 +20,52 @@ namespace Sharpen.Analyzer.FixProvider.CSharp10;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseInterpolatedStringCodeFixProvider))]
 [Shared]
-public sealed class UseInterpolatedStringCodeFixProvider : CodeFixProvider
+public sealed class UseInterpolatedStringCodeFixProvider
+    : SafetyCheckedSharpenCodeFixProvider<ExpressionSyntax, StringInterpolationSafetyChecker>
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(
             CSharp10Rules.UseInterpolatedStringRule.Id,
             CSharp10Rules.UseConstInterpolatedStringRule.Id);
 
-    public override FixAllProvider GetFixAllProvider()
+    protected override ExpressionSyntax? TryGetTargetNode(SyntaxNode root, Diagnostic diagnostic)
     {
-        return WellKnownFixAllProviders.BatchFixer;
+        var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
+        if (node is InvocationExpressionSyntax invocation)
+            return invocation;
+
+        var add = node.FirstAncestorOrSelf<BinaryExpressionSyntax>();
+        return add?.IsKind(SyntaxKind.AddExpression) == true ? add : null;
     }
 
-    public override async Task RegisterCodeFixesAsync(CodeFixContext context)
+    protected override async Task RegisterSafetyCheckedCodeFixesAsync(
+        CodeFixContext context,
+        SyntaxNode root,
+        Diagnostic diagnostic,
+        ExpressionSyntax targetNode)
     {
         if (!await IsCSharp10OrAboveAsync(context.Document, context.CancellationToken).ConfigureAwait(false))
             return;
 
-        var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-        if (root == null)
-            return;
-
-        var diagnostic = context.Diagnostics[0];
-        var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-
-        var semanticModel = await context.Document
-            .GetSemanticModelAsync(context.CancellationToken)
-            .ConfigureAwait(false);
-        if (semanticModel is null)
-            return;
-
-        // Fix-provider-side safety gate: only offer code actions when the mapped safety checker says it's safe.
-        var safetyEvaluation = FixProviderSafetyRunner.Evaluate(
-            semanticModel,
-            typeof(UseInterpolatedStringCodeFixProvider),
-            node,
-            diagnostic,
-            context.CancellationToken);
-
-        if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
-            return;
-
-        if (node is InvocationExpressionSyntax invocation)
+        switch (targetNode)
         {
-            context.RegisterCodeFix(
-                CodeAction.Create(
+            case InvocationExpressionSyntax invocation:
+                RegisterCodeFix(
+                    context,
+                    diagnostic,
                     "Use interpolated string",
-                    c => FixStringFormatAsync(context.Document, invocation, c),
-                    "UseInterpolatedString_StringFormat"),
-                diagnostic);
-            return;
-        }
+                    "UseInterpolatedString_StringFormat",
+                    c => FixStringFormatAsync(context.Document, invocation, c));
+                break;
 
-        var add = node.FirstAncestorOrSelf<BinaryExpressionSyntax>();
-        if (add?.IsKind(SyntaxKind.AddExpression) == true)
-        {
-            context.RegisterCodeFix(
-                CodeAction.Create(
+            case BinaryExpressionSyntax add when add.IsKind(SyntaxKind.AddExpression):
+                RegisterCodeFix(
+                    context,
+                    diagnostic,
                     "Use interpolated string",
-                    c => FixConcatenationAsync(context.Document, add, c),
-                    "UseInterpolatedString_Concat"),
-                diagnostic);
+                    "UseInterpolatedString_Concat",
+                    c => FixConcatenationAsync(context.Document, add, c));
+                break;
         }
     }
 

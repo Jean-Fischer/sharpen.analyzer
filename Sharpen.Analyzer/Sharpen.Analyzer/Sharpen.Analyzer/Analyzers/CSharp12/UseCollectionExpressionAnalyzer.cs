@@ -74,7 +74,6 @@ public sealed class UseCollectionExpressionAnalyzer : DiagnosticAnalyzer
         // in the code-fix path.
         var evaluation = FixProviderSafetyRunner.Evaluate(
             context.SemanticModel,
-            typeof(object),
             expression,
             null,
             context.CancellationToken);

@@ -15,40 +15,32 @@ namespace Sharpen.Analyzer;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseSystemThreadingLockCodeFixProvider))]
 [Shared]
-public sealed class UseSystemThreadingLockCodeFixProvider : CSharp13OrAboveSharpenCodeFixProvider
+public sealed class UseSystemThreadingLockCodeFixProvider
+    : CSharp13OrAboveSafetyCheckedSharpenCodeFixProvider<VariableDeclaratorSyntax, UseSystemThreadingLockSafetyChecker>
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(CSharp13Rules.UseSystemThreadingLockRule.Id);
 
-    protected override async Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
+    protected override VariableDeclaratorSyntax? TryGetTargetNode(SyntaxNode root, Diagnostic diagnostic)
     {
         var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-        var variable = node.FirstAncestorOrSelf<VariableDeclaratorSyntax>();
-        if (variable is null)
-            return;
+        return node.FirstAncestorOrSelf<VariableDeclaratorSyntax>();
+    }
 
-        var semanticModel =
-            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-        if (semanticModel is null)
-            return;
-
-        var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            new UseSystemThreadingLockSafetyChecker(),
-            root.SyntaxTree,
-            semanticModel,
-            diagnostic,
-            true,
-            context.CancellationToken);
-
-        if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
-            return;
-
+    protected override Task RegisterSafetyCheckedCodeFixesAsync(
+        CodeFixContext context,
+        SyntaxNode root,
+        Diagnostic diagnostic,
+        VariableDeclaratorSyntax targetNode)
+    {
         RegisterCodeFix(
             context,
             diagnostic,
             "Use System.Threading.Lock",
             nameof(UseSystemThreadingLockCodeFixProvider),
-            ct => ApplyAsync(context.Document, variable, ct));
+            ct => ApplyAsync(context.Document, targetNode, ct));
+
+        return Task.CompletedTask;
     }
 
     private static async Task<Document> ApplyAsync(Document document, VariableDeclaratorSyntax variable,

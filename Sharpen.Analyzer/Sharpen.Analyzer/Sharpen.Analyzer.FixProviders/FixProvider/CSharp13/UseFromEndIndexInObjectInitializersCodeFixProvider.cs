@@ -16,18 +16,19 @@ namespace Sharpen.Analyzer;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseFromEndIndexInObjectInitializersCodeFixProvider))]
 [Shared]
-public sealed class UseFromEndIndexInObjectInitializersCodeFixProvider : CSharp13OrAboveSharpenCodeFixProvider
+public sealed class UseFromEndIndexInObjectInitializersCodeFixProvider
+    : CSharp13OrAboveSafetyCheckedSharpenCodeFixProvider<ExpressionSyntax, UseFromEndIndexInObjectInitializersSafetyChecker>
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(CSharp13Rules.UseFromEndIndexInObjectInitializersRule.Id);
 
-    protected override async Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
+    protected override ExpressionSyntax? TryGetTargetNode(SyntaxNode root, Diagnostic diagnostic)
     {
         var diagnosticSpan = diagnostic.Location.SourceSpan;
 
         // Diagnostic is reported on the index expression.
         if (!(root.FindNode(diagnosticSpan, getInnermostNodeForTie: true) is ExpressionSyntax indexExpression))
-            return;
+            return null;
 
         // In object initializers, the indexer assignment uses ImplicitElementAccessSyntax.
         // FindNode may return a nested node (e.g. the `Length` member access),
@@ -43,43 +44,29 @@ public sealed class UseFromEndIndexInObjectInitializersCodeFixProvider : CSharp1
                 Parent: BracketedArgumentListSyntax { Parent: ImplicitElementAccessSyntax }
             })
         {
-            return;
+            return null;
         }
 
         if (!IsLengthMinusOne(indexExpression))
-            return;
+            return null;
 
-        // Ensure the `.Length` is from an array (keep analyzer + fix consistent).
-        if (indexExpression is not BinaryExpressionSyntax { Left: MemberAccessExpressionSyntax memberAccess })
-            return;
+        return indexExpression;
+    }
 
-        var semanticModel =
-            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-        if (semanticModel is null)
-            return;
-
-        var lengthTargetType = semanticModel.GetTypeInfo(memberAccess.Expression, context.CancellationToken).Type;
-        if (lengthTargetType is null || lengthTargetType.TypeKind != TypeKind.Array)
-            return;
-
-        // Safety checker already validates the same conditions; keep it as the final gate.
-        var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            new UseFromEndIndexInObjectInitializersSafetyChecker(),
-            root.SyntaxTree,
-            semanticModel,
-            diagnostic,
-            true,
-            context.CancellationToken);
-
-        if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
-            return;
-
+    protected override Task RegisterSafetyCheckedCodeFixesAsync(
+        CodeFixContext context,
+        SyntaxNode root,
+        Diagnostic diagnostic,
+        ExpressionSyntax targetNode)
+    {
         RegisterCodeFix(
             context,
             diagnostic,
             "Use from-end index (^) in initializer",
             nameof(UseFromEndIndexInObjectInitializersCodeFixProvider),
-            ct => ApplyAsync(context.Document, indexExpression, ct));
+            ct => ApplyAsync(context.Document, targetNode, ct));
+
+        return Task.CompletedTask;
     }
 
     private static async Task<Document> ApplyAsync(Document document, ExpressionSyntax indexExpression,

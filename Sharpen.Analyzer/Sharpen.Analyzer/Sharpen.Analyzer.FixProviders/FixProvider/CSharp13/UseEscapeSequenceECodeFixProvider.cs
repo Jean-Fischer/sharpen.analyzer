@@ -16,38 +16,31 @@ namespace Sharpen.Analyzer;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseEscapeSequenceECodeFixProvider))]
 [Shared]
-public sealed class UseEscapeSequenceECodeFixProvider : CSharp13OrAboveSharpenCodeFixProvider
+public sealed class UseEscapeSequenceECodeFixProvider
+    : CSharp13OrAboveSafetyCheckedSharpenCodeFixProvider<LiteralExpressionSyntax, UseEscapeSequenceESafetyChecker>
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(CSharp13Rules.UseEscapeSequenceERule.Id);
 
-    protected override async Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
+    protected override LiteralExpressionSyntax? TryGetTargetNode(SyntaxNode root, Diagnostic diagnostic)
     {
-        if (!(root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true) is LiteralExpressionSyntax literal))
-            return;
+        return root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true) as LiteralExpressionSyntax;
+    }
 
-        var semanticModel =
-            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-        if (semanticModel is null)
-            return;
-
-        var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            new UseEscapeSequenceESafetyChecker(),
-            root.SyntaxTree,
-            semanticModel,
-            diagnostic,
-            true,
-            context.CancellationToken);
-
-        if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
-            return;
-
+    protected override Task RegisterSafetyCheckedCodeFixesAsync(
+        CodeFixContext context,
+        SyntaxNode root,
+        Diagnostic diagnostic,
+        LiteralExpressionSyntax targetNode)
+    {
         RegisterCodeFix(
             context,
             diagnostic,
             "Use \\e escape sequence",
             nameof(UseEscapeSequenceECodeFixProvider),
-            ct => ApplyAsync(context.Document, literal, ct));
+            ct => ApplyAsync(context.Document, targetNode, ct));
+
+        return Task.CompletedTask;
     }
 
     private static async Task<Document> ApplyAsync(Document document, LiteralExpressionSyntax literal,

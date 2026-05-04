@@ -68,15 +68,12 @@ public static class FixProviderSafetyRunner
 
     public static FixProviderSafetyEvaluation Evaluate(
         SemanticModel semanticModel,
-        Type fixProviderType,
         SyntaxNode node,
         Diagnostic? diagnostic,
         CancellationToken cancellationToken = default)
     {
         if (semanticModel is null)
             throw new ArgumentNullException(nameof(semanticModel));
-        if (fixProviderType is null)
-            throw new ArgumentNullException(nameof(fixProviderType));
         if (node is null)
             throw new ArgumentNullException(nameof(node));
 
@@ -98,11 +95,6 @@ public static class FixProviderSafetyRunner
                     globalSafety.ReasonId ?? "first-pass-unsafe",
                     globalSafety.Message));
         }
-
-        // Local stage: analyzer-side checkers currently require a SyntaxTree instance.
-        // Until we expand the checker contract, we conservatively treat analyzer-side local
-        // evaluation as "safe" (after the global gate).
-        _ = node;
 
         return FixProviderSafetyEvaluation.Safe();
     }

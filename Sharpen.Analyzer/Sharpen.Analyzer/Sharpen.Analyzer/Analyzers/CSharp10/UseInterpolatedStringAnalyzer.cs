@@ -108,7 +108,6 @@ public sealed class UseInterpolatedStringAnalyzer : DiagnosticAnalyzer
         // in the code-fix path.
         var evaluation = FixProviderSafetyRunner.Evaluate(
             context.SemanticModel,
-            typeof(object),
             expression,
             null,
             context.CancellationToken);

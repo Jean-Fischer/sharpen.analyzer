@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Sharpen.Analyzer.Extensions;
+using Sharpen.Analyzer.FixProvider.Common;
 using Sharpen.Analyzer.Rules;
 using Sharpen.Analyzer.Safety.FixProviderSafety;
 
@@ -16,54 +17,32 @@ namespace Sharpen.Analyzer;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseCollectionExpressionCodeFixProvider))]
 [Shared]
-public sealed class UseCollectionExpressionCodeFixProvider : CodeFixProvider
+public sealed class UseCollectionExpressionCodeFixProvider
+    : SafetyCheckedSharpenCodeFixProvider<ExpressionSyntax, CollectionExpressionSafetyChecker>
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(CSharp12Rules.UseCollectionExpressionRule.Id);
 
-    public override FixAllProvider GetFixAllProvider()
+    protected override ExpressionSyntax? TryGetTargetNode(SyntaxNode root, Diagnostic diagnostic)
     {
-        return WellKnownFixAllProviders.BatchFixer;
+        var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
+        return node as ExpressionSyntax;
     }
 
-    public override async Task RegisterCodeFixesAsync(CodeFixContext context)
+    protected override Task RegisterSafetyCheckedCodeFixesAsync(
+        CodeFixContext context,
+        SyntaxNode root,
+        Diagnostic diagnostic,
+        ExpressionSyntax targetNode)
     {
-        var root = await context.Document
-            .GetSyntaxRootAsync(context.CancellationToken)
-            .ConfigureAwait(false);
-        if (root is null)
-            return;
-
-        var diagnostic = context.Diagnostics[0];
-        var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-
-        // We report on the array creation expression itself.
-        if (node is not ExpressionSyntax expression)
-            return;
-
-        var semanticModel = await context.Document
-            .GetSemanticModelAsync(context.CancellationToken)
-            .ConfigureAwait(false);
-        if (semanticModel is null)
-            return;
-
-        var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            new CollectionExpressionSafetyChecker(),
-            root.SyntaxTree,
-            semanticModel,
+        RegisterCodeFix(
+            context,
             diagnostic,
-            true,
-            context.CancellationToken);
+            "Use collection expression",
+            "UseCollectionExpression",
+            c => UseCollectionExpressionAsync(context.Document, targetNode, c));
 
-        if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
-            return;
-
-        context.RegisterCodeFix(
-            CodeAction.Create(
-                "Use collection expression",
-                c => UseCollectionExpressionAsync(context.Document, expression, c),
-                "UseCollectionExpression"),
-            diagnostic);
+        return Task.CompletedTask;
     }
 
     private static async Task<Document> UseCollectionExpressionAsync(

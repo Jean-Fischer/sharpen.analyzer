@@ -15,40 +15,33 @@ namespace Sharpen.Analyzer;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseLambdaParameterModifiersWithoutTypesCodeFixProvider))]
 [Shared]
-public sealed class UseLambdaParameterModifiersWithoutTypesCodeFixProvider : CSharp13OrAboveSharpenCodeFixProvider
+public sealed class UseLambdaParameterModifiersWithoutTypesCodeFixProvider
+    : CSharp13OrAboveSafetyCheckedSharpenCodeFixProvider<ParameterListSyntax,
+        LambdaParameterModifiersWithoutTypesSafetyChecker>
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(CSharp14Rules.UseLambdaParameterModifiersWithoutTypesRule.Id);
 
-    protected override async Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
+    protected override ParameterListSyntax? TryGetTargetNode(SyntaxNode root, Diagnostic diagnostic)
     {
         var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-        var parameterList = node as ParameterListSyntax ?? node.FirstAncestorOrSelf<ParameterListSyntax>();
-        if (parameterList is null)
-            return;
+        return node as ParameterListSyntax ?? node.FirstAncestorOrSelf<ParameterListSyntax>();
+    }
 
-        var semanticModel =
-            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-        if (semanticModel is null)
-            return;
-
-        var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            new LambdaParameterModifiersWithoutTypesSafetyChecker(),
-            root.SyntaxTree,
-            semanticModel,
-            diagnostic,
-            true,
-            context.CancellationToken);
-
-        if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
-            return;
-
+    protected override Task RegisterSafetyCheckedCodeFixesAsync(
+        CodeFixContext context,
+        SyntaxNode root,
+        Diagnostic diagnostic,
+        ParameterListSyntax targetNode)
+    {
         RegisterCodeFix(
             context,
             diagnostic,
             CSharp14Rules.UseLambdaParameterModifiersWithoutTypesRule.Title.ToString(),
             nameof(UseLambdaParameterModifiersWithoutTypesCodeFixProvider),
-            ct => ApplyFixAsync(context.Document, parameterList, ct));
+            ct => ApplyFixAsync(context.Document, targetNode, ct));
+
+        return Task.CompletedTask;
     }
 
     private static async Task<Document> ApplyFixAsync(Document document, ParameterListSyntax parameterList,
