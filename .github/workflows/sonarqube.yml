@@ -10,7 +10,7 @@ on:
 jobs:
   sonarqube:
     name: SonarQube Analysis
-    runs-on: windows-latest # Required for dotnet-sonarscanner
+    runs-on: windows-latest
 
     steps:
       # Setup .NET (required for build)
@@ -36,11 +36,6 @@ jobs:
         shell: powershell
         run: dotnet tool install --global dotnet-sonarscanner
 
-      # Install Coverlet (for OpenCover report)
-      - name: Install Coverlet
-        shell: powershell
-        run: dotnet tool install --global coverlet.console
-
       # Restore dependencies
       - name: Restore dependencies
         run: dotnet restore "Sharpen.Analyzer/Sharpen.Analyzer.sln"
@@ -51,29 +46,25 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
-          dotnet sonarscanner begin /k:"Jean-Fischer_sharpen.analyzer" /o:"jean-fischer" /d:sonar.token="$env:SONAR_TOKEN" /d:sonar.cs.opencover.reportsPaths="Sharpen.Analyzer/coverage.xml"
+          dotnet sonarscanner begin /k:"Jean-Fischer_sharpen.analyzer" /o:"jean-fischer" /d:sonar.token="$env:SONAR_TOKEN" /d:sonar.cs.opencover.reportsPaths="Sharpen.Analyzer/TestResults/**/coverage.opencover.xml"
 
       # Build project
       - name: Build
         run: dotnet build "Sharpen.Analyzer/Sharpen.Analyzer.sln" --configuration Release --no-restore
 
-      # Generate coverage report (OpenCover)
-      - name: Generate coverage report
+      # Run tests and collect OpenCover coverage for SonarQube
+      - name: Run tests with coverage
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
+          $resultsDirectory = "Sharpen.Analyzer/TestResults"
 
-          $testProject = "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.Tests/Sharpen.Analyzer.Tests.csproj"
-          $configuration = "Release"
-          $tfm = "net10.0"
-          $testDll = "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.Tests/bin/$configuration/$tfm/Sharpen.Analyzer.Tests.dll"
-          $coverageFile = "Sharpen.Analyzer/coverage.xml"
+          if (Test-Path $resultsDirectory) { Remove-Item -Recurse -Force $resultsDirectory }
 
-          if (Test-Path $coverageFile) { Remove-Item -Force $coverageFile }
+          dotnet test "Sharpen.Analyzer/Sharpen.Analyzer.sln" --configuration Release --no-build --collect:"XPlat Code Coverage;Format=opencover" --results-directory $resultsDirectory --verbosity normal
 
-          coverlet $testDll --target "dotnet" --targetargs "test $testProject --no-build --configuration $configuration" -f opencover -o $coverageFile
-
-          if (!(Test-Path $coverageFile)) { throw "Coverage file not found: $coverageFile" }
+          $coverageFiles = Get-ChildItem -Path $resultsDirectory -Recurse -Filter "coverage.opencover.xml"
+          if ($coverageFiles.Count -eq 0) { throw "Coverage file not found under $resultsDirectory" }
 
       # End SonarQube analysis
       - name: End SonarQube analysis
