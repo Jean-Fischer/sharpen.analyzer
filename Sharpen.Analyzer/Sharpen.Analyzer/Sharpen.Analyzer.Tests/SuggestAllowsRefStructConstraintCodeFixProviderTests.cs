@@ -3,7 +3,7 @@ using Sharpen.Analyzer.Rules;
 using Xunit;
 using Verifier = Sharpen.Analyzer.Tests.Infrastructure.CSharp13CodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp13.SuggestAllowsRefStructConstraintAnalyzer,
-    Sharpen.Analyzer.FixProviders.FixProvider.CSharp13.SuggestAllowsRefStructConstraintCodeFixProvider>;
+    Sharpen.Analyzer.FixProvider.CSharp13.SuggestAllowsRefStructConstraintCodeFixProvider>;
 
 public sealed class SuggestAllowsRefStructConstraintCodeFixProviderTests
 {

@@ -12,7 +12,7 @@ using Microsoft.CodeAnalysis.Formatting;
 using Sharpen.Analyzer.FixProvider.Common;
 using Sharpen.Analyzer.Rules;
 
-namespace Sharpen.Analyzer.FixProviders.FixProvider.CSharp13;
+namespace Sharpen.Analyzer.FixProvider.CSharp13;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(SuggestAllowsRefStructConstraintCodeFixProvider))]
 [Shared]

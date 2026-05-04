@@ -3,7 +3,7 @@ using Sharpen.Analyzer.Rules;
 using Xunit;
 using Verifier = Sharpen.Analyzer.Tests.Infrastructure.CSharp13CodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp13.PartialPropertiesIndexersRefactoringAnalyzer,
-    Sharpen.Analyzer.PartialPropertiesIndexersRefactoringCodeFixProvider>;
+    Sharpen.Analyzer.FixProvider.CSharp13.PartialPropertiesIndexersRefactoringCodeFixProvider>;
 
 namespace Sharpen.Analyzer.Tests;
 

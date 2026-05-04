@@ -16,19 +16,19 @@ public sealed class FixProviderSafetyContractTests
     {
         var expected = new HashSet<string>(StringComparer.Ordinal)
         {
-            "Sharpen.Analyzer.UseCollectionExpressionCodeFixProvider",
-            "Sharpen.Analyzer.PreferParamsCollectionsCodeFixProvider",
-            "Sharpen.Analyzer.UseEscapeSequenceECodeFixProvider",
-            "Sharpen.Analyzer.UseFromEndIndexInObjectInitializersCodeFixProvider",
-            "Sharpen.Analyzer.UseSystemThreadingLockCodeFixProvider",
-            "Sharpen.Analyzer.PartialPropertiesIndexersRefactoringCodeFixProvider",
-            "Sharpen.Analyzer.UseExtensionBlocksCodeFixProvider",
-            "Sharpen.Analyzer.UseFieldKeywordInPropertiesCodeFixProvider",
-            "Sharpen.Analyzer.UseImplicitSpanConversionsCodeFixProvider",
-            "Sharpen.Analyzer.UseLambdaParameterModifiersWithoutTypesCodeFixProvider",
-            "Sharpen.Analyzer.UseNullConditionalAssignmentCodeFixProvider",
-            "Sharpen.Analyzer.UseUnboundGenericTypeInNameofCodeFixProvider",
-            "Sharpen.Analyzer.FixProvider.CSharp10.UseInterpolatedStringCodeFixProvider"
+            typeof(Sharpen.Analyzer.FixProvider.CSharp10.UseInterpolatedStringCodeFixProvider).FullName!,
+            typeof(Sharpen.Analyzer.FixProvider.CSharp12.UseCollectionExpressionCodeFixProvider).FullName!,
+            typeof(Sharpen.Analyzer.FixProvider.CSharp13.PartialPropertiesIndexersRefactoringCodeFixProvider).FullName!,
+            typeof(Sharpen.Analyzer.FixProvider.CSharp13.PreferParamsCollectionsCodeFixProvider).FullName!,
+            typeof(Sharpen.Analyzer.FixProvider.CSharp13.UseEscapeSequenceECodeFixProvider).FullName!,
+            typeof(Sharpen.Analyzer.FixProvider.CSharp13.UseFromEndIndexInObjectInitializersCodeFixProvider).FullName!,
+            typeof(Sharpen.Analyzer.FixProvider.CSharp13.UseSystemThreadingLockCodeFixProvider).FullName!,
+            typeof(Sharpen.Analyzer.FixProvider.CSharp14.UseExtensionBlocksCodeFixProvider).FullName!,
+            typeof(Sharpen.Analyzer.FixProvider.CSharp14.UseFieldKeywordInPropertiesCodeFixProvider).FullName!,
+            typeof(Sharpen.Analyzer.FixProvider.CSharp14.UseImplicitSpanConversionsCodeFixProvider).FullName!,
+            typeof(Sharpen.Analyzer.FixProvider.CSharp14.UseLambdaParameterModifiersWithoutTypesCodeFixProvider).FullName!,
+            typeof(Sharpen.Analyzer.FixProvider.CSharp14.UseNullConditionalAssignmentCodeFixProvider).FullName!,
+            typeof(Sharpen.Analyzer.FixProvider.CSharp14.UseUnboundGenericTypeInNameofCodeFixProvider).FullName!,
         };
 
         var actual = GetSafetyCheckedProviders()

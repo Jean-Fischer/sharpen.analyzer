@@ -25,18 +25,22 @@ public sealed class UseExpressionBodyForGetAccessorsInIndexersAnalyzer : Diagnos
     {
         var accessor = (AccessorDeclarationSyntax)context.Node;
 
-        if (accessor.ExpressionBody != null) return;
-
-        if (accessor.Parent is not AccessorListSyntax accessorList) return;
-
-        // Must have a set accessor as well (otherwise C# 6 get-only indexer rule applies).
-        if (accessorList.Accessors.Count <= 1) return;
-
-        if (accessor.FirstAncestorOrSelf<IndexerDeclarationSyntax>() == null) return;
-
-        if (!CSharp6SyntaxHelpers.TryGetSingleReturnExpressionFromGetter(accessor, out _)) return;
+        if (!IsSupportedIndexerGetter(accessor))
+            return;
 
         context.ReportDiagnostic(Diagnostic.Create(Rules.GeneralRules.UseExpressionBodyForGetAccessorsInIndexersRule,
             accessor.Keyword.GetLocation()));
+    }
+
+    private static bool IsSupportedIndexerGetter(AccessorDeclarationSyntax accessor)
+    {
+        if (accessor.ExpressionBody != null)
+            return false;
+
+        if (accessor.Parent is not AccessorListSyntax accessorList || accessorList.Accessors.Count <= 1)
+            return false;
+
+        return accessor.FirstAncestorOrSelf<IndexerDeclarationSyntax>() != null
+               && CSharp6SyntaxHelpers.TryGetSingleReturnExpressionFromGetter(accessor, out _);
     }
 }

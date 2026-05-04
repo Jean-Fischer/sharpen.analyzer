@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -60,15 +61,25 @@ public sealed class UseUnboundGenericTypeInNameofAnalyzer : DiagnosticAnalyzer
         if (argExpression is not TypeSyntax typeSyntax) return;
         switch (typeSyntax)
         {
-            case GenericNameSyntax genericName when genericName.TypeArgumentList.Arguments.Any():
-            case QualifiedNameSyntax { Right: GenericNameSyntax { TypeArgumentList.Arguments.Count: > 0 } }:
+            case GenericNameSyntax genericName when ContainsBoundTypeArguments(genericName.TypeArgumentList):
                 context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseUnboundGenericTypeInNameofRule,
                     typeSyntax.GetLocation()));
                 return;
-            case AliasQualifiedNameSyntax { Name: GenericNameSyntax { TypeArgumentList.Arguments.Count: > 0 } }:
+            case AliasQualifiedNameSyntax { Name: GenericNameSyntax aliasGeneric }
+                when ContainsBoundTypeArguments(aliasGeneric.TypeArgumentList):
+                context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseUnboundGenericTypeInNameofRule,
+                    typeSyntax.GetLocation()));
+                break;
+            case QualifiedNameSyntax { Right: GenericNameSyntax rightGeneric }
+                when ContainsBoundTypeArguments(rightGeneric.TypeArgumentList):
                 context.ReportDiagnostic(Diagnostic.Create(CSharp14Rules.UseUnboundGenericTypeInNameofRule,
                     typeSyntax.GetLocation()));
                 break;
         }
+    }
+
+    private static bool ContainsBoundTypeArguments(TypeArgumentListSyntax typeArgumentList)
+    {
+        return typeArgumentList.Arguments.Any(static argument => argument is not OmittedTypeArgumentSyntax);
     }
 }

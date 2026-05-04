@@ -23,6 +23,9 @@ public class UseExpressionBodyForGetAccessorsInIndexersSample
     public int this[int i]
     {
         get => _i;
-        set { }
+        set
+        {
+            // Sample intentionally leaves the setter empty because this rule only demonstrates the getter shape.
+        }
     }
 }

@@ -89,72 +89,115 @@ public sealed class SuggestAllowsRefStructConstraintAnalyzer : DiagnosticAnalyze
         //
         // This is guidance-only; we keep it intentionally narrow to avoid noise.
 
-        foreach (var typeParameter in node.DescendantNodes().OfType<TypeParameterSyntax>())
+        return node.DescendantNodes()
+            .OfType<TypeParameterSyntax>()
+            .Select(typeParameter => semanticModel.GetDeclaredSymbol(typeParameter, cancellationToken))
+            .OfType<ITypeParameterSymbol>()
+            .Any(typeParameter => UsesTypeParameterInByRefLikePosition(node, typeParameter, semanticModel, cancellationToken));
+    }
+
+    private static bool UsesTypeParameterInByRefLikePosition(
+        SyntaxNode node,
+        ITypeParameterSymbol typeParameter,
+        SemanticModel semanticModel,
+        CancellationToken cancellationToken)
+    {
+        return HasByRefParameterUsage(node, typeParameter, semanticModel, cancellationToken)
+               || HasSpanParameterUsage(node, typeParameter, semanticModel, cancellationToken)
+               || HasMethodReturnUsage(node, typeParameter, semanticModel, cancellationToken)
+               || HasPropertyOrIndexerUsage(node, typeParameter, semanticModel, cancellationToken)
+               || HasFieldOrLocalUsage(node, typeParameter, semanticModel, cancellationToken);
+    }
+
+    private static bool HasByRefParameterUsage(
+        SyntaxNode node,
+        ITypeParameterSymbol typeParameter,
+        SemanticModel semanticModel,
+        CancellationToken cancellationToken)
+    {
+        foreach (var parameter in node.DescendantNodes().OfType<ParameterSyntax>())
         {
-            var typeParamSymbol = semanticModel.GetDeclaredSymbol(typeParameter, cancellationToken);
-            if (typeParamSymbol is null)
+            if (parameter.Type is null || !HasByRefModifier(parameter))
                 continue;
 
-            // ref/out/in parameters
-            foreach (var parameter in node.DescendantNodes().OfType<ParameterSyntax>())
-            {
-                if (parameter.Type is null)
-                    continue;
-
-                if (parameter.Modifiers.Any(SyntaxKind.RefKeyword)
-                    || parameter.Modifiers.Any(SyntaxKind.OutKeyword)
-                    || parameter.Modifiers.Any(SyntaxKind.InKeyword))
-                {
-                    var paramType = semanticModel.GetTypeInfo(parameter.Type, cancellationToken).Type;
-                    if (SymbolEqualityComparer.Default.Equals(paramType, typeParamSymbol))
-                        return true;
-                }
-
-                if (IsSpanOfTypeParameter(parameter.Type, typeParamSymbol, semanticModel, cancellationToken))
-                    return true;
-            }
-
-            // return type
-            if (node is MethodDeclarationSyntax method)
-            {
-                if (method.ReturnType is RefTypeSyntax refType)
-                {
-                    var refReturnType = semanticModel.GetTypeInfo(refType.Type, cancellationToken).Type;
-                    if (SymbolEqualityComparer.Default.Equals(refReturnType, typeParamSymbol))
-                        return true;
-                }
-
-                if (IsSpanOfTypeParameter(method.ReturnType, typeParamSymbol, semanticModel, cancellationToken))
-                    return true;
-            }
-
-            // properties/fields
-            foreach (var memberType in node.DescendantNodes().OfType<BasePropertyDeclarationSyntax>())
-            {
-                if (memberType is PropertyDeclarationSyntax prop)
-                {
-                    if (IsSpanOfTypeParameter(prop.Type, typeParamSymbol, semanticModel, cancellationToken))
-                        return true;
-                }
-
-                if (memberType is not IndexerDeclarationSyntax indexer || indexer.Type is null) continue;
-                if (IsSpanOfTypeParameter(indexer.Type, typeParamSymbol, semanticModel, cancellationToken))
-                    return true;
-            }
-
-            if (node.DescendantNodes().OfType<FieldDeclarationSyntax>().Any(field => IsSpanOfTypeParameter(field.Declaration.Type, typeParamSymbol, semanticModel, cancellationToken)))
-            {
+            var parameterType = semanticModel.GetTypeInfo(parameter.Type, cancellationToken).Type;
+            if (SymbolEqualityComparer.Default.Equals(parameterType, typeParameter))
                 return true;
-            }
-
-            // locals
-            if (node.DescendantNodes().OfType<VariableDeclarationSyntax>().Any(local => IsSpanOfTypeParameter(local.Type, typeParamSymbol, semanticModel, cancellationToken)))
-            {
-                return true;
-            }
         }
 
         return false;
+    }
+
+    private static bool HasSpanParameterUsage(
+        SyntaxNode node,
+        ITypeParameterSymbol typeParameter,
+        SemanticModel semanticModel,
+        CancellationToken cancellationToken)
+    {
+        return node.DescendantNodes()
+            .OfType<ParameterSyntax>()
+            .Where(parameter => parameter.Type is not null)
+            .Any(parameter => IsSpanOfTypeParameter(parameter.Type!, typeParameter, semanticModel, cancellationToken));
+    }
+
+    private static bool HasMethodReturnUsage(
+        SyntaxNode node,
+        ITypeParameterSymbol typeParameter,
+        SemanticModel semanticModel,
+        CancellationToken cancellationToken)
+    {
+        if (node is not MethodDeclarationSyntax method)
+            return false;
+
+        if (method.ReturnType is RefTypeSyntax refType)
+        {
+            var refReturnType = semanticModel.GetTypeInfo(refType.Type, cancellationToken).Type;
+            if (SymbolEqualityComparer.Default.Equals(refReturnType, typeParameter))
+                return true;
+        }
+
+        return IsSpanOfTypeParameter(method.ReturnType, typeParameter, semanticModel, cancellationToken);
+    }
+
+    private static bool HasPropertyOrIndexerUsage(
+        SyntaxNode node,
+        ITypeParameterSymbol typeParameter,
+        SemanticModel semanticModel,
+        CancellationToken cancellationToken)
+    {
+        foreach (var member in node.DescendantNodes().OfType<BasePropertyDeclarationSyntax>())
+        {
+            var typeSyntax = member switch
+            {
+                PropertyDeclarationSyntax property => property.Type,
+                IndexerDeclarationSyntax indexer => indexer.Type,
+                _ => null
+            };
+
+            if (typeSyntax != null && IsSpanOfTypeParameter(typeSyntax, typeParameter, semanticModel, cancellationToken))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool HasFieldOrLocalUsage(
+        SyntaxNode node,
+        ITypeParameterSymbol typeParameter,
+        SemanticModel semanticModel,
+        CancellationToken cancellationToken)
+    {
+        return node.DescendantNodes().OfType<FieldDeclarationSyntax>()
+                   .Any(field => IsSpanOfTypeParameter(field.Declaration.Type, typeParameter, semanticModel, cancellationToken))
+               || node.DescendantNodes().OfType<VariableDeclarationSyntax>()
+                   .Any(local => IsSpanOfTypeParameter(local.Type, typeParameter, semanticModel, cancellationToken));
+    }
+
+    private static bool HasByRefModifier(ParameterSyntax parameter)
+    {
+        return parameter.Modifiers.Any(SyntaxKind.RefKeyword)
+               || parameter.Modifiers.Any(SyntaxKind.OutKeyword)
+               || parameter.Modifiers.Any(SyntaxKind.InKeyword);
     }
 
     private static bool IsSpanOfTypeParameter(

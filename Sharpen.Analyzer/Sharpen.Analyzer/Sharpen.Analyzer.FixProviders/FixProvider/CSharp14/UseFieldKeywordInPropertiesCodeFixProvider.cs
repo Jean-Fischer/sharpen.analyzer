@@ -13,7 +13,7 @@ using Sharpen.Analyzer.Helpers.CSharp14;
 using Sharpen.Analyzer.Rules;
 using Sharpen.Analyzer.Safety.FixProviderSafety;
 
-namespace Sharpen.Analyzer;
+namespace Sharpen.Analyzer.FixProvider.CSharp14;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseFieldKeywordInPropertiesCodeFixProvider))]
 [Shared]

@@ -5,7 +5,7 @@ using Sharpen.Analyzer.Safety;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp12.UseCollectionExpressionAnalyzer,
-    Sharpen.Analyzer.UseCollectionExpressionCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
+    Sharpen.Analyzer.FixProvider.CSharp12.UseCollectionExpressionCodeFixProvider, Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
 

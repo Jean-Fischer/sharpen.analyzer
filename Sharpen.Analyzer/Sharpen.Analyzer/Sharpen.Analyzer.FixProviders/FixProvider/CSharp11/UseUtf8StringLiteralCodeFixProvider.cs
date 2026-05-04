@@ -47,46 +47,25 @@ public sealed class UseUtf8StringLiteralCodeFixProvider : CodeFixProvider
         var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 
         // Only offer fix when the expression is assigned to a ReadOnlySpan<byte> (or compatible) local.
-        if (node is ExpressionSyntax expr)
+        if (!TryGetTargetExpression(node, out var expr)
+            || !IsReadOnlySpanByteLocal(semanticModel, expr, context.CancellationToken)
+            || !TryGetAsciiText(semanticModel, expr, context.CancellationToken, out var text))
         {
-            var localDecl = expr.FirstAncestorOrSelf<LocalDeclarationStatementSyntax>();
-            if (localDecl == null)
-                return;
-
-            if (localDecl.Declaration.Variables.Count != 1)
-                return;
-
-            var variable = localDecl.Declaration.Variables[0];
-            if (variable.Initializer?.Value != expr)
-                return;
-
-            var typeInfo = semanticModel.GetTypeInfo(localDecl.Declaration.Type, context.CancellationToken).Type;
-            if (!IsReadOnlySpanOfByte(typeInfo))
-                return;
-
-            if (!TryGetAsciiText(semanticModel, expr, context.CancellationToken, out var text))
-                return;
-
-            context.RegisterCodeFix(
-                CodeAction.Create(
-                    "Replace with UTF-8 string literal",
-                    ct => ReplaceAsync(context.Document, expr, text, ct),
-                    nameof(UseUtf8StringLiteralCodeFixProvider)),
-                diagnostic);
+            return;
         }
+
+        context.RegisterCodeFix(
+            CodeAction.Create(
+                "Replace with UTF-8 string literal",
+                ct => ReplaceAsync(context.Document, expr, text, ct),
+                nameof(UseUtf8StringLiteralCodeFixProvider)),
+            diagnostic);
     }
 
     private static async Task<Document> ReplaceAsync(Document document, ExpressionSyntax expr, string text,
         CancellationToken ct)
     {
         var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
-
-        // "text"u8
-        var literal = SyntaxFactory.LiteralExpression(
-            SyntaxKind.StringLiteralExpression,
-            SyntaxFactory.Literal(text));
-
-        var u8 = SyntaxFactory.Token(SyntaxKind.Utf8StringLiteralToken);
 
         // Roslyn doesn't expose a dedicated syntax node for the u8 suffix; use ParseExpression.
         var replacement = SyntaxFactory.ParseExpression($"\"{EscapeForRegularString(text)}\"u8")
@@ -115,43 +94,12 @@ public sealed class UseUtf8StringLiteralCodeFixProvider : CodeFixProvider
     {
         text = string.Empty;
 
-        if (expr is ArrayCreationExpressionSyntax arrayCreation)
+        return expr switch
         {
-            if (arrayCreation.Initializer == null)
-                return false;
-
-            var bytes = arrayCreation.Initializer.Expressions
-                .Select(e => semanticModel.GetConstantValue(e, ct))
-                .Select(v => v.HasValue ? v.Value : null)
-                .Select(v => v is byte b ? b : v is int i && i is >= 0 and <= 255 ? (byte?)i : null)
-                .ToArray();
-
-            if (bytes.Any(b => b == null))
-                return false;
-
-            var arr = bytes.Select(b => b!.Value).ToArray();
-            if (!IsAscii(arr))
-                return false;
-
-            text = Encoding.ASCII.GetString(arr);
-            return true;
-        }
-
-        if (expr is InvocationExpressionSyntax invocation)
-        {
-            var constant = semanticModel.GetConstantValue(invocation.ArgumentList.Arguments[0].Expression, ct);
-            if (!constant.HasValue || constant.Value is not string s)
-                return false;
-
-            var bytes = Encoding.UTF8.GetBytes(s);
-            if (!IsAscii(bytes))
-                return false;
-
-            text = s;
-            return true;
-        }
-
-        return false;
+            ArrayCreationExpressionSyntax arrayCreation => TryGetAsciiTextFromArrayCreation(semanticModel, arrayCreation, ct, out text),
+            InvocationExpressionSyntax invocation => TryGetAsciiTextFromInvocation(semanticModel, invocation, ct, out text),
+            _ => false
+        };
     }
 
     private static bool IsAscii(byte[] bytes)
@@ -176,5 +124,77 @@ public sealed class UseUtf8StringLiteralCodeFixProvider : CodeFixProvider
             .Replace("\r", "\\r")
             .Replace("\n", "\\n")
             .Replace("\t", "\\t");
+    }
+
+    private static bool TryGetTargetExpression(SyntaxNode node, out ExpressionSyntax expr)
+    {
+        expr = node as ExpressionSyntax;
+        return expr is not null;
+    }
+
+    private static bool IsReadOnlySpanByteLocal(
+        SemanticModel semanticModel,
+        ExpressionSyntax expr,
+        CancellationToken cancellationToken)
+    {
+        var localDecl = expr.FirstAncestorOrSelf<LocalDeclarationStatementSyntax>();
+        if (localDecl == null
+            || localDecl.Declaration.Variables.Count != 1
+            || localDecl.Declaration.Variables[0].Initializer?.Value != expr)
+        {
+            return false;
+        }
+
+        var typeInfo = semanticModel.GetTypeInfo(localDecl.Declaration.Type, cancellationToken).Type;
+        return IsReadOnlySpanOfByte(typeInfo);
+    }
+
+    private static bool TryGetAsciiTextFromArrayCreation(
+        SemanticModel semanticModel,
+        ArrayCreationExpressionSyntax arrayCreation,
+        CancellationToken cancellationToken,
+        out string text)
+    {
+        text = string.Empty;
+        if (arrayCreation.Initializer == null)
+            return false;
+
+        var bytes = arrayCreation.Initializer.Expressions
+            .Select(e => semanticModel.GetConstantValue(e, cancellationToken))
+            .Select(v => v.HasValue ? v.Value : null)
+            .Select(v => v is byte b ? b : v is int i && i is >= 0 and <= 255 ? (byte?)i : null)
+            .ToArray();
+
+        if (bytes.Any(b => b == null))
+            return false;
+
+        var asciiBytes = bytes.Select(b => b!.Value).ToArray();
+        if (!IsAscii(asciiBytes))
+            return false;
+
+        text = Encoding.ASCII.GetString(asciiBytes);
+        return true;
+    }
+
+    private static bool TryGetAsciiTextFromInvocation(
+        SemanticModel semanticModel,
+        InvocationExpressionSyntax invocation,
+        CancellationToken cancellationToken,
+        out string text)
+    {
+        text = string.Empty;
+        if (invocation.ArgumentList.Arguments.Count == 0)
+            return false;
+
+        var constant = semanticModel.GetConstantValue(invocation.ArgumentList.Arguments[0].Expression, cancellationToken);
+        if (!constant.HasValue || constant.Value is not string s)
+            return false;
+
+        var bytes = Encoding.UTF8.GetBytes(s);
+        if (!IsAscii(bytes))
+            return false;
+
+        text = s;
+        return true;
     }
 }

@@ -3,12 +3,12 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Testing;
 using Sharpen.Analyzer.Analyzers.CSharp13;
-using Sharpen.Analyzer.FixProviders.FixProvider.CSharp13;
+using Sharpen.Analyzer.FixProvider.CSharp13;
 using Sharpen.Analyzer.Rules;
 using Xunit;
 using Verifier = Sharpen.Analyzer.Tests.Infrastructure.CSharp13CodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp13.SuggestOverloadResolutionPriorityAnalyzer,
-    Sharpen.Analyzer.FixProviders.FixProvider.CSharp13.SuggestOverloadResolutionPriorityCodeFixProvider>;
+    Sharpen.Analyzer.FixProvider.CSharp13.SuggestOverloadResolutionPriorityCodeFixProvider>;
 
 public sealed class SuggestOverloadResolutionPriorityCodeFixProviderTests
 {

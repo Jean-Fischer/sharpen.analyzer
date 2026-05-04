@@ -47,26 +47,14 @@ public sealed class UseInterpolatedStringCodeFixProvider
         if (!await IsCSharp10OrAboveAsync(context.Document, context.CancellationToken).ConfigureAwait(false))
             return;
 
-        switch (targetNode)
+        if (targetNode is InvocationExpressionSyntax invocation)
         {
-            case InvocationExpressionSyntax invocation:
-                RegisterCodeFix(
-                    context,
-                    diagnostic,
-                    "Use interpolated string",
-                    "UseInterpolatedString_StringFormat",
-                    c => FixStringFormatAsync(context.Document, invocation, c));
-                break;
-
-            case BinaryExpressionSyntax add when add.IsKind(SyntaxKind.AddExpression):
-                RegisterCodeFix(
-                    context,
-                    diagnostic,
-                    "Use interpolated string",
-                    "UseInterpolatedString_Concat",
-                    c => FixConcatenationAsync(context.Document, add, c));
-                break;
+            RegisterStringFormatFix(context, diagnostic, invocation);
+            return;
         }
+
+        if (targetNode is BinaryExpressionSyntax add && add.IsKind(SyntaxKind.AddExpression))
+            RegisterConcatenationFix(context, diagnostic, add);
     }
 
     private static async Task<bool> IsCSharp10OrAboveAsync(Document document, CancellationToken ct)
@@ -122,61 +110,31 @@ public sealed class UseInterpolatedStringCodeFixProvider
         for (var i = 0; i < format.Length; i++)
         {
             var ch = format[i];
-            if (ch == '{')
+            switch (ch)
             {
-                if (i + 1 < format.Length && format[i + 1] == '{')
-                {
-                    sb.Append("{");
-                    i++;
+                case '{':
+                    if (TryAppendEscapedBrace(format, "{", ref i, sb))
+                        continue;
+
+                    if (!TryAppendInterpolation(format, args, ref i, sb))
+                        return null;
+
                     continue;
-                }
 
-                var end = format.IndexOf('}', i + 1);
-                if (end < 0)
+                case '}':
+                    if (TryAppendEscapedBrace(format, "}", ref i, sb))
+                        continue;
+
                     return null;
 
-                var inside = format.Substring(i + 1, end - i - 1);
-                // inside: "0" or "0:000"
-                var parts = inside.Split(new[] { ':' }, 2);
-                if (!int.TryParse(parts[0].Trim(), out var index))
-                    return null;
-
-                if (index < 0 || index >= args.Count)
-                    return null;
-
-                sb.Append("{");
-                sb.Append(args[index]);
-                if (parts.Length == 2)
-                {
-                    sb.Append(":");
-                    sb.Append(parts[1]);
-                }
-
-                sb.Append("}");
-
-                i = end;
-                continue;
-            }
-
-            if (ch == '}')
-            {
-                if (i + 1 < format.Length && format[i + 1] == '}')
-                {
-                    sb.Append("}");
-                    i++;
+                case '"':
+                    sb.Append("\\\"");
                     continue;
-                }
 
-                return null;
+                default:
+                    sb.Append(ch);
+                    continue;
             }
-
-            if (ch == '"')
-            {
-                sb.Append("\\\"");
-                continue;
-            }
-
-            sb.Append(ch);
         }
 
         sb.Append("\"");
@@ -189,31 +147,11 @@ public sealed class UseInterpolatedStringCodeFixProvider
         // Convert "Hello, " + name + "!" => $"Hello, {name}!"
         // Only handles + chains.
 
-        var parts = FlattenAdd(add).ToList();
-        if (parts.Count < 2)
+        var interpolatedText = BuildInterpolatedStringFromConcatenation(add);
+        if (interpolatedText == null)
             return document;
 
-        var sb = new StringBuilder();
-        sb.Append("$\"");
-
-        foreach (var part in parts)
-        {
-            if (part is LiteralExpressionSyntax lit && lit.IsKind(SyntaxKind.StringLiteralExpression))
-            {
-                var text = lit.Token.ValueText;
-                sb.Append(text.Replace("\"", "\\\""));
-            }
-            else
-            {
-                sb.Append("{");
-                sb.Append(part);
-                sb.Append("}");
-            }
-        }
-
-        sb.Append("\"");
-
-        var newExpr = SyntaxFactory.ParseExpression(sb.ToString())
+        var newExpr = SyntaxFactory.ParseExpression(interpolatedText)
             .WithTriviaFrom(add)
             .WithAdditionalAnnotations(Formatter.Annotation);
 
@@ -234,5 +172,95 @@ public sealed class UseInterpolatedStringCodeFixProvider
         }
 
         yield return expr;
+    }
+
+    private static void RegisterStringFormatFix(
+        CodeFixContext context,
+        Diagnostic diagnostic,
+        InvocationExpressionSyntax invocation)
+    {
+        RegisterCodeFix(
+            context,
+            diagnostic,
+            "Use interpolated string",
+            "UseInterpolatedString_StringFormat",
+            c => FixStringFormatAsync(context.Document, invocation, c));
+    }
+
+    private static void RegisterConcatenationFix(
+        CodeFixContext context,
+        Diagnostic diagnostic,
+        BinaryExpressionSyntax add)
+    {
+        RegisterCodeFix(
+            context,
+            diagnostic,
+            "Use interpolated string",
+            "UseInterpolatedString_Concat",
+            c => FixConcatenationAsync(context.Document, add, c));
+    }
+
+    private static bool TryAppendEscapedBrace(string format, string brace, ref int index, StringBuilder sb)
+    {
+        if (index + 1 >= format.Length || format[index + 1].ToString() != brace)
+            return false;
+
+        sb.Append(brace);
+        index++;
+        return true;
+    }
+
+    private static bool TryAppendInterpolation(
+        string format,
+        IReadOnlyList<ExpressionSyntax> args,
+        ref int index,
+        StringBuilder sb)
+    {
+        var end = format.IndexOf('}', index + 1);
+        if (end < 0)
+            return false;
+
+        var inside = format.Substring(index + 1, end - index - 1);
+        var parts = inside.Split(new[] { ':' }, 2);
+        if (!int.TryParse(parts[0].Trim(), out var argIndex) || argIndex < 0 || argIndex >= args.Count)
+            return false;
+
+        sb.Append("{");
+        sb.Append(args[argIndex]);
+        if (parts.Length == 2)
+        {
+            sb.Append(":");
+            sb.Append(parts[1]);
+        }
+
+        sb.Append("}");
+        index = end;
+        return true;
+    }
+
+    private static string? BuildInterpolatedStringFromConcatenation(BinaryExpressionSyntax add)
+    {
+        var parts = FlattenAdd(add).ToList();
+        if (parts.Count < 2)
+            return null;
+
+        var sb = new StringBuilder();
+        sb.Append("$\"");
+
+        foreach (var part in parts)
+        {
+            if (part is LiteralExpressionSyntax lit && lit.IsKind(SyntaxKind.StringLiteralExpression))
+            {
+                sb.Append(lit.Token.ValueText.Replace("\"", "\\\""));
+                continue;
+            }
+
+            sb.Append("{");
+            sb.Append(part);
+            sb.Append("}");
+        }
+
+        sb.Append("\"");
+        return sb.ToString();
     }
 }

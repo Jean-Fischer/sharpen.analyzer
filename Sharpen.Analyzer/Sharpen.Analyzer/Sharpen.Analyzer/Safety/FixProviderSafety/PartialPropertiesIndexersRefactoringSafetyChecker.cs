@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -13,68 +14,121 @@ public sealed class PartialPropertiesIndexersRefactoringSafetyChecker : IFixProv
         Diagnostic diagnostic,
         CancellationToken cancellationToken = default)
     {
-        if (diagnostic is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "diagnostic-null");
-
-        if (syntaxTree?.Options.Language != LanguageNames.CSharp)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "not-csharp");
-
-        var root = syntaxTree.GetRoot(cancellationToken);
-        var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-
-        // Analyzer reports on identifier/this keyword; normalize to the property/indexer declaration.
-        var propertyOrIndexer = node.FirstAncestorOrSelf<BasePropertyDeclarationSyntax>();
-        if (propertyOrIndexer is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "property-or-indexer-not-found");
-
-        // Must be in a partial type.
-        var containingType = propertyOrIndexer.FirstAncestorOrSelf<TypeDeclarationSyntax>();
-        if (containingType?.Modifiers.Any(SyntaxKind.PartialKeyword) != true)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "not-in-partial-type");
-
-        // Must not already be partial.
-        if (propertyOrIndexer.Modifiers.Any(SyntaxKind.PartialKeyword))
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "already-partial");
-
-        // Must not be abstract.
-        if (propertyOrIndexer.Modifiers.Any(SyntaxKind.AbstractKeyword))
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "abstract");
-
-        // Must not be expression-bodied.
-        if (propertyOrIndexer is PropertyDeclarationSyntax { ExpressionBody: not null })
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "expression-bodied");
-
-        if (propertyOrIndexer is IndexerDeclarationSyntax { ExpressionBody: not null })
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "expression-bodied");
-
-        if (propertyOrIndexer.AccessorList is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "no-accessor-list");
-
-        // Conservative: only auto accessors (no bodies, no expression bodies).
-        foreach (var accessor in propertyOrIndexer.AccessorList.Accessors)
+        if (!TryGetPropertyOrIndexer(
+                syntaxTree,
+                diagnostic,
+                cancellationToken,
+                out var propertyOrIndexer,
+                out var failureCode))
         {
-            if (accessor.Body is not null || accessor.ExpressionBody is not null)
-                return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "non-auto-accessor");
+            return Unsafe(failureCode);
         }
 
-        // Ensure symbol exists (avoid broken code).
-        var symbol = semanticModel.GetDeclaredSymbol(propertyOrIndexer, cancellationToken);
-        if (symbol is null)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "symbol-null");
-
-        // Validate that we can produce a valid partial member:
-        // - Must have at least one accessor
-        // - Must not be an explicit interface implementation (partial members can't be explicit)
-        // - Must not be in an interface (partial properties/indexers are for classes/structs/records)
-        if (!propertyOrIndexer.AccessorList.Accessors.Any())
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "no-accessors");
-
-        if (propertyOrIndexer is PropertyDeclarationSyntax { ExplicitInterfaceSpecifier: not null } or IndexerDeclarationSyntax { ExplicitInterfaceSpecifier: not null })
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "explicit-interface-impl");
+        var containingType = propertyOrIndexer.FirstAncestorOrSelf<TypeDeclarationSyntax>();
+        if (containingType?.Modifiers.Any(SyntaxKind.PartialKeyword) != true)
+            return Unsafe("not-in-partial-type");
 
         if (containingType is InterfaceDeclarationSyntax)
-            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "interface-member");
+            return Unsafe("interface-member");
+
+        if (!IsEligibleForPartialMemberRefactoring(propertyOrIndexer))
+            return Unsafe(GetIneligibleMemberReason(propertyOrIndexer));
+
+        if (!HasAutoAccessors(propertyOrIndexer))
+            return Unsafe("non-auto-accessor");
+
+        if (semanticModel.GetDeclaredSymbol(propertyOrIndexer, cancellationToken) is null)
+            return Unsafe("symbol-null");
+
+        if (!propertyOrIndexer.AccessorList!.Accessors.Any())
+            return Unsafe("no-accessors");
+
+        if (HasExplicitInterfaceSpecifier(propertyOrIndexer))
+            return Unsafe("explicit-interface-impl");
 
         return FixProviderSafetyResult.Safe();
+    }
+
+    private static bool TryGetPropertyOrIndexer(
+        SyntaxTree syntaxTree,
+        Diagnostic diagnostic,
+        CancellationToken cancellationToken,
+        out BasePropertyDeclarationSyntax propertyOrIndexer,
+        out string failureCode)
+    {
+        propertyOrIndexer = null!;
+
+        if (diagnostic is null)
+        {
+            failureCode = "diagnostic-null";
+            return false;
+        }
+
+        if (syntaxTree?.Options.Language != LanguageNames.CSharp)
+        {
+            failureCode = "not-csharp";
+            return false;
+        }
+
+        propertyOrIndexer = syntaxTree.GetRoot(cancellationToken)
+            .FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true)
+            .FirstAncestorOrSelf<BasePropertyDeclarationSyntax>()!;
+        if (propertyOrIndexer is null)
+        {
+            failureCode = "property-or-indexer-not-found";
+            return false;
+        }
+
+        failureCode = string.Empty;
+        return true;
+    }
+
+    private static bool IsEligibleForPartialMemberRefactoring(BasePropertyDeclarationSyntax propertyOrIndexer)
+    {
+        return !propertyOrIndexer.Modifiers.Any(SyntaxKind.PartialKeyword)
+               && !propertyOrIndexer.Modifiers.Any(SyntaxKind.AbstractKeyword)
+               && propertyOrIndexer.AccessorList is not null
+               && !IsExpressionBodied(propertyOrIndexer);
+    }
+
+    private static string GetIneligibleMemberReason(BasePropertyDeclarationSyntax propertyOrIndexer)
+    {
+        if (propertyOrIndexer.Modifiers.Any(SyntaxKind.PartialKeyword))
+            return "already-partial";
+
+        if (propertyOrIndexer.Modifiers.Any(SyntaxKind.AbstractKeyword))
+            return "abstract";
+
+        if (IsExpressionBodied(propertyOrIndexer))
+            return "expression-bodied";
+
+        return "no-accessor-list";
+    }
+
+    private static bool IsExpressionBodied(BasePropertyDeclarationSyntax propertyOrIndexer)
+    {
+        return propertyOrIndexer switch
+        {
+            PropertyDeclarationSyntax { ExpressionBody: not null } => true,
+            IndexerDeclarationSyntax { ExpressionBody: not null } => true,
+            _ => false
+        };
+    }
+
+    private static bool HasAutoAccessors(BasePropertyDeclarationSyntax propertyOrIndexer)
+    {
+        return propertyOrIndexer.AccessorList!.Accessors.All(accessor =>
+            accessor.Body is null && accessor.ExpressionBody is null);
+    }
+
+    private static bool HasExplicitInterfaceSpecifier(BasePropertyDeclarationSyntax propertyOrIndexer)
+    {
+        return propertyOrIndexer is PropertyDeclarationSyntax { ExplicitInterfaceSpecifier: not null }
+            or IndexerDeclarationSyntax { ExplicitInterfaceSpecifier: not null };
+    }
+
+    private static FixProviderSafetyResult Unsafe(string code)
+    {
+        return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, code);
     }
 }

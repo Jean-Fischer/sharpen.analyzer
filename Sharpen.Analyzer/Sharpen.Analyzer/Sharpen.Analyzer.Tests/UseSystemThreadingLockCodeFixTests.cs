@@ -3,7 +3,7 @@ using Sharpen.Analyzer.Rules;
 using Xunit;
 using Verifier = Sharpen.Analyzer.Tests.Infrastructure.CSharp13CodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp13.UseSystemThreadingLockAnalyzer,
-    Sharpen.Analyzer.UseSystemThreadingLockCodeFixProvider>;
+    Sharpen.Analyzer.FixProvider.CSharp13.UseSystemThreadingLockCodeFixProvider>;
 
 namespace Sharpen.Analyzer.Tests;
 
