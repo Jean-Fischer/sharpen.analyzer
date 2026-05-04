@@ -30,27 +30,11 @@ public sealed class ReplaceSwitchStatementWithSwitchExpressionAnalyzer : Diagnos
         // Legacy behavior: do not support multiple labels per section.
         if (switchStatement.Sections.Any(section => section.Labels.Count != 1)) return;
 
-        var isSurelyExhaustive = switchStatement.Sections.Any(section =>
-            section.Labels.Any(label => label.IsKind(SyntaxKind.DefaultSwitchLabel)));
+        var isSurelyExhaustive = IsSurelyExhaustive(switchStatement.Sections);
+        var diagnostic = GetDiagnostic(context.SemanticModel, switchStatement.Sections, isSurelyExhaustive);
+        if (diagnostic is null) return;
 
-        if (AllSwitchSectionsAreAssignmentsToTheSameIdentifier(context.SemanticModel, switchStatement.Sections))
-        {
-            context.ReportDiagnostic(Diagnostic.Create(
-                isSurelyExhaustive
-                    ? Rules.GeneralRules.ReplaceSwitchStatementContainingOnlyAssignmentsWithSwitchExpressionRule
-                    : Rules.GeneralRules.ConsiderReplacingSwitchStatementContainingOnlyAssignmentsWithSwitchExpressionRule,
-                switchStatement.SwitchKeyword.GetLocation()));
-            return;
-        }
-
-        if (AllSwitchSectionsAreReturnStatements(switchStatement.Sections))
-        {
-            context.ReportDiagnostic(Diagnostic.Create(
-                isSurelyExhaustive
-                    ? Rules.GeneralRules.ReplaceSwitchStatementContainingOnlyReturnsWithSwitchExpressionRule
-                    : Rules.GeneralRules.ConsiderReplacingSwitchStatementContainingOnlyReturnsWithSwitchExpressionRule,
-                switchStatement.SwitchKeyword.GetLocation()));
-        }
+        context.ReportDiagnostic(Diagnostic.Create(diagnostic, switchStatement.SwitchKeyword.GetLocation()));
     }
 
     private static bool AllSwitchSectionsAreAssignmentsToTheSameIdentifier(
@@ -61,34 +45,19 @@ public sealed class ReplaceSwitchStatementWithSwitchExpressionAnalyzer : Diagnos
 
         foreach (var switchSection in switchSections)
         {
-            switch (switchSection.Statements.Count)
+            if (IsThrowOnlySection(switchSection))
+                continue;
+
+            if (!TryGetAssignedIdentifierSymbol(semanticModel, switchSection, out var currentIdentifierSymbol))
+                return false;
+
+            if (previousIdentifierSymbol != null
+                && !SymbolEqualityComparer.Default.Equals(previousIdentifierSymbol, currentIdentifierSymbol))
             {
-                // We have only one statement which then must be exception throwing.
-                case 1:
-                    if (!switchSection.Statements[0].IsKind(SyntaxKind.ThrowStatement)) return false;
-                    break;
-
-                // We have two statements, which then must be an assignment immediately followed by break.
-                case 2:
-                    if (!switchSection.Statements[1].IsKind(SyntaxKind.BreakStatement)) return false;
-                    if (switchSection.Statements[0] is not ExpressionStatementSyntax expression) return false;
-                    if (expression.Expression is not AssignmentExpressionSyntax assignment) return false;
-
-                    // Legacy behavior: do not support compound assignments (+=, *=, -=, /=, ...).
-                    if (!assignment.IsKind(SyntaxKind.SimpleAssignmentExpression)) return false;
-
-                    var currentIdentifierSymbol = semanticModel.GetSymbolInfo(assignment.Left).Symbol;
-                    if (currentIdentifierSymbol == null) return false;
-
-                    if (previousIdentifierSymbol != null && !SymbolEqualityComparer.Default.Equals(previousIdentifierSymbol, currentIdentifierSymbol))
-                        return false;
-
-                    previousIdentifierSymbol = currentIdentifierSymbol;
-                    break;
-
-                default:
-                    return false;
+                return false;
             }
+
+            previousIdentifierSymbol = currentIdentifierSymbol;
         }
 
         return true;
@@ -118,5 +87,54 @@ public sealed class ReplaceSwitchStatementWithSwitchExpressionAnalyzer : Diagnos
         }
 
         return true;
+    }
+
+    private static bool IsSurelyExhaustive(SyntaxList<SwitchSectionSyntax> switchSections)
+    {
+        return switchSections.Any(section => section.Labels.Any(label => label.IsKind(SyntaxKind.DefaultSwitchLabel)));
+    }
+
+    private static DiagnosticDescriptor? GetDiagnostic(
+        SemanticModel semanticModel,
+        SyntaxList<SwitchSectionSyntax> switchSections,
+        bool isSurelyExhaustive)
+    {
+        if (AllSwitchSectionsAreAssignmentsToTheSameIdentifier(semanticModel, switchSections))
+        {
+            return isSurelyExhaustive
+                ? Rules.GeneralRules.ReplaceSwitchStatementContainingOnlyAssignmentsWithSwitchExpressionRule
+                : Rules.GeneralRules.ConsiderReplacingSwitchStatementContainingOnlyAssignmentsWithSwitchExpressionRule;
+        }
+
+        return AllSwitchSectionsAreReturnStatements(switchSections)
+            ? isSurelyExhaustive
+                ? Rules.GeneralRules.ReplaceSwitchStatementContainingOnlyReturnsWithSwitchExpressionRule
+                : Rules.GeneralRules.ConsiderReplacingSwitchStatementContainingOnlyReturnsWithSwitchExpressionRule
+            : null;
+    }
+
+    private static bool IsThrowOnlySection(SwitchSectionSyntax switchSection)
+    {
+        return switchSection.Statements.Count == 1
+               && switchSection.Statements[0].IsKind(SyntaxKind.ThrowStatement);
+    }
+
+    private static bool TryGetAssignedIdentifierSymbol(
+        SemanticModel semanticModel,
+        SwitchSectionSyntax switchSection,
+        out ISymbol? identifierSymbol)
+    {
+        identifierSymbol = null;
+
+        if (switchSection.Statements.Count != 2
+            || !switchSection.Statements[1].IsKind(SyntaxKind.BreakStatement)
+            || switchSection.Statements[0] is not ExpressionStatementSyntax { Expression: AssignmentExpressionSyntax assignment }
+            || !assignment.IsKind(SyntaxKind.SimpleAssignmentExpression))
+        {
+            return false;
+        }
+
+        identifierSymbol = semanticModel.GetSymbolInfo(assignment.Left).Symbol;
+        return identifierSymbol is not null;
     }
 }

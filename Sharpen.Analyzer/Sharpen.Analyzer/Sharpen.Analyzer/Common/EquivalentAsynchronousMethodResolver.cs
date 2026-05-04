@@ -10,35 +10,65 @@ public static class EquivalentAsynchronousMethodResolver
         InvocationExpressionSyntax? invocation,
         SemanticModel? semanticModel)
     {
-        if (invocation?.Expression == null) return null;
+        if (!TryGetInvokedMethod(invocation, semanticModel, out var method))
+            return null;
 
-        if (semanticModel?.GetSymbolInfo(invocation).Symbol is not IMethodSymbol method) return null;
+        if (ShouldIgnoreInvocation(invocation!, semanticModel!, method))
+            return null;
 
-        // Mirror the finder behavior: ignore known methods.
-        if (EquivalentAsynchronousMethodMetadata.IsIgnoredMethod(method)) return null;
+        return ResolveOnContainingType(invocation!, semanticModel!, method)
+               ?? ResolveOnCalledOnType(invocation!, semanticModel!, method);
+    }
 
-        // Mirror the finder behavior: ignore lambdas/anonymous methods.
-        if (invocation.IsWithinLambdaOrAnonymousMethod()) return null;
+    private static bool TryGetInvokedMethod(
+        InvocationExpressionSyntax? invocation,
+        SemanticModel? semanticModel,
+        out IMethodSymbol method)
+    {
+        method = null!;
+        if (invocation?.Expression == null || semanticModel is null)
+            return false;
 
-        // Mirror the finder behavior: ignore invocations within the containing type.
-        if (MethodIsInvokedWithinItsContainingType(invocation, semanticModel, method)) return null;
+        method = semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
+        return method is not null;
+    }
 
-        // Candidate search strategy: check containing type first, then receiver type (if different).
-        var asyncEquivalent = EquivalentAsynchronousMethodLookup.ResolveAsynchronousEquivalent(
+    private static bool ShouldIgnoreInvocation(
+        InvocationExpressionSyntax invocation,
+        SemanticModel semanticModel,
+        IMethodSymbol method)
+    {
+        return EquivalentAsynchronousMethodMetadata.IsIgnoredMethod(method)
+               || invocation.IsWithinLambdaOrAnonymousMethod()
+               || MethodIsInvokedWithinItsContainingType(invocation, semanticModel, method);
+    }
+
+    private static IMethodSymbol? ResolveOnContainingType(
+        InvocationExpressionSyntax invocation,
+        SemanticModel semanticModel,
+        IMethodSymbol method)
+    {
+        return EquivalentAsynchronousMethodLookup.ResolveAsynchronousEquivalent(
             semanticModel,
             method.ContainingType,
             method,
             invocation);
-        if (asyncEquivalent != null) return asyncEquivalent;
+    }
 
+    private static IMethodSymbol? ResolveOnCalledOnType(
+        InvocationExpressionSyntax invocation,
+        SemanticModel semanticModel,
+        IMethodSymbol method)
+    {
         var calledOnType = GetCalledOnType(invocation, semanticModel);
-        return SymbolEqualityComparer.Default.Equals(calledOnType, method.ContainingType)
-            ? null
-            : EquivalentAsynchronousMethodLookup.ResolveAsynchronousEquivalent(
-                semanticModel,
-                calledOnType,
-                method,
-                invocation);
+        if (SymbolEqualityComparer.Default.Equals(calledOnType, method.ContainingType))
+            return null;
+
+        return EquivalentAsynchronousMethodLookup.ResolveAsynchronousEquivalent(
+            semanticModel,
+            calledOnType,
+            method,
+            invocation);
     }
 
     private static bool MethodIsInvokedWithinItsContainingType(

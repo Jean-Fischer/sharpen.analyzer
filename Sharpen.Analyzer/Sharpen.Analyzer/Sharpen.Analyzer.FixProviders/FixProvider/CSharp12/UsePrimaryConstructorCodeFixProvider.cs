@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Composition;
 using System.Linq;
@@ -69,21 +70,41 @@ public sealed class UsePrimaryConstructorCodeFixProvider : CodeFixProvider
         if (semanticModel is null)
             return document;
 
-        // Re-acquire nodes from current root.
-        var currentCtor = root.FindNode(ctor.Span, getInnermostNodeForTie: true)
-            .FirstAncestorOrSelf<ConstructorDeclarationSyntax>() ?? ctor;
-        var currentType = root.FindNode(typeDecl.Span, getInnermostNodeForTie: true)
-            .FirstAncestorOrSelf<TypeDeclarationSyntax>() ?? typeDecl;
-
-        if (currentCtor.Body is null)
+        var currentCtor = GetCurrentConstructor(root, ctor) ?? ctor;
+        var currentType = GetCurrentType(root, typeDecl) ?? typeDecl;
+        if (currentCtor.Body is null || !currentCtor.ParameterList.Parameters.Any())
             return document;
 
-        var parameters = currentCtor.ParameterList.Parameters;
-        if (!parameters.Any())
+        if (!TryCreateMemberToParameterMap(semanticModel, currentCtor, cancellationToken, out var memberToParameter))
             return document;
 
-        // Build mapping: member symbol -> parameter syntax.
-        var assignments = currentCtor.Body.Statements
+        var updatedType = UpdateTypeDeclaration(currentType, currentCtor, semanticModel, memberToParameter, cancellationToken);
+
+        var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
+        editor.ReplaceNode(currentType, updatedType);
+        return editor.GetChangedDocument();
+    }
+
+    private static ConstructorDeclarationSyntax? GetCurrentConstructor(SyntaxNode root, ConstructorDeclarationSyntax ctor)
+    {
+        return root.FindNode(ctor.Span, getInnermostNodeForTie: true).FirstAncestorOrSelf<ConstructorDeclarationSyntax>();
+    }
+
+    private static TypeDeclarationSyntax? GetCurrentType(SyntaxNode root, TypeDeclarationSyntax typeDecl)
+    {
+        return root.FindNode(typeDecl.Span, getInnermostNodeForTie: true).FirstAncestorOrSelf<TypeDeclarationSyntax>();
+    }
+
+    private static bool TryCreateMemberToParameterMap(
+        SemanticModel semanticModel,
+        ConstructorDeclarationSyntax ctor,
+        CancellationToken cancellationToken,
+        out Dictionary<ISymbol, string> memberToParameter)
+    {
+        memberToParameter = new Dictionary<ISymbol, string>(SymbolEqualityComparer.Default);
+
+        var parameters = ctor.ParameterList.Parameters;
+        var assignments = ctor.Body!.Statements
             .OfType<ExpressionStatementSyntax>()
             .Select(s => s.Expression)
             .OfType<AssignmentExpressionSyntax>()
@@ -91,91 +112,116 @@ public sealed class UsePrimaryConstructorCodeFixProvider : CodeFixProvider
             .ToArray();
 
         if (assignments.Length != parameters.Count)
-            return document;
+            return false;
 
-        var memberToParameter = assignments
-            .Select(a => new
-            {
-                Member = semanticModel.GetSymbolInfo(a.Left, cancellationToken).Symbol,
-                ParameterName = (a.Right as IdentifierNameSyntax)?.Identifier.ValueText
-            })
-            .Where(x => x.Member is IFieldSymbol or IPropertySymbol && x.ParameterName is not null)
-            .ToDictionary(x => x.Member!, x => x.ParameterName!, SymbolEqualityComparer.Default);
+        foreach (var assignment in assignments)
+        {
+            var member = semanticModel.GetSymbolInfo(assignment.Left, cancellationToken).Symbol;
+            var parameterName = (assignment.Right as IdentifierNameSyntax)?.Identifier.ValueText;
+            if (member is not IFieldSymbol and not IPropertySymbol || parameterName is null)
+                return false;
 
-        if (memberToParameter.Count != parameters.Count)
-            return document;
+            memberToParameter[member] = parameterName;
+        }
 
-        // Update members: convert assigned properties/fields to get-only auto-properties initialized from parameter.
+        return memberToParameter.Count == parameters.Count;
+    }
+
+    private static TypeDeclarationSyntax UpdateTypeDeclaration(
+        TypeDeclarationSyntax currentType,
+        ConstructorDeclarationSyntax currentCtor,
+        SemanticModel semanticModel,
+        IReadOnlyDictionary<ISymbol, string> memberToParameter,
+        CancellationToken cancellationToken)
+    {
+        var updatedMembers = UpdateMembers(currentType, semanticModel, memberToParameter, cancellationToken);
+        updatedMembers = SyntaxFactory.List(updatedMembers.Where(m => !m.IsEquivalentTo(currentCtor)));
+
+        return AddPrimaryConstructorParameterList(currentType, currentCtor.ParameterList.Parameters)
+            .WithMembers(updatedMembers);
+    }
+
+    private static SyntaxList<MemberDeclarationSyntax> UpdateMembers(
+        TypeDeclarationSyntax currentType,
+        SemanticModel semanticModel,
+        IReadOnlyDictionary<ISymbol, string> memberToParameter,
+        CancellationToken cancellationToken)
+    {
         var updatedMembers = currentType.Members;
 
         foreach (var kvp in memberToParameter)
         {
-            var memberSymbol = kvp.Key;
-            var parameterName = kvp.Value;
-
-            var memberDecl = currentType.Members
-                .FirstOrDefault(m =>
-                    SymbolEqualityComparer.Default.Equals(semanticModel.GetDeclaredSymbol(m, cancellationToken),
-                        memberSymbol));
-
-            if (memberDecl is PropertyDeclarationSyntax property)
-            {
-                // Only handle auto-properties.
-                if (property.AccessorList is null)
-                    continue;
-
-                var accessors = property.AccessorList.Accessors;
-                var getAccessor = accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.GetAccessorDeclaration));
-                if (getAccessor is null)
-                    continue;
-
-                // Remove set/init accessors.
-                var newAccessorList = property.AccessorList.WithAccessors(
-                    SyntaxFactory.List(new[]
-                    {
-                        getAccessor.WithBody(null).WithExpressionBody(null)
-                            .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken))
-                    }));
-
-                var newProperty = property
-                    .WithAccessorList(newAccessorList)
-                    .WithInitializer(SyntaxFactory.EqualsValueClause(SyntaxFactory.IdentifierName(parameterName)))
-                    .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
-
-                updatedMembers = updatedMembers.Replace(property, newProperty);
-            }
-            else if (memberDecl is FieldDeclarationSyntax field)
-            {
-                // Only handle single-variable fields.
-                if (field.Declaration.Variables.Count != 1)
-                    continue;
-
-                var variable = field.Declaration.Variables[0];
-                var newVariable =
-                    variable.WithInitializer(
-                        SyntaxFactory.EqualsValueClause(SyntaxFactory.IdentifierName(parameterName)));
-                var newField =
-                    field.WithDeclaration(
-                        field.Declaration.WithVariables(SyntaxFactory.SingletonSeparatedList(newVariable)));
-                updatedMembers = updatedMembers.Replace(field, newField);
-            }
+            var memberDecl = FindMemberDeclaration(currentType, semanticModel, kvp.Key, cancellationToken);
+            var updatedMember = RewriteAssignedMember(memberDecl, kvp.Value);
+            if (memberDecl != null && updatedMember != null)
+                updatedMembers = updatedMembers.Replace(memberDecl, updatedMember);
         }
 
-        // Remove the constructor.
-        updatedMembers = SyntaxFactory.List(updatedMembers.Where(m => !m.IsEquivalentTo(currentCtor)));
+        return updatedMembers;
+    }
 
-        // Add primary constructor parameter list.
-        var updatedType = currentType switch
+    private static MemberDeclarationSyntax? FindMemberDeclaration(
+        TypeDeclarationSyntax currentType,
+        SemanticModel semanticModel,
+        ISymbol memberSymbol,
+        CancellationToken cancellationToken)
+    {
+        return currentType.Members.FirstOrDefault(member =>
+            SymbolEqualityComparer.Default.Equals(semanticModel.GetDeclaredSymbol(member, cancellationToken), memberSymbol));
+    }
+
+    private static MemberDeclarationSyntax? RewriteAssignedMember(MemberDeclarationSyntax? memberDecl, string parameterName)
+    {
+        return memberDecl switch
+        {
+            PropertyDeclarationSyntax property => RewriteAssignedProperty(property, parameterName),
+            FieldDeclarationSyntax field => RewriteAssignedField(field, parameterName),
+            _ => memberDecl
+        };
+    }
+
+    private static PropertyDeclarationSyntax? RewriteAssignedProperty(PropertyDeclarationSyntax property, string parameterName)
+    {
+        if (property.AccessorList is null)
+            return null;
+
+        var getAccessor = property.AccessorList.Accessors.FirstOrDefault(a => a.IsKind(SyntaxKind.GetAccessorDeclaration));
+        if (getAccessor is null)
+            return null;
+
+        var newAccessorList = property.AccessorList.WithAccessors(
+            SyntaxFactory.List(new[]
+            {
+                getAccessor.WithBody(null).WithExpressionBody(null)
+                    .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken))
+            }));
+
+        return property
+            .WithAccessorList(newAccessorList)
+            .WithInitializer(SyntaxFactory.EqualsValueClause(SyntaxFactory.IdentifierName(parameterName)))
+            .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+    }
+
+    private static FieldDeclarationSyntax? RewriteAssignedField(FieldDeclarationSyntax field, string parameterName)
+    {
+        if (field.Declaration.Variables.Count != 1)
+            return null;
+
+        var variable = field.Declaration.Variables[0].WithInitializer(
+            SyntaxFactory.EqualsValueClause(SyntaxFactory.IdentifierName(parameterName)));
+        return field.WithDeclaration(
+            field.Declaration.WithVariables(SyntaxFactory.SingletonSeparatedList(variable)));
+    }
+
+    private static TypeDeclarationSyntax AddPrimaryConstructorParameterList(
+        TypeDeclarationSyntax typeDeclaration,
+        SeparatedSyntaxList<ParameterSyntax> parameters)
+    {
+        return typeDeclaration switch
         {
             ClassDeclarationSyntax c => c.WithParameterList(SyntaxFactory.ParameterList(parameters)),
             StructDeclarationSyntax s => s.WithParameterList(SyntaxFactory.ParameterList(parameters)),
-            _ => currentType
+            _ => typeDeclaration
         };
-
-        updatedType = updatedType.WithMembers(updatedMembers);
-
-        var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-        editor.ReplaceNode(currentType, updatedType);
-        return editor.GetChangedDocument();
     }
 }

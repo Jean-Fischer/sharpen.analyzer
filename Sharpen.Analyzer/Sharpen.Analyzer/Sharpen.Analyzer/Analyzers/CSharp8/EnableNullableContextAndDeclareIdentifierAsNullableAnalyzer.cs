@@ -86,69 +86,16 @@ public sealed class EnableNullableContextAndDeclareIdentifierAsNullableAnalyzer 
 
     private static ISymbol? GetNullableIdentifierSymbol(SyntaxNodeAnalysisContext context)
     {
-        var node = context.Node;
-        var semanticModel = context.SemanticModel;
-
-        switch (node)
+        return context.Node switch
         {
-            case AssignmentExpressionSyntax assignment:
-                return IsSurelyNullable(assignment.Right) && IsIdentifierOrPropertyAccess(assignment.Left)
-                    ? semanticModel.GetSymbolInfo(assignment.Left, context.CancellationToken).Symbol
-                    : null;
-
-            case BinaryExpressionSyntax binaryExpression:
-                switch (binaryExpression.Kind())
-                {
-                    case SyntaxKind.EqualsExpression:
-                    case SyntaxKind.NotEqualsExpression:
-                        if (IsSurelyNullable(binaryExpression.Right) &&
-                            IsIdentifierOrPropertyAccess(binaryExpression.Left))
-                        {
-                            return semanticModel.GetSymbolInfo(binaryExpression.Left, context.CancellationToken).Symbol;
-                        }
-
-                        if (IsSurelyNullable(binaryExpression.Left) &&
-                            IsIdentifierOrPropertyAccess(binaryExpression.Right))
-                        {
-                            return semanticModel.GetSymbolInfo(binaryExpression.Right, context.CancellationToken)
-                                .Symbol;
-                        }
-
-                        return null;
-
-                    case SyntaxKind.CoalesceExpression:
-                        return IsIdentifierOrPropertyAccess(binaryExpression.Left)
-                            ? semanticModel.GetSymbolInfo(binaryExpression.Left, context.CancellationToken).Symbol
-                            : null;
-
-                    default:
-                        return null;
-                }
-
-            case VariableDeclaratorSyntax variableDeclarator:
-                return IsSurelyNullable(variableDeclarator.Initializer?.Value) &&
-                       variableDeclarator.Identifier.IsKind(SyntaxKind.IdentifierToken)
-                    ? semanticModel.GetDeclaredSymbol(variableDeclarator, context.CancellationToken)
-                    : null;
-
-            case ConditionalAccessExpressionSyntax conditionalAccess:
-                return IsIdentifierOrPropertyAccess(conditionalAccess.Expression)
-                    ? semanticModel.GetSymbolInfo(conditionalAccess.Expression, context.CancellationToken).Symbol
-                    : null;
-
-            case ParameterSyntax parameter:
-                return IsSurelyNullable(parameter.Default?.Value)
-                    ? semanticModel.GetDeclaredSymbol(parameter, context.CancellationToken)
-                    : null;
-
-            case PropertyDeclarationSyntax propertyDeclaration:
-                return IsSurelyNullable(propertyDeclaration.Initializer?.Value)
-                    ? semanticModel.GetDeclaredSymbol(propertyDeclaration, context.CancellationToken)
-                    : null;
-
-            default:
-                return null;
-        }
+            AssignmentExpressionSyntax assignment => GetNullableSymbolFromAssignment(context, assignment),
+            BinaryExpressionSyntax binaryExpression => GetNullableSymbolFromBinaryExpression(context, binaryExpression),
+            VariableDeclaratorSyntax variableDeclarator => GetNullableSymbolFromVariableDeclarator(context, variableDeclarator),
+            ConditionalAccessExpressionSyntax conditionalAccess => GetNullableSymbolFromConditionalAccess(context, conditionalAccess),
+            ParameterSyntax parameter => GetNullableSymbolFromParameter(context, parameter),
+            PropertyDeclarationSyntax propertyDeclaration => GetNullableSymbolFromProperty(context, propertyDeclaration),
+            _ => null
+        };
 
         static bool IsSurelyNullable(SyntaxNode? potentiallyNullableNode)
         {
@@ -163,5 +110,92 @@ public sealed class EnableNullableContextAndDeclareIdentifierAsNullableAnalyzer 
             return syntaxNode.IsKind(SyntaxKind.IdentifierName) ||
                    syntaxNode.IsKind(SyntaxKind.SimpleMemberAccessExpression);
         }
+    }
+
+    private static ISymbol? GetNullableSymbolFromAssignment(
+        SyntaxNodeAnalysisContext context,
+        AssignmentExpressionSyntax assignment)
+    {
+        return IsSurelyNullable(assignment.Right) && IsIdentifierOrPropertyAccess(assignment.Left)
+            ? context.SemanticModel.GetSymbolInfo(assignment.Left, context.CancellationToken).Symbol
+            : null;
+    }
+
+    private static ISymbol? GetNullableSymbolFromBinaryExpression(
+        SyntaxNodeAnalysisContext context,
+        BinaryExpressionSyntax binaryExpression)
+    {
+        return binaryExpression.Kind() switch
+        {
+            SyntaxKind.EqualsExpression or SyntaxKind.NotEqualsExpression =>
+                GetNullableSymbolFromEquality(context, binaryExpression),
+            SyntaxKind.CoalesceExpression => IsIdentifierOrPropertyAccess(binaryExpression.Left)
+                ? context.SemanticModel.GetSymbolInfo(binaryExpression.Left, context.CancellationToken).Symbol
+                : null,
+            _ => null
+        };
+    }
+
+    private static ISymbol? GetNullableSymbolFromEquality(
+        SyntaxNodeAnalysisContext context,
+        BinaryExpressionSyntax binaryExpression)
+    {
+        if (IsSurelyNullable(binaryExpression.Right) && IsIdentifierOrPropertyAccess(binaryExpression.Left))
+            return context.SemanticModel.GetSymbolInfo(binaryExpression.Left, context.CancellationToken).Symbol;
+
+        return IsSurelyNullable(binaryExpression.Left) && IsIdentifierOrPropertyAccess(binaryExpression.Right)
+            ? context.SemanticModel.GetSymbolInfo(binaryExpression.Right, context.CancellationToken).Symbol
+            : null;
+    }
+
+    private static ISymbol? GetNullableSymbolFromVariableDeclarator(
+        SyntaxNodeAnalysisContext context,
+        VariableDeclaratorSyntax variableDeclarator)
+    {
+        return IsSurelyNullable(variableDeclarator.Initializer?.Value)
+               && variableDeclarator.Identifier.IsKind(SyntaxKind.IdentifierToken)
+            ? context.SemanticModel.GetDeclaredSymbol(variableDeclarator, context.CancellationToken)
+            : null;
+    }
+
+    private static ISymbol? GetNullableSymbolFromConditionalAccess(
+        SyntaxNodeAnalysisContext context,
+        ConditionalAccessExpressionSyntax conditionalAccess)
+    {
+        return IsIdentifierOrPropertyAccess(conditionalAccess.Expression)
+            ? context.SemanticModel.GetSymbolInfo(conditionalAccess.Expression, context.CancellationToken).Symbol
+            : null;
+    }
+
+    private static ISymbol? GetNullableSymbolFromParameter(
+        SyntaxNodeAnalysisContext context,
+        ParameterSyntax parameter)
+    {
+        return IsSurelyNullable(parameter.Default?.Value)
+            ? context.SemanticModel.GetDeclaredSymbol(parameter, context.CancellationToken)
+            : null;
+    }
+
+    private static ISymbol? GetNullableSymbolFromProperty(
+        SyntaxNodeAnalysisContext context,
+        PropertyDeclarationSyntax propertyDeclaration)
+    {
+        return IsSurelyNullable(propertyDeclaration.Initializer?.Value)
+            ? context.SemanticModel.GetDeclaredSymbol(propertyDeclaration, context.CancellationToken)
+            : null;
+    }
+
+    private static bool IsSurelyNullable(SyntaxNode? potentiallyNullableNode)
+    {
+        return potentiallyNullableNode.IsKind(SyntaxKind.NullLiteralExpression) ||
+               potentiallyNullableNode.IsKind(SyntaxKind.DefaultLiteralExpression) ||
+               potentiallyNullableNode.IsKind(SyntaxKind.DefaultExpression) ||
+               potentiallyNullableNode.IsKind(SyntaxKind.AsExpression);
+    }
+
+    private static bool IsIdentifierOrPropertyAccess(SyntaxNode? syntaxNode)
+    {
+        return syntaxNode.IsKind(SyntaxKind.IdentifierName) ||
+               syntaxNode.IsKind(SyntaxKind.SimpleMemberAccessExpression);
     }
 }
