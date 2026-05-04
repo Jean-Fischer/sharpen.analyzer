@@ -4,10 +4,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Sharpen.Analyzer.FixProvider.Common;
 using Sharpen.Analyzer.Rules;
 using Sharpen.Analyzer.Safety.FixProviderSafety;
 
@@ -15,69 +15,54 @@ namespace Sharpen.Analyzer;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(PartialPropertiesIndexersRefactoringCodeFixProvider))]
 [Shared]
-public sealed class PartialPropertiesIndexersRefactoringCodeFixProvider : CodeFixProvider
+public sealed class PartialPropertiesIndexersRefactoringCodeFixProvider
+    : CSharp13OrAboveSafetyCheckedSharpenCodeFixProvider<BasePropertyDeclarationSyntax,
+        PartialPropertiesIndexersRefactoringSafetyChecker>
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(CSharp13Rules.PartialPropertiesIndexersRefactoringRule.Id);
 
-    public override FixAllProvider GetFixAllProvider()
+    protected override BasePropertyDeclarationSyntax? TryGetTargetNode(SyntaxNode root, Diagnostic diagnostic)
     {
-        return WellKnownFixAllProviders.BatchFixer;
+        var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
+        return node.FirstAncestorOrSelf<BasePropertyDeclarationSyntax>();
     }
 
-    public override async Task RegisterCodeFixesAsync(CodeFixContext context)
+    protected override Task RegisterSafetyCheckedCodeFixesAsync(
+        CodeFixContext context,
+        SyntaxNode root,
+        Diagnostic diagnostic,
+        BasePropertyDeclarationSyntax targetNode)
     {
-        var diagnostic = context.Diagnostics.FirstOrDefault();
-        if (diagnostic is null)
-            return;
-
-        var document = context.Document;
-        var cancellationToken = context.CancellationToken;
-
-        var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-        if (root is null)
-            return;
-
-        var semanticModel = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-        if (semanticModel is null)
-            return;
-
-        // Safety gate.
-        var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            new PartialPropertiesIndexersRefactoringSafetyChecker(),
-            root.SyntaxTree,
-            semanticModel,
+        RegisterCodeFix(
+            context,
             diagnostic,
-            true,
-            cancellationToken);
+            "Refactor to partial property/indexer",
+            nameof(PartialPropertiesIndexersRefactoringCodeFixProvider),
+            ct => RefactorAsync(context.Document, targetNode, ct));
 
-        if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
-            return;
-
-        context.RegisterCodeFix(
-            CodeAction.Create(
-                "Refactor to partial property/indexer",
-                ct => RefactorAsync(document, root, diagnostic, ct),
-                nameof(PartialPropertiesIndexersRefactoringCodeFixProvider)),
-            diagnostic);
+        return Task.CompletedTask;
     }
 
     private static async Task<Document> RefactorAsync(
         Document document,
-        SyntaxNode root,
-        Diagnostic diagnostic,
+        BasePropertyDeclarationSyntax propertyOrIndexer,
         CancellationToken cancellationToken)
     {
-        var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-        var propertyOrIndexer = node.FirstAncestorOrSelf<BasePropertyDeclarationSyntax>();
-        if (propertyOrIndexer is null)
+        var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+        if (root is null)
+            return document;
+
+        var currentDeclaration = root.FindNode(propertyOrIndexer.Span, getInnermostNodeForTie: true)
+            .FirstAncestorOrSelf<BasePropertyDeclarationSyntax>();
+        if (currentDeclaration is null)
             return document;
 
         // Avoid SyntaxEditor tracking issues by doing a pure syntax rewrite.
-        var declaring = AddPartialModifier(propertyOrIndexer);
-        var implementing = CreateImplementingDeclaration(propertyOrIndexer);
+        var declaring = AddPartialModifier(currentDeclaration);
+        var implementing = CreateImplementingDeclaration(currentDeclaration);
 
-        var newRoot = root.ReplaceNode(propertyOrIndexer, new SyntaxNode[] { declaring, implementing });
+        var newRoot = root.ReplaceNode(currentDeclaration, new SyntaxNode[] { declaring, implementing });
         return document.WithSyntaxRoot(newRoot);
     }
 

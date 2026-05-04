@@ -15,39 +15,32 @@ namespace Sharpen.Analyzer;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseUnboundGenericTypeInNameofCodeFixProvider))]
 [Shared]
-public sealed class UseUnboundGenericTypeInNameofCodeFixProvider : CSharp13OrAboveSharpenCodeFixProvider
+public sealed class UseUnboundGenericTypeInNameofCodeFixProvider
+    : CSharp13OrAboveSafetyCheckedSharpenCodeFixProvider<TypeSyntax, UnboundGenericTypeInNameofSafetyChecker>
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(CSharp14Rules.UseUnboundGenericTypeInNameofRule.Id);
 
-    protected override async Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
+    protected override TypeSyntax? TryGetTargetNode(SyntaxNode root, Diagnostic diagnostic)
     {
         var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-        if (node is not TypeSyntax typeSyntax)
-            return;
+        return node as TypeSyntax;
+    }
 
-        var semanticModel =
-            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-        if (semanticModel is null)
-            return;
-
-        var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            new UnboundGenericTypeInNameofSafetyChecker(),
-            root.SyntaxTree,
-            semanticModel,
-            diagnostic,
-            true,
-            context.CancellationToken);
-
-        if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
-            return;
-
+    protected override Task RegisterSafetyCheckedCodeFixesAsync(
+        CodeFixContext context,
+        SyntaxNode root,
+        Diagnostic diagnostic,
+        TypeSyntax targetNode)
+    {
         RegisterCodeFix(
             context,
             diagnostic,
             "Use unbound generic type in nameof",
             nameof(UseUnboundGenericTypeInNameofCodeFixProvider),
-            ct => ApplyAsync(context.Document, typeSyntax, ct));
+            ct => ApplyAsync(context.Document, targetNode, ct));
+
+        return Task.CompletedTask;
     }
 
     private static async Task<Document> ApplyAsync(Document document, TypeSyntax typeSyntax, CancellationToken ct)

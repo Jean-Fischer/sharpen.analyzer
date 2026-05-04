@@ -16,40 +16,32 @@ namespace Sharpen.Analyzer;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseExtensionBlocksCodeFixProvider))]
 [Shared]
-public sealed class UseExtensionBlocksCodeFixProvider : SharpenCodeFixProvider
+public sealed class UseExtensionBlocksCodeFixProvider
+    : SafetyCheckedSharpenCodeFixProvider<ClassDeclarationSyntax, ExtensionBlocksSafetyChecker>
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(CSharp14Rules.UseExtensionBlocksRule.Id);
 
-    protected override async Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
+    protected override ClassDeclarationSyntax? TryGetTargetNode(SyntaxNode root, Diagnostic diagnostic)
     {
         var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-        var classDeclaration = node.FirstAncestorOrSelf<ClassDeclarationSyntax>() ?? node as ClassDeclarationSyntax;
-        if (classDeclaration is null)
-            return;
+        return node.FirstAncestorOrSelf<ClassDeclarationSyntax>() ?? node as ClassDeclarationSyntax;
+    }
 
-        var semanticModel =
-            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-        if (semanticModel is null)
-            return;
-
-        var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            new ExtensionBlocksSafetyChecker(),
-            root.SyntaxTree,
-            semanticModel,
-            diagnostic,
-            true,
-            context.CancellationToken);
-
-        if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
-            return;
-
+    protected override Task RegisterSafetyCheckedCodeFixesAsync(
+        CodeFixContext context,
+        SyntaxNode root,
+        Diagnostic diagnostic,
+        ClassDeclarationSyntax targetNode)
+    {
         RegisterCodeFix(
             context,
             diagnostic,
             CSharp14Rules.UseExtensionBlocksRule.Title.ToString(),
             nameof(UseExtensionBlocksCodeFixProvider),
-            ct => ApplyAsync(context.Document, classDeclaration, ct));
+            ct => ApplyAsync(context.Document, targetNode, ct));
+
+        return Task.CompletedTask;
     }
 
     private static async Task<Document> ApplyAsync(Document document, ClassDeclarationSyntax classDeclaration,

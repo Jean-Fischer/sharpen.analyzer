@@ -17,40 +17,32 @@ namespace Sharpen.Analyzer;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseFieldKeywordInPropertiesCodeFixProvider))]
 [Shared]
-public sealed class UseFieldKeywordInPropertiesCodeFixProvider : SharpenCodeFixProvider
+public sealed class UseFieldKeywordInPropertiesCodeFixProvider
+    : SafetyCheckedSharpenCodeFixProvider<PropertyDeclarationSyntax, FieldBackedPropertySafetyChecker>
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(CSharp14Rules.UseFieldKeywordInPropertiesRule.Id);
 
-    protected override async Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
+    protected override PropertyDeclarationSyntax? TryGetTargetNode(SyntaxNode root, Diagnostic diagnostic)
     {
         var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-        var property = node.FirstAncestorOrSelf<PropertyDeclarationSyntax>();
-        if (property is null)
-            return;
+        return node.FirstAncestorOrSelf<PropertyDeclarationSyntax>();
+    }
 
-        var semanticModel =
-            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-        if (semanticModel is null)
-            return;
-
-        var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            new FieldBackedPropertySafetyChecker(),
-            root.SyntaxTree,
-            semanticModel,
-            diagnostic,
-            true,
-            context.CancellationToken);
-
-        if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
-            return;
-
+    protected override Task RegisterSafetyCheckedCodeFixesAsync(
+        CodeFixContext context,
+        SyntaxNode root,
+        Diagnostic diagnostic,
+        PropertyDeclarationSyntax targetNode)
+    {
         RegisterCodeFix(
             context,
             diagnostic,
             "Use field-backed property",
             nameof(UseFieldKeywordInPropertiesCodeFixProvider),
-            ct => ApplyAsync(context.Document, property, ct));
+            ct => ApplyAsync(context.Document, targetNode, ct));
+
+        return Task.CompletedTask;
     }
 
     private static async Task<Document> ApplyAsync(Document document, PropertyDeclarationSyntax property,

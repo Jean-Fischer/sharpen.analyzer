@@ -17,41 +17,32 @@ namespace Sharpen.Analyzer;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(PreferParamsCollectionsCodeFixProvider))]
 [Shared]
-public sealed class PreferParamsCollectionsCodeFixProvider : CSharp13OrAboveSharpenCodeFixProvider
+public sealed class PreferParamsCollectionsCodeFixProvider
+    : CSharp13OrAboveSafetyCheckedSharpenCodeFixProvider<ParameterSyntax, PreferParamsCollectionsSafetyChecker>
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(CSharp13Rules.PreferParamsCollectionsRule.Id);
 
-    protected override async Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
+    protected override ParameterSyntax? TryGetTargetNode(SyntaxNode root, Diagnostic diagnostic)
     {
-        var parameter = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true)
+        return root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true)
             .FirstAncestorOrSelf<ParameterSyntax>();
-        if (parameter is null)
-            return;
+    }
 
-        var semanticModel =
-            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-        if (semanticModel is null)
-            return;
-
-        // Fix-provider-side safety gate: only offer code actions when the mapped safety checker says it's safe.
-        var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            new PreferParamsCollectionsSafetyChecker(),
-            root.SyntaxTree,
-            semanticModel,
-            diagnostic,
-            true,
-            context.CancellationToken);
-
-        if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
-            return;
-
+    protected override Task RegisterSafetyCheckedCodeFixesAsync(
+        CodeFixContext context,
+        SyntaxNode root,
+        Diagnostic diagnostic,
+        ParameterSyntax targetNode)
+    {
         RegisterCodeFix(
             context,
             diagnostic,
             "Prefer collection-based params",
             nameof(PreferParamsCollectionsCodeFixProvider),
-            ct => ApplyAsync(context.Document, parameter, ct));
+            ct => ApplyAsync(context.Document, targetNode, ct));
+
+        return Task.CompletedTask;
     }
 
     private static async Task<Document> ApplyAsync(Document document, ParameterSyntax parameter, CancellationToken ct)

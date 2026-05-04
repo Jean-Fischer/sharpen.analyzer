@@ -14,39 +14,32 @@ namespace Sharpen.Analyzer;
 
 [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(UseImplicitSpanConversionsCodeFixProvider))]
 [Shared]
-public sealed class UseImplicitSpanConversionsCodeFixProvider : CSharp13OrAboveSharpenCodeFixProvider
+public sealed class UseImplicitSpanConversionsCodeFixProvider
+    : CSharp13OrAboveSafetyCheckedSharpenCodeFixProvider<InvocationExpressionSyntax, ImplicitSpanConversionsSafetyChecker>
 {
     public override ImmutableArray<string> FixableDiagnosticIds =>
         ImmutableArray.Create(CSharp14Rules.UseImplicitSpanConversionsRule.Id);
 
-    protected override async Task RegisterCodeFixesAsync(CodeFixContext context, SyntaxNode root, Diagnostic diagnostic)
+    protected override InvocationExpressionSyntax? TryGetTargetNode(SyntaxNode root, Diagnostic diagnostic)
     {
         var node = root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
-        if (node is not InvocationExpressionSyntax asSpanInvocation)
-            return;
+        return node as InvocationExpressionSyntax;
+    }
 
-        var semanticModel =
-            await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-        if (semanticModel is null)
-            return;
-
-        var safetyEvaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
-            new ImplicitSpanConversionsSafetyChecker(),
-            root.SyntaxTree,
-            semanticModel,
-            diagnostic,
-            true,
-            context.CancellationToken);
-
-        if (safetyEvaluation.Outcome != FixProviderSafetyOutcome.Safe)
-            return;
-
+    protected override Task RegisterSafetyCheckedCodeFixesAsync(
+        CodeFixContext context,
+        SyntaxNode root,
+        Diagnostic diagnostic,
+        InvocationExpressionSyntax targetNode)
+    {
         RegisterCodeFix(
             context,
             diagnostic,
             CSharp14Rules.UseImplicitSpanConversionsRule.Title.ToString(),
             nameof(UseImplicitSpanConversionsCodeFixProvider),
-            ct => ApplyAsync(context.Document, asSpanInvocation, ct));
+            ct => ApplyAsync(context.Document, targetNode, ct));
+
+        return Task.CompletedTask;
     }
 
     private static async Task<Document> ApplyAsync(Document document, InvocationExpressionSyntax asSpanInvocation,
