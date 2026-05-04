@@ -39,6 +39,9 @@ jobs:
           dotnet build "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.csproj" --configuration Release --no-restore
           dotnet build "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.FixProviders/Sharpen.Analyzer.FixProviders.csproj" --configuration Release --no-restore
 
+      - name: Run tests
+        run: dotnet test "Sharpen.Analyzer/Sharpen.Analyzer.sln" --configuration Release --no-build --verbosity normal
+
       - name: Pack (lockstep version)
         run: |
           dotnet pack "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.csproj" --configuration Release --no-build --output nupkgs /p:Version=${{ steps.version.outputs.version }}
