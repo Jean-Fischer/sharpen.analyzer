@@ -11,6 +11,7 @@ on:
 jobs:
   sonarqube:
     name: SonarQube Analysis
+    if: github.actor != 'dependabot[bot]'
     runs-on: windows-latest
 
     steps:
@@ -41,9 +42,8 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore "Sharpen.Analyzer/Sharpen.Analyzer.sln"
 
-      # Begin SonarQube analysis (skip Dependabot PRs because they cannot access repo secrets)
+      # Begin SonarQube analysis
       - name: Begin SonarQube analysis
-        if: github.actor != 'dependabot[bot]'
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
@@ -70,7 +70,6 @@ jobs:
 
       # End SonarQube analysis
       - name: End SonarQube analysis
-        if: github.actor != 'dependabot[bot]'
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
