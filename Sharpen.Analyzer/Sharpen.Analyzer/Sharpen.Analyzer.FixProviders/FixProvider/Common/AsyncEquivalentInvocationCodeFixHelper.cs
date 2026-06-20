@@ -101,14 +101,16 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
             .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
             .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
 
+        var effectiveParent = GetEffectiveParent(originalInvocation);
+
         // Avoid double-await.
-        if (originalInvocation.Parent is AwaitExpressionSyntax) return rewrittenInvocation;
+        if (effectiveParent is AwaitExpressionSyntax) return rewrittenInvocation;
 
         // Only add await when inside an async method/local function.
         if (!IsWithinAsyncCallable(originalInvocation, semanticModel)) return rewrittenInvocation;
 
         // Expression statement: `X();` -> `await XAsync();`
-        if (originalInvocation.Parent is ExpressionStatementSyntax)
+        if (effectiveParent is ExpressionStatementSyntax)
         {
             return SyntaxFactory.AwaitExpression(rewrittenInvocation)
                 .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
@@ -116,7 +118,7 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
         }
 
         // Assignment RHS: `x = X();` -> `x = await XAsync();`
-        if (originalInvocation.Parent is AssignmentExpressionSyntax assignment &&
+        if (effectiveParent is AssignmentExpressionSyntax assignment &&
             assignment.Right == originalInvocation)
         {
             return SyntaxFactory.AwaitExpression(rewrittenInvocation)
@@ -125,7 +127,7 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
         }
 
         // Variable initializer: `var x = X();` -> `var x = await XAsync();`
-        if (originalInvocation.Parent is EqualsValueClauseSyntax equalsValue &&
+        if (effectiveParent is EqualsValueClauseSyntax equalsValue &&
             equalsValue.Value == originalInvocation)
         {
             return SyntaxFactory.AwaitExpression(rewrittenInvocation)
@@ -134,7 +136,7 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
         }
 
         // Return statement: `return X();` -> `return await XAsync();`
-        if (originalInvocation.Parent is ReturnStatementSyntax)
+        if (effectiveParent is ReturnStatementSyntax)
         {
             return SyntaxFactory.AwaitExpression(rewrittenInvocation)
                 .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
@@ -143,6 +145,17 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
 
         // Guardrails: unknown context, don't add await.
         return rewrittenInvocation;
+    }
+
+    private static SyntaxNode? GetEffectiveParent(SyntaxNode node)
+    {
+        var current = node.Parent;
+        while (current is ParenthesizedExpressionSyntax parenthesizedExpression)
+        {
+            current = parenthesizedExpression.Parent;
+        }
+
+        return current;
     }
 
     private static bool IsWithinAsyncCallable(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
