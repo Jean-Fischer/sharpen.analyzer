@@ -1,10 +1,10 @@
 ## Context
 
-Sharpen.Analyzer has a growing set of code fix providers and a parallel set of “safety checkers” intended to validate whether a fix is safe to apply in a given context. The current architecture does not strictly enforce that every fix provider has exactly one corresponding safety checker, nor does it provide a single, canonical integration flow that always runs the correct safety checker before applying a fix.
+Sharpen.Analyzer has a growing set of code fix providers and a parallel set of “safety checkers” intended to validate whether a fix is safe to apply in a given context. The current architecture does not strictly enforce that every safety-checked fix provider has exactly one corresponding safety checker, nor does it provide a single, canonical integration flow that always runs the correct safety checker before applying a fix.
 
 This creates two recurring risks:
 
-- A fix provider can be added without a safety checker (or with an incorrectly wired checker), leading to unsafe fixes being offered/applied.
+- A safety-checked fix provider can be added without a safety checker (or with an incorrectly wired checker), leading to unsafe fixes being offered/applied.
 - Safety checkers can exist without a clear ownership relationship to a fix provider, making the system harder to reason about and maintain.
 
 Constraints / assumptions:
@@ -17,17 +17,17 @@ Constraints / assumptions:
 
 **Goals:**
 
-- Enforce a one-to-one relationship between fix providers and safety checkers.
+- Enforce a one-to-one relationship between safety-checked fix providers and safety checkers.
 - Provide a single integration flow that:
-  1) discovers fix providers,
+  1) discovers safety-checked fix providers,
   2) resolves the mapped safety checker,
   3) runs the safety checker,
   4) only then applies the fix.
 - Provide validation that:
-  - every fix provider has a mapped safety checker,
-  - no safety checker is mapped to multiple fix providers,
+  - every safety-checked fix provider has a mapped safety checker,
+  - no safety checker is mapped to multiple safety-checked fix providers,
   - the mapping is deterministic and does not depend on ordering.
-- Make it straightforward to add a new fix provider + safety checker pair.
+- Make it straightforward to add a new safety-checked fix provider + safety checker pair.
 
 **Non-Goals:**
 
@@ -39,7 +39,7 @@ Constraints / assumptions:
 
 ### 1) Represent the mapping as an explicit registry
 
-**Decision:** Introduce a single registry that defines the mapping between a fix provider type (or identifier) and a safety checker type.
+**Decision:** Introduce a single registry that defines the mapping between a safety-checked fix provider type (or identifier) and a safety checker type.
 
 **Rationale:**
 
@@ -103,7 +103,7 @@ Constraints / assumptions:
 ## Risks / Trade-offs
 
 - **Risk:** Existing fix providers may not have safety checkers yet → **Mitigation:** introduce the mapping with a migration phase where missing mappings are surfaced as test failures first, then upgraded to runtime failures once coverage is complete.
-- **Risk:** Multiple discovery mechanisms (MEF/reflection/manual registration) could lead to duplicate registrations → **Mitigation:** make the registry the single source of truth and have discovery feed into it rather than bypass it.
+- **Risk:** Multiple discovery mechanisms (MEF/reflection/manual registration) could lead to duplicate registrations → **Mitigation:** make the registry the single source of truth for safety-checked providers and have discovery feed into it rather than bypass it.
 - **Trade-off:** Central registry adds a small amount of boilerplate when adding new fix providers, but improves correctness and maintainability.
 
 ## Migration Plan
