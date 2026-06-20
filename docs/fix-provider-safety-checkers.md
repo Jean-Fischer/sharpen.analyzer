@@ -41,10 +41,10 @@ The mapping is validated by [`FixProviderSafetyMappingValidator`](../Sharpen.Ana
 ### Analyzer pipeline
 
 1. Analyzer matches a pattern.
-2. Analyzer calls `FixProviderSafetyRunner` (global stage).
+2. Analyzer calls `FixProviderSafetyRunner.EvaluateOrMatchFailed(...)` with the mapped safety checker.
 3. If safe, analyzer reports a diagnostic.
 
-> Note: analyzers run the global stage only. The local checker stage runs in the fix-provider pipeline, where a `Document` is available.
+> Note: analyzers evaluate both the global gate and the local safety checker, using syntax tree + semantic model inputs instead of a `Document`.
 > The global stage still ensures diagnostics are suppressed when the global gate blocks.
 
 Example (simplified):

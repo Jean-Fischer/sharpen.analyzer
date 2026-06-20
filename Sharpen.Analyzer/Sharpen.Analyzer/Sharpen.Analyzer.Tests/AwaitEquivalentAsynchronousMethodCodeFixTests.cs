@@ -107,6 +107,26 @@ public class Example
     }
 
     [Fact]
+    public async Task AwaitEquivalentAsynchronousMethodCodeFix_UnsupportedBinaryExpression_SuppressesCodeAction()
+    {
+        const string original = @"
+using System.IO;
+using System.Threading.Tasks;
+
+public class Example
+{
+    public async Task<string> TestAsync()
+    {
+        var reader = new StringReader(""test"");
+        return ""prefix"" + reader.ReadToEnd();
+    }
+}";
+
+        var expected = Verifier.Diagnostic().WithSpan(10, 27, 10, 45).WithArguments("reader.ReadToEnd");
+        await Verifier.VerifyCodeFixAsync(original, expected, original);
+    }
+
+    [Fact]
     public async Task AwaitEquivalentAsynchronousMethodCodeFix_AssignmentRhs_IsAwaited()
     {
         const string original = @"
