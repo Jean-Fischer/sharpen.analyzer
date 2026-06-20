@@ -44,24 +44,26 @@ The mapping is validated by [`FixProviderSafetyMappingValidator`](../Sharpen.Ana
 2. Analyzer calls `FixProviderSafetyRunner` (global stage).
 3. If safe, analyzer reports a diagnostic.
 
-> Note: analyzers run only the global stage. The local checker stage runs in the fix-provider pipeline, where a `Document` is available.
+> Note: analyzers run the global stage only. The local checker stage runs in the fix-provider pipeline, where a `Document` is available.
 > The global stage still ensures diagnostics are suppressed when the global gate blocks.
 
 Example (simplified):
 
 ```csharp
 // Analyzer
-var evaluation = FixProviderSafetyRunner.Evaluate(
-    semanticModel: context.SemanticModel,
-    fixProviderType: typeof(UseCollectionExpressionCodeFixProvider),
-    node: matchedNode,
-    diagnostic: null,
+var diagnostic = Diagnostic.Create(rule, matchedNode.GetLocation());
+var evaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
+    new CollectionExpressionSafetyChecker(),
+    matchedNode.SyntaxTree,
+    context.SemanticModel,
+    diagnostic,
+    matchSucceeded: true,
     cancellationToken: context.CancellationToken);
 
 if (evaluation.Outcome != FixProviderSafetyOutcome.Safe)
     return;
 
-context.ReportDiagnostic(Diagnostic.Create(rule, matchedNode.GetLocation()));
+context.ReportDiagnostic(diagnostic);
 ```
 
 ### Fix provider pipeline
@@ -78,11 +80,12 @@ var semanticModel = await context.Document.GetSemanticModelAsync(context.Cancell
 if (semanticModel is null)
     return;
 
-var evaluation = FixProviderSafetyRunner.Evaluate(
-    semanticModel: semanticModel,
-    fixProviderType: typeof(UseInterpolatedStringCodeFixProvider),
-    node: node,
-    diagnostic: diagnostic,
+var evaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
+    new StringInterpolationSafetyChecker(),
+    node.SyntaxTree,
+    semanticModel,
+    diagnostic,
+    matchSucceeded: true,
     cancellationToken: context.CancellationToken);
 
 if (evaluation.Outcome != FixProviderSafetyOutcome.Safe)
