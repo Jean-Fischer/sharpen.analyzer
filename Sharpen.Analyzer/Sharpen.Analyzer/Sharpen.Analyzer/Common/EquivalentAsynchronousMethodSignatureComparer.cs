@@ -87,8 +87,11 @@ internal static class EquivalentAsynchronousMethodSignatureComparer
 
     private static bool HasSupportedTrailingParameter(IMethodSymbol potentialEquivalent, int numberOfParameters)
     {
-        return potentialEquivalent.Parameters.Length == numberOfParameters ||
-               potentialEquivalent.Parameters[numberOfParameters].Type
-                   .FullNameIsEqualTo("System.Threading", "CancellationToken");
+        if (potentialEquivalent.Parameters.Length == numberOfParameters)
+            return true;
+
+        var trailingParameter = potentialEquivalent.Parameters[numberOfParameters];
+        return trailingParameter.Type.FullNameIsEqualTo("System.Threading", "CancellationToken")
+               && trailingParameter.IsOptional;
     }
 }

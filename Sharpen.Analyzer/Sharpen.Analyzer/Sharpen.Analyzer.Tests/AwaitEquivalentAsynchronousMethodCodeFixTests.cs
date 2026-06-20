@@ -275,9 +275,52 @@ public class Example
         var expected = Verifier.Diagnostic().WithSpan(14, 16, 14, 21).WithArguments("1.M");
         await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
      }
- 
-     [Fact]
-     public async Task AwaitEquivalentAsynchronousMethodAnalyzer_NoAsyncEquivalent_ProducesNoDiagnostic()
+
+    [Fact]
+    public async Task AwaitEquivalentAsynchronousMethodCodeFix_OptionalCancellationToken_IsAccepted()
+    {
+        const string original = @"
+using System.Threading;
+using System.Threading.Tasks;
+
+public static class Extensions
+{
+    public static int M(this int x) => x;
+    public static Task<int> MAsync(this int x, CancellationToken cancellationToken = default) => Task.FromResult(x);
+}
+
+public class Example
+{
+    public async Task<int> TestAsync()
+    {
+        return 1.M();
+    }
+}";
+
+        const string fixedText = @"
+using System.Threading;
+using System.Threading.Tasks;
+
+public static class Extensions
+{
+    public static int M(this int x) => x;
+    public static Task<int> MAsync(this int x, CancellationToken cancellationToken = default) => Task.FromResult(x);
+}
+
+public class Example
+{
+    public async Task<int> TestAsync()
+    {
+        return await 1.MAsync();
+    }
+}";
+
+        var expected = Verifier.Diagnostic().WithSpan(15, 16, 15, 21).WithArguments("1.M");
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
+    }
+
+    [Fact]
+    public async Task AwaitEquivalentAsynchronousMethodAnalyzer_NoAsyncEquivalent_ProducesNoDiagnostic()
      {
          const string original = @"
  using System.Threading.Tasks;

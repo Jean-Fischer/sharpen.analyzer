@@ -108,23 +108,23 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
         InvocationExpressionSyntax rewrittenInvocation,
         SemanticModel semanticModel)
     {
-        // Preserve trivia on the invocation itself.
-        rewrittenInvocation = rewrittenInvocation
+        var effectiveParent = GetEffectiveParent(originalInvocation);
+        var invocationWithTrivia = rewrittenInvocation
             .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
             .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
 
-        var effectiveParent = GetEffectiveParent(originalInvocation);
-
         // Avoid double-await.
-        if (effectiveParent is AwaitExpressionSyntax) return rewrittenInvocation;
+        if (effectiveParent is AwaitExpressionSyntax) return invocationWithTrivia;
 
         // Only add await when inside an async method/local function.
-        if (!IsWithinAsyncCallable(originalInvocation, semanticModel)) return rewrittenInvocation;
+        if (!IsWithinAsyncCallable(originalInvocation, semanticModel)) return invocationWithTrivia;
+
+        var awaitedInvocation = rewrittenInvocation.WithoutTrivia();
 
         // Expression statement: `X();` -> `await XAsync();`
         if (effectiveParent is ExpressionStatementSyntax)
         {
-            return SyntaxFactory.AwaitExpression(rewrittenInvocation)
+            return SyntaxFactory.AwaitExpression(awaitedInvocation)
                 .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
                 .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
         }
@@ -133,7 +133,7 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
         if (effectiveParent is AssignmentExpressionSyntax assignment &&
             assignment.Right == originalInvocation)
         {
-            return SyntaxFactory.AwaitExpression(rewrittenInvocation)
+            return SyntaxFactory.AwaitExpression(awaitedInvocation)
                 .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
                 .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
         }
@@ -142,7 +142,7 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
         if (effectiveParent is EqualsValueClauseSyntax equalsValue &&
             equalsValue.Value == originalInvocation)
         {
-            return SyntaxFactory.AwaitExpression(rewrittenInvocation)
+            return SyntaxFactory.AwaitExpression(awaitedInvocation)
                 .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
                 .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
         }
@@ -150,7 +150,7 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
         // Return statement: `return X();` -> `return await XAsync();`
         if (effectiveParent is ReturnStatementSyntax)
         {
-            return SyntaxFactory.AwaitExpression(rewrittenInvocation)
+            return SyntaxFactory.AwaitExpression(awaitedInvocation)
                 .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
                 .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
         }
