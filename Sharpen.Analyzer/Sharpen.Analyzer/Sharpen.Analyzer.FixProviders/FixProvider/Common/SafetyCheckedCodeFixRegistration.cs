@@ -24,6 +24,8 @@ internal static class SafetyCheckedCodeFixRegistration
         if (safetyChecker is null)
             throw new ArgumentNullException(nameof(safetyChecker));
 
+        FixProviderSafetyMappingValidator.EnsureValidated();
+
         var targetNode = tryGetTargetNode(root, diagnostic);
         if (targetNode is null)
             return;

@@ -146,6 +146,43 @@ public class Example
     }
 
     [Fact]
+    public async Task AwaitEquivalentAsynchronousMethodCodeFix_AssignmentRhs_WithNestedParentheses_IsAwaited()
+    {
+        const string original = @"
+using System.IO;
+using System.Threading.Tasks;
+
+public class Example
+{
+    public async Task<string> TestAsync()
+    {
+        var reader = new StringReader(""test"");
+        var s = """";
+        s = ((reader.ReadToEnd()));
+        return s;
+    }
+}";
+
+        const string fixedText = @"
+using System.IO;
+using System.Threading.Tasks;
+
+public class Example
+{
+    public async Task<string> TestAsync()
+    {
+        var reader = new StringReader(""test"");
+        var s = """";
+        s = ((await reader.ReadToEndAsync()));
+        return s;
+    }
+}";
+
+        var expected = Verifier.Diagnostic().WithSpan(11, 15, 11, 33).WithArguments("reader.ReadToEnd");
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
+    }
+
+    [Fact]
     public async Task AwaitEquivalentAsynchronousMethodCodeFix_ReturnStatement_IsReturnAwaited()
     {
         const string original = @"

@@ -174,9 +174,12 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
         ExpressionSyntax expression,
         InvocationExpressionSyntax originalInvocation)
     {
-        return expression == originalInvocation
-               || expression is ParenthesizedExpressionSyntax parenthesizedExpression
-                  && parenthesizedExpression.Expression == originalInvocation;
+        while (expression is ParenthesizedExpressionSyntax parenthesizedExpression)
+        {
+            expression = parenthesizedExpression.Expression;
+        }
+
+        return expression == originalInvocation;
     }
 
     private static bool IsWithinAsyncCallable(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
