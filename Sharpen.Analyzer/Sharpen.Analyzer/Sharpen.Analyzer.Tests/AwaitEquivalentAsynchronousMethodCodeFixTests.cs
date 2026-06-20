@@ -193,10 +193,8 @@ public class Example
     }
 
     [Fact]
-    public async Task AwaitEquivalentAsynchronousMethodCodeFix_ExtensionMethodEquivalent_IsResolved()
+    public async Task AwaitEquivalentAsynchronousMethodCodeFix_ExtensionMethodEquivalent_IsRewritten()
     {
-        // NOTE: The analyzer intentionally excludes extension methods (see spec/design).
-        // This test is kept as a regression guard to ensure we don't accidentally start reporting on them.
         const string original = @"
 using System.Threading.Tasks;
 
@@ -214,7 +212,25 @@ public class Example
     }
 }";
 
-        await Verifier.VerifyAnalyzerAsync(original);
+        const string fixedText = @"
+using System.Threading.Tasks;
+
+public static class Extensions
+{
+    public static int M(this int x) => x;
+    public static Task<int> MAsync(this int x) => Task.FromResult(x);
+}
+
+public class Example
+{
+    public async Task<int> TestAsync()
+    {
+        return await 1.MAsync();
+    }
+}";
+
+        var expected = Verifier.Diagnostic().WithSpan(14, 16, 14, 21).WithArguments("1.M");
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
      }
  
      [Fact]
