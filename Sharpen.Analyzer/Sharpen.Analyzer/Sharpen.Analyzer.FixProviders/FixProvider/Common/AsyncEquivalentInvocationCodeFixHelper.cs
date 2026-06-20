@@ -131,7 +131,7 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
 
         // Assignment RHS: `x = X();` -> `x = await XAsync();`
         if (effectiveParent is AssignmentExpressionSyntax assignment &&
-            assignment.Right == originalInvocation)
+            IsInvocationOrParenthesizedInvocation(assignment.Right, originalInvocation))
         {
             return SyntaxFactory.AwaitExpression(awaitedInvocation)
                 .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
@@ -140,7 +140,7 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
 
         // Variable initializer: `var x = X();` -> `var x = await XAsync();`
         if (effectiveParent is EqualsValueClauseSyntax equalsValue &&
-            equalsValue.Value == originalInvocation)
+            IsInvocationOrParenthesizedInvocation(equalsValue.Value, originalInvocation))
         {
             return SyntaxFactory.AwaitExpression(awaitedInvocation)
                 .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
@@ -168,6 +168,15 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
         }
 
         return current;
+    }
+
+    private static bool IsInvocationOrParenthesizedInvocation(
+        ExpressionSyntax expression,
+        InvocationExpressionSyntax originalInvocation)
+    {
+        return expression == originalInvocation
+               || expression is ParenthesizedExpressionSyntax parenthesizedExpression
+                  && parenthesizedExpression.Expression == originalInvocation;
     }
 
     private static bool IsWithinAsyncCallable(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
