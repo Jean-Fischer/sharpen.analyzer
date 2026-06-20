@@ -74,6 +74,39 @@ public class Example
     }
 
     [Fact]
+    public async Task AwaitEquivalentAsynchronousMethodCodeFix_PreservesInvocationTrivia()
+    {
+        const string original = @"
+using System.IO;
+using System.Threading.Tasks;
+
+public class Example
+{
+    public async Task<string> TestAsync()
+    {
+        var reader = new StringReader(""test"");
+        return /*before*/reader.ReadToEnd();/*after*/
+    }
+}";
+
+        const string fixedText = @"
+using System.IO;
+using System.Threading.Tasks;
+
+public class Example
+{
+    public async Task<string> TestAsync()
+    {
+        var reader = new StringReader(""test"");
+        return /*before*/await reader.ReadToEndAsync();/*after*/
+    }
+}";
+
+        var expected = Verifier.Diagnostic().WithSpan(10, 26, 10, 44).WithArguments("reader.ReadToEnd");
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
+    }
+
+    [Fact]
     public async Task AwaitEquivalentAsynchronousMethodCodeFix_AssignmentRhs_IsAwaited()
     {
         const string original = @"

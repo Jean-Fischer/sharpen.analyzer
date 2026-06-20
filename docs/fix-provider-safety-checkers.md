@@ -19,7 +19,7 @@ Each fix provider should have a corresponding safety checker:
 - Fix provider: applies the transformation (code action)
 - Safety checker: validates the transformation is safe to offer
 
-The mapping is defined in [`FixProviderSafetyMapping.cs`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/FixProviderSafetyMapping.cs).
+The mapping is validated by [`FixProviderSafetyMappingValidator`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.FixProviders/FixProvider/Common/FixProviderSafetyMappingValidator.cs) and is derived from the shared safety-checked fix provider base types.
 
 ## Mapping summary table
 
@@ -44,7 +44,7 @@ The mapping is defined in [`FixProviderSafetyMapping.cs`](../Sharpen.Analyzer/Sh
 2. Analyzer calls `FixProviderSafetyRunner` (global stage).
 3. If safe, analyzer reports a diagnostic.
 
-> Note: analyzer-side local checker evaluation is currently not executed because checkers require a `Document` instance.
+> Note: analyzers run only the global stage. The local checker stage runs in the fix-provider pipeline, where a `Document` is available.
 > The global stage still ensures diagnostics are suppressed when the global gate blocks.
 
 Example (simplified):
@@ -108,7 +108,7 @@ Flow:
 ## Adding a new fix provider + safety checker
 
 1. Create a new checker implementing [`IFixProviderSafetyChecker`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/IFixProviderSafetyChecker.cs).
-2. Add a mapping entry in [`FixProviderSafetyMapping.cs`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/FixProviderSafetyMapping.cs).
+2. Add the fix provider under one of the shared safety-checked base classes so it participates in mapping validation.
 3. Gate the analyzer before `ReportDiagnostic` by calling `FixProviderSafetyRunner`.
 4. Gate the fix provider before `RegisterCodeFix` by calling `FixProviderSafetyRunner`.
 5. Do not call [`FirstPassSafetyRunner`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FirstPassSafetyRunner.cs) directly.
