@@ -99,7 +99,8 @@ internal abstract class EquivalentAsynchronousMethodFinder
 
     private static bool MethodIsInvokedWithinACallerNodeThatCanBeMarkedAsAsync(InvocationExpressionSyntax invocation)
     {
-        return invocation.FirstAncestorOrSelf<MethodDeclarationSyntax>() != null;
+        return invocation.FirstAncestorOrSelf<MethodDeclarationSyntax>() != null
+               || invocation.FirstAncestorOrSelf<LocalFunctionStatementSyntax>() != null;
     }
 
     private static bool TryGetEnclosingLocalFunctionOrMethod(

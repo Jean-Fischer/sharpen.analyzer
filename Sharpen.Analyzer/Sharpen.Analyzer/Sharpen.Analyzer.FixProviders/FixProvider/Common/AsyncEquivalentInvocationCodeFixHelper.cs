@@ -70,6 +70,7 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
         // - avoid double-await
         // - only apply in known-safe contexts
         var replacementExpression = ApplyAwaitIfNeeded(invocation, rewrittenInvocation, semanticModel);
+        if (replacementExpression is null) return document;
 
         var newRoot = root.ReplaceNode(invocation, replacementExpression);
         return document.WithSyntaxRoot(newRoot);
@@ -91,7 +92,7 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
         return null;
     }
 
-    private static ExpressionSyntax ApplyAwaitIfNeeded(
+    private static ExpressionSyntax? ApplyAwaitIfNeeded(
         InvocationExpressionSyntax originalInvocation,
         InvocationExpressionSyntax rewrittenInvocation,
         SemanticModel semanticModel)
@@ -143,8 +144,8 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
                 .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
         }
 
-        // Guardrails: unknown context, don't add await.
-        return rewrittenInvocation;
+        // Guardrails: unknown context, do not offer a potentially-invalid rewrite.
+        return null;
     }
 
     private static SyntaxNode? GetEffectiveParent(SyntaxNode node)
