@@ -41,6 +41,17 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
         var diagnostic = context.Diagnostics[0];
         if (!(root.FindNode(diagnostic.Location.SourceSpan) is InvocationExpressionSyntax invocation)) return;
 
+        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+        if (semanticModel is null) return;
+
+        var asyncEquivalent = EquivalentAsynchronousMethodResolver.ResolveAsyncEquivalent(invocation, semanticModel);
+        if (asyncEquivalent is null) return;
+
+        var rewrittenInvocation = RewriteInvocation(invocation, asyncEquivalent.Name);
+        if (rewrittenInvocation is null) return;
+
+        if (ApplyAwaitIfNeeded(invocation, rewrittenInvocation, semanticModel) is null) return;
+
         context.RegisterCodeFix(
             CodeAction.Create(
                 title,
