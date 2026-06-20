@@ -13,7 +13,7 @@ public class UseFileScopedNamespaceTests
     [Fact]
     public async Task UseFileScopedNamespace_TriggersAndFixes_ForSingleNamespaceWithMultipleMembers()
     {
-        var source = @"
+        const string source = @"
 namespace MyNs
 {
     class A { }
@@ -22,7 +22,7 @@ namespace MyNs
 }
 ";
 
-        var fixedSource = @"
+        const string fixedSource = @"
 namespace MyNs;
 
 class A { }
@@ -42,24 +42,13 @@ interface I { }
     [Fact]
     public async Task UseFileScopedNamespace_TriggersAndFixes_ForNestedNamespaces()
     {
-        var source = @"
+        const string source = @"
 namespace Outer
 {
     namespace Inner
     {
         class C { }
     }
-}
-";
-
-        // File-scoped namespaces cannot contain nested namespace declarations.
-        // The fix lifts the outer namespace to file-scoped and moves the inner namespace to the compilation unit.
-        var fixedSource = @"
-namespace Outer;
-
-namespace Inner
-{
-    class C { }
 }
 ";
 
@@ -71,7 +60,7 @@ namespace Inner
     [Fact]
     public async Task UseFileScopedNamespace_DoesNotTrigger_WhenTwoSiblingNamespacesExist()
     {
-        var source = @"
+        const string source = @"
 namespace A
 {
     class A1 { }

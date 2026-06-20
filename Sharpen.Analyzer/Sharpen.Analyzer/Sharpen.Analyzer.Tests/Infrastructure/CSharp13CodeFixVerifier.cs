@@ -57,40 +57,48 @@ namespace System.Threading
         var test = CreateTest();
         test.TestCode = source;
         test.ExpectedDiagnostics.AddRange(expected);
-        await test.RunAsync().ConfigureAwait(false);
+        await test.RunAsync();
     }
 
     public static async Task VerifyCodeFixAsync(
         string source,
-        string fixedSource)
+        string fixedSource,
+        int? numberOfIncrementalIterations = null,
+        int? numberOfFixAllIterations = null)
     {
-        var test = CreateTest();
-        test.TestState.Sources.Add(source);
-        test.TestState.Sources.Add(LockStubSource);
-
-        test.FixedState.Sources.Add(fixedSource);
-        test.FixedState.Sources.Add(LockStubSource);
-
-        await test.RunAsync().ConfigureAwait(false);
+        var test = CreateTest(numberOfIncrementalIterations, numberOfFixAllIterations);
+        AddSources(test, source, fixedSource);
+        await test.RunAsync();
     }
 
     public static async Task VerifyCodeFixAsync(
         string source,
         DiagnosticResult expected,
+        string fixedSource,
+        int? numberOfIncrementalIterations = null,
+        int? numberOfFixAllIterations = null)
+    {
+        var test = CreateTest(numberOfIncrementalIterations, numberOfFixAllIterations);
+        AddSources(test, source, fixedSource);
+        test.ExpectedDiagnostics.Add(expected);
+        await test.RunAsync();
+    }
+
+    private static void AddSources(
+        CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier> test,
+        string source,
         string fixedSource)
     {
-        var test = CreateTest();
         test.TestState.Sources.Add(source);
         test.TestState.Sources.Add(LockStubSource);
 
         test.FixedState.Sources.Add(fixedSource);
         test.FixedState.Sources.Add(LockStubSource);
-
-        test.ExpectedDiagnostics.Add(expected);
-        await test.RunAsync().ConfigureAwait(false);
     }
 
-    private static CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier> CreateTest()
+    public static CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier> CreateTest(
+        int? numberOfIncrementalIterations = null,
+        int? numberOfFixAllIterations = null)
     {
         var test = new CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier>
         {
@@ -98,6 +106,12 @@ namespace System.Threading
             // (e.g. byref-like generics) can compile in fixed-state.
             ReferenceAssemblies = ReferenceAssemblies.Net.Net90
         };
+
+        if (numberOfIncrementalIterations.HasValue)
+            test.NumberOfIncrementalIterations = numberOfIncrementalIterations.Value;
+
+        if (numberOfFixAllIterations.HasValue)
+            test.NumberOfFixAllIterations = numberOfFixAllIterations.Value;
 
         test.SolutionTransforms.Add((solution, projectId) =>
         {

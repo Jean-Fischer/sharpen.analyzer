@@ -22,6 +22,7 @@
         </PackageReference>
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\Sharpen.Analyzer.Core\Sharpen.Analyzer.Core.csproj"/>
         <ProjectReference Include="..\Sharpen.Analyzer\Sharpen.Analyzer.csproj"/>
         <ProjectReference Include="..\Sharpen.Analyzer.FixProviders\Sharpen.Analyzer.FixProviders.csproj"/>
     </ItemGroup>

@@ -11,18 +11,14 @@ public class AwaitEquivalentAsynchronousMethodCodeFixTests
     public async Task AwaitEquivalentAsynchronousMethodAnalyzer_InvocationOutsideMethod_ProducesNoDiagnostic()
     {
         const string test = @"
-using System.Threading.Tasks;
+using System.IO;
 
 public class Example
 {
-    private readonly int _ = Task.CompletedTask.GetAwaiter().GetResult();
+    private readonly string _ = new StringReader(""test"").ReadToEnd();
 }";
 
-        var expectedCompilerError = DiagnosticResult.CompilerError("CS0029")
-            .WithSpan(6, 30, 6, 73)
-            .WithArguments("void", "int");
-
-        await Verifier.VerifyAnalyzerAsync(test, expectedCompilerError);
+        await Verifier.VerifyAnalyzerAsync(test);
     }
 
     [Fact]

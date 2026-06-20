@@ -1,7 +1,4 @@
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Testing;
-using Microsoft.CodeAnalysis.Testing;
 using Sharpen.Analyzer.Analyzers.CSharp13;
 using Sharpen.Analyzer.FixProviders.FixProvider.CSharp13;
 using Sharpen.Analyzer.Rules;
@@ -15,7 +12,7 @@ public sealed class SuggestOverloadResolutionPriorityCodeFixProviderTests
     [Fact]
     public async Task Adds_attribute_to_method()
     {
-        var source = @"
+        const string source = @"
 public class C
 {
     public void M(int x) { }
@@ -23,7 +20,7 @@ public class C
 }
 ";
 
-        var fixedSource = @"
+        const string fixedSource = @"
 public class C
 {
     [System.Runtime.CompilerServices.OverloadResolutionPriority(1)]
@@ -35,27 +32,11 @@ public class C
         var expected = Verifier.Diagnostic(CSharp13Rules.SuggestOverloadResolutionPriorityRule)
             .WithLocation(4, 17);
 
-        var test = new CSharpCodeFixTest<
-            SuggestOverloadResolutionPriorityAnalyzer,
-            SuggestOverloadResolutionPriorityCodeFixProvider,
-            DefaultVerifier>
-        {
-            ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
-            NumberOfFixAllIterations = 1
-        };
+        var test = Verifier.CreateTest(numberOfFixAllIterations: 1);
 
         test.TestState.Sources.Add(source);
         test.FixedState.Sources.Add(fixedSource);
         test.ExpectedDiagnostics.Add(expected);
-
-        test.SolutionTransforms.Add((solution, projectId) =>
-        {
-            var project = solution.GetProject(projectId)!;
-            var parseOptions = (CSharpParseOptions)project.ParseOptions!;
-            project = project.WithParseOptions(parseOptions.WithLanguageVersion(LanguageVersion.Preview));
-            return project.Solution;
-        });
-
-        await test.RunAsync().ConfigureAwait(false);
+        await test.RunAsync();
     }
 }

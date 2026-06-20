@@ -72,7 +72,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- Fix providers depend on shared analyzer infrastructure (rules, helpers, safety pipeline). -->
-        <ProjectReference Include="..\Sharpen.Analyzer\Sharpen.Analyzer.csproj"/>
+        <!-- Fix providers depend on shared modernization infrastructure only. -->
+        <ProjectReference Include="..\Sharpen.Analyzer.Core\Sharpen.Analyzer.Core.csproj"/>
     </ItemGroup>
 </Project>
