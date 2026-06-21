@@ -302,6 +302,45 @@ public class Example
     }
 
     [Fact]
+    public async Task AwaitEquivalentAsynchronousMethodCodeFix_SameTypeEquivalent_IsAwaited()
+    {
+        const string original = @"
+using System.IO;
+using System.Threading.Tasks;
+
+public class Example
+{
+    public string Read() => new StringReader(""test"").ReadToEnd();
+
+    public Task<string> ReadAsync() => Task.FromResult(new StringReader(""test"").ReadToEndAsync().Result);
+
+    public async Task<string> TestAsync()
+    {
+        return Read();
+    }
+}";
+
+        const string fixedText = @"
+using System.IO;
+using System.Threading.Tasks;
+
+public class Example
+{
+    public string Read() => new StringReader(""test"").ReadToEnd();
+
+    public Task<string> ReadAsync() => Task.FromResult(new StringReader(""test"").ReadToEndAsync().Result);
+
+    public async Task<string> TestAsync()
+    {
+        return await ReadAsync();
+    }
+}";
+
+        var expected = Verifier.Diagnostic().WithSpan(13, 16, 13, 22).WithArguments("Read");
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
+    }
+
+    [Fact]
     public async Task AwaitEquivalentAsynchronousMethodCodeFix_AsyncLocalFunction_IsAwaited()
     {
         const string original = @"

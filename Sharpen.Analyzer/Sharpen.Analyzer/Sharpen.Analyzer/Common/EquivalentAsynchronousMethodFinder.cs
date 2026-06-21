@@ -63,14 +63,6 @@ internal abstract class EquivalentAsynchronousMethodFinder
         // TODO: Support suggestion for lambdas and anonymous methods.
         if (invocation.IsWithinLambdaOrAnonymousMethod()) return false;
 
-        // If type authors invoke the synchronous method
-        // within the implementation of its containing type
-        // we assume that they exactly know what they are doing.
-        // They for sure want to call exactly that method on
-        // that particular place in code. We are 100% sure that
-        // they do not want to call its async equivalent.
-        if (MethodIsInvokedWithinItsContainingType(invocation, semanticModel, method)) return false;
-
         if (!MethodIsInvokedWithinACallerNodeThatCanBeMarkedAsAsync(invocation)) return false;
 
         if (!TryGetEnclosingLocalFunctionOrMethod(invocation, semanticModel, out var callerSymbol, out var callerSyntaxNode)

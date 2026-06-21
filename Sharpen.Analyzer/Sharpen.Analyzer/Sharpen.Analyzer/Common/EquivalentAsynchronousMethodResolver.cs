@@ -38,8 +38,7 @@ public static class EquivalentAsynchronousMethodResolver
         IMethodSymbol method)
     {
         return EquivalentAsynchronousMethodMetadata.IsIgnoredMethod(method)
-               || invocation.IsWithinLambdaOrAnonymousMethod()
-               || MethodIsInvokedWithinItsContainingType(invocation, semanticModel, method);
+               || invocation.IsWithinLambdaOrAnonymousMethod();
     }
 
     private static IMethodSymbol? ResolveOnContainingType(
@@ -68,19 +67,6 @@ public static class EquivalentAsynchronousMethodResolver
             calledOnType,
             method,
             invocation);
-    }
-
-    private static bool MethodIsInvokedWithinItsContainingType(
-        InvocationExpressionSyntax invocation,
-        SemanticModel semanticModel,
-        IMethodSymbol method)
-    {
-        var invokedInType = invocation.FirstAncestorOrSelf<TypeDeclarationSyntax>();
-
-        // If syntax tree is unexpected, be conservative and treat as within containing type.
-        if (invokedInType == null) return true;
-
-        return SymbolEqualityComparer.Default.Equals(method.ContainingType, semanticModel.GetDeclaredSymbol(invokedInType));
     }
 
     private static INamedTypeSymbol? GetCalledOnType(InvocationExpressionSyntax invocation, SemanticModel semanticModel)
