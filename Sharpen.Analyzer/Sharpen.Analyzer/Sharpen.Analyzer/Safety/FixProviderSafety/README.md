@@ -20,5 +20,5 @@ Safety checks are used to gate:
 
 ## Registry
 
-The canonical fix provider ↔ safety checker mapping lives in [
-`FixProviderSafetyMapping`](Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/FixProviderSafetyMapping.cs:1).
+The canonical fix provider ↔ safety checker mapping is validated by
+[`FixProviderSafetyMappingValidator`](../../../Sharpen.Analyzer.FixProviders/FixProvider/Common/FixProviderSafetyMappingValidator.cs).

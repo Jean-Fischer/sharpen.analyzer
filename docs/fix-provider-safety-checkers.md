@@ -25,8 +25,8 @@ The mapping is validated by [`FixProviderSafetyMappingValidator`](../Sharpen.Ana
 
 | Fix provider | Safety checker | Notes |
 |---|---|---|
-| [`UseCollectionExpressionCodeFixProvider`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/FixProvider/CSharp12/UseCollectionExpressionCodeFixProvider.cs) | [`CollectionExpressionSafetyChecker`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/CollectionExpressionSafetyChecker.cs) | Implemented |
-| [`UseInterpolatedStringCodeFixProvider`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/FixProvider/CSharp10/UseInterpolatedStringCodeFixProvider.cs) | [`StringInterpolationSafetyChecker`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/StringInterpolationSafetyChecker.cs) | Implemented |
+| [`UseCollectionExpressionCodeFixProvider`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.FixProviders/FixProvider/CSharp12/UseCollectionExpressionCodeFixProvider.cs) | [`CollectionExpressionSafetyChecker`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/CollectionExpressionSafetyChecker.cs) | Implemented |
+| [`UseInterpolatedStringCodeFixProvider`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.FixProviders/FixProvider/CSharp10/UseInterpolatedStringCodeFixProvider.cs) | [`StringInterpolationSafetyChecker`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/StringInterpolationSafetyChecker.cs) | Implemented |
 | [`PreferParamsCollectionsCodeFixProvider`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.FixProviders/FixProvider/CSharp13/PreferParamsCollectionsCodeFixProvider.cs) | [`PreferParamsCollectionsSafetyChecker`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/PreferParamsCollectionsSafetyChecker.cs) | Implemented |
 | [`UseFromEndIndexInObjectInitializersCodeFixProvider`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.FixProviders/FixProvider/CSharp13/UseFromEndIndexInObjectInitializersCodeFixProvider.cs) | [`UseFromEndIndexInObjectInitializersSafetyChecker`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/UseFromEndIndexInObjectInitializersSafetyChecker.cs) | Implemented |
 | [`UseEscapeSequenceECodeFixProvider`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.FixProviders/FixProvider/CSharp13/UseEscapeSequenceECodeFixProvider.cs) | [`UseEscapeSequenceESafetyChecker`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/UseEscapeSequenceESafetyChecker.cs) | Implemented |
@@ -97,7 +97,7 @@ context.RegisterCodeFix(action, diagnostic);
 ## Example: end-to-end (collection expressions)
 
 - Analyzer: [`UseCollectionExpressionAnalyzer`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Analyzers/CSharp12/UseCollectionExpressionAnalyzer.cs)
-- Fix provider: [`UseCollectionExpressionCodeFixProvider`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/FixProvider/CSharp12/UseCollectionExpressionCodeFixProvider.cs)
+- Fix provider: [`UseCollectionExpressionCodeFixProvider`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.FixProviders/FixProvider/CSharp12/UseCollectionExpressionCodeFixProvider.cs)
 - Safety checker: [`CollectionExpressionSafetyChecker`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/CollectionExpressionSafetyChecker.cs)
 
 Flow:
