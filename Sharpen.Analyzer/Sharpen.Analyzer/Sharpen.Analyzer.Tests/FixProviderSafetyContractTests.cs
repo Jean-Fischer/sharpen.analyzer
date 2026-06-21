@@ -32,8 +32,7 @@ public sealed class FixProviderSafetyContractTests
         };
 
         var actual = GetSafetyCheckedProviders()
-            .Select(type => type.FullName)
-            .Where(static fullName => fullName is not null)
+            .Select(static type => type.FullName!)
             .ToHashSet(StringComparer.Ordinal);
 
         Assert.Equal(expected, actual);

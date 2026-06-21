@@ -57,7 +57,7 @@ namespace System.Threading
         var test = CreateTest();
         test.TestCode = source;
         test.ExpectedDiagnostics.AddRange(expected);
-        await test.RunAsync().ConfigureAwait(false);
+        await test.RunAsync();
     }
 
     public static async Task VerifyCodeFixAsync(
@@ -68,7 +68,7 @@ namespace System.Threading
     {
         var test = CreateTest(numberOfIncrementalIterations, numberOfFixAllIterations);
         AddSources(test, source, fixedSource);
-        await test.RunAsync().ConfigureAwait(false);
+        await test.RunAsync();
     }
 
     public static async Task VerifyCodeFixAsync(
@@ -81,7 +81,7 @@ namespace System.Threading
         var test = CreateTest(numberOfIncrementalIterations, numberOfFixAllIterations);
         AddSources(test, source, fixedSource);
         test.ExpectedDiagnostics.Add(expected);
-        await test.RunAsync().ConfigureAwait(false);
+        await test.RunAsync();
     }
 
     private static void AddSources(
@@ -96,7 +96,7 @@ namespace System.Threading
         test.FixedState.Sources.Add(LockStubSource);
     }
 
-    private static CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier> CreateTest(
+    public static CSharpCodeFixTest<TAnalyzer, TCodeFix, DefaultVerifier> CreateTest(
         int? numberOfIncrementalIterations = null,
         int? numberOfFixAllIterations = null)
     {

@@ -1,9 +1,9 @@
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
 using Sharpen.Analyzer.Safety;
 using Sharpen.Analyzer.Safety.FixProviderSafety;
+using Sharpen.Analyzer.Tests.Infrastructure;
 using Xunit;
 
 namespace Sharpen.Analyzer.Tests;
@@ -11,14 +11,14 @@ namespace Sharpen.Analyzer.Tests;
 public sealed class FixProviderSafetyRunnerTests
 {
     [Fact]
-    public void EvaluateOrMatchFailed_ReturnsMatchFailed_WhenMatchSucceededIsFalse()
+    public async Task EvaluateOrMatchFailed_ReturnsMatchFailed_WhenMatchSucceededIsFalse()
     {
-        var (document, semanticModel) = CreateCSharpDocumentAndSemanticModel("class C { void M() { } }");
+        var (_, syntaxTree, semanticModel) = await SafetyTestDocumentFactory.CreateAsync("class C { void M() { } }");
         var diagnostic = CreateDiagnostic("TEST0001");
 
         var evaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
             new AlwaysSafeChecker(),
-            document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!,
+            syntaxTree,
             semanticModel,
             diagnostic,
             false,
@@ -29,9 +29,9 @@ public sealed class FixProviderSafetyRunnerTests
     }
 
     [Fact]
-    public void EvaluateOrMatchFailed_ReturnsUnsafeGlobal_AndDoesNotEvaluateLocal_WhenGlobalIsUnsafe()
+    public async Task EvaluateOrMatchFailed_ReturnsUnsafeGlobal_AndDoesNotEvaluateLocal_WhenGlobalIsUnsafe()
     {
-        var (document, semanticModel) = CreateCSharpDocumentAndSemanticModel("class C { void M() { } }");
+        var (_, syntaxTree, semanticModel) = await SafetyTestDocumentFactory.CreateAsync("class C { void M() { } }");
         var diagnostic = CreateDiagnostic("TEST0002");
 
         var localChecker = new CountingChecker(true);
@@ -47,7 +47,7 @@ public sealed class FixProviderSafetyRunnerTests
 
             var evaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
                 localChecker,
-                document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!,
+                syntaxTree,
                 semanticModel,
                 diagnostic,
                 true,
@@ -65,9 +65,9 @@ public sealed class FixProviderSafetyRunnerTests
     }
 
     [Fact]
-    public void EvaluateOrMatchFailed_ReturnsUnsafeLocal_WhenGlobalIsSafe_AndLocalIsUnsafe()
+    public async Task EvaluateOrMatchFailed_ReturnsUnsafeLocal_WhenGlobalIsSafe_AndLocalIsUnsafe()
     {
-        var (document, semanticModel) = CreateCSharpDocumentAndSemanticModel("class C { void M() { } }");
+        var (_, syntaxTree, semanticModel) = await SafetyTestDocumentFactory.CreateAsync("class C { void M() { } }");
         var diagnostic = CreateDiagnostic("TEST0003");
 
         var originalGate = FirstPassSafety.Gate;
@@ -78,7 +78,7 @@ public sealed class FixProviderSafetyRunnerTests
 
             var evaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
                 new AlwaysUnsafeChecker(),
-                document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!,
+                syntaxTree,
                 semanticModel,
                 diagnostic,
                 true,
@@ -95,9 +95,9 @@ public sealed class FixProviderSafetyRunnerTests
     }
 
     [Fact]
-    public void EvaluateOrMatchFailed_ReturnsSafe_WhenGlobalIsSafe_AndLocalIsSafe()
+    public async Task EvaluateOrMatchFailed_ReturnsSafe_WhenGlobalIsSafe_AndLocalIsSafe()
     {
-        var (document, semanticModel) = CreateCSharpDocumentAndSemanticModel("class C { void M() { } }");
+        var (_, syntaxTree, semanticModel) = await SafetyTestDocumentFactory.CreateAsync("class C { void M() { } }");
         var diagnostic = CreateDiagnostic("TEST0004");
 
         var originalGate = FirstPassSafety.Gate;
@@ -108,7 +108,7 @@ public sealed class FixProviderSafetyRunnerTests
 
             var evaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
                 new AlwaysSafeChecker(),
-                document.GetSyntaxTreeAsync(CancellationToken.None).GetAwaiter().GetResult()!,
+                syntaxTree,
                 semanticModel,
                 diagnostic,
                 true,
@@ -128,19 +128,6 @@ public sealed class FixProviderSafetyRunnerTests
         return Diagnostic.Create(
             new DiagnosticDescriptor(id, "t", "m", "c", DiagnosticSeverity.Info, true),
             Location.None);
-    }
-
-    private static (Document document, SemanticModel semanticModel) CreateCSharpDocumentAndSemanticModel(string source)
-    {
-        var workspace = new AdhocWorkspace();
-        var project = workspace.AddProject("TestProject", LanguageNames.CSharp)
-            .WithCompilationOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-
-        var document = workspace.AddDocument(project.Id, "Test0.cs", SourceText.From(source));
-        var semanticModel = document.GetSemanticModelAsync(CancellationToken.None).GetAwaiter().GetResult();
-
-        Assert.NotNull(semanticModel);
-        return (document, semanticModel!);
     }
 
     private sealed class AlwaysSafeChecker : IFixProviderSafetyChecker

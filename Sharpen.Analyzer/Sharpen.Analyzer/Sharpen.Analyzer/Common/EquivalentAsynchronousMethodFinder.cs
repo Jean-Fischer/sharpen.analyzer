@@ -63,17 +63,11 @@ internal abstract class EquivalentAsynchronousMethodFinder
         // TODO: Support suggestion for lambdas and anonymous methods.
         if (invocation.IsWithinLambdaOrAnonymousMethod()) return false;
 
-        // If type authors invoke the synchronous method
-        // within the implementation of its containing type
-        // we assume that they exactly know what they are doing.
-        // They for sure want to call exactly that method on
-        // that particular place in code. We are 100% sure that
-        // they do not want to call its async equivalent.
-        if (MethodIsInvokedWithinItsContainingType(invocation, semanticModel, method)) return false;
-
         if (!MethodIsInvokedWithinACallerNodeThatCanBeMarkedAsAsync(invocation)) return false;
 
-        if (!TryGetEnclosingLocalFunctionOrMethod(invocation, semanticModel, out var callerSymbol, out var callerSyntaxNode))
+        if (!TryGetEnclosingLocalFunctionOrMethod(invocation, semanticModel, out var callerSymbol, out var callerSyntaxNode)
+            || callerSymbol is null
+            || callerSyntaxNode is null)
             return false;
 
         if (!CallerMatchesAsyncStatus(callerSymbol, callerAsyncStatus, semanticModel)) return false;
@@ -97,33 +91,34 @@ internal abstract class EquivalentAsynchronousMethodFinder
 
     private static bool MethodIsInvokedWithinACallerNodeThatCanBeMarkedAsAsync(InvocationExpressionSyntax invocation)
     {
-        return invocation.FirstAncestorOrSelf<MethodDeclarationSyntax>() != null;
+        return invocation.FirstAncestorOrSelf<MethodDeclarationSyntax>() != null
+               || invocation.FirstAncestorOrSelf<LocalFunctionStatementSyntax>() != null;
     }
 
     private static bool TryGetEnclosingLocalFunctionOrMethod(
         InvocationExpressionSyntax invocation,
         SemanticModel semanticModel,
-        out IMethodSymbol callerSymbol,
-        out SyntaxNode callerSyntaxNode)
+        out IMethodSymbol? callerSymbol,
+        out SyntaxNode? callerSyntaxNode)
     {
         var enclosingLocalFunction = invocation.FirstAncestorOrSelf<LocalFunctionStatementSyntax>();
         if (enclosingLocalFunction != null)
         {
-            callerSymbol = semanticModel.GetDeclaredSymbol(enclosingLocalFunction)!;
+            callerSymbol = semanticModel.GetDeclaredSymbol(enclosingLocalFunction);
             callerSyntaxNode = enclosingLocalFunction;
-            return callerSymbol is not null;
+            return callerSymbol != null;
         }
 
         var enclosingMethod = invocation.FirstAncestorOrSelf<MethodDeclarationSyntax>();
         if (enclosingMethod != null)
         {
-            callerSymbol = semanticModel.GetDeclaredSymbol(enclosingMethod)!;
+            callerSymbol = semanticModel.GetDeclaredSymbol(enclosingMethod);
             callerSyntaxNode = enclosingMethod;
-            return callerSymbol is not null;
+            return callerSymbol != null;
         }
 
-        callerSymbol = null!;
-        callerSyntaxNode = null!;
+        callerSymbol = null;
+        callerSyntaxNode = null;
         return false;
     }
 

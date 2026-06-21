@@ -69,13 +69,13 @@ public sealed class UseCollectionExpressionAnalyzer : DiagnosticAnalyzer
 
     private static bool IsSafeToReport(SyntaxNodeAnalysisContext context, ExpressionSyntax expression)
     {
-        // NOTE: This analyzer must not reference concrete fix provider types.
-        // The global safety gate is still applied, but local per-fix-provider checks are evaluated
-        // in the code-fix path.
-        var evaluation = FixProviderSafetyRunner.Evaluate(
+        var diagnostic = Diagnostic.Create(CSharp12Rules.UseCollectionExpressionRule, expression.GetLocation());
+        var evaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
+            new CollectionExpressionSafetyChecker(),
+            expression.SyntaxTree,
             context.SemanticModel,
-            expression,
-            null,
+            diagnostic,
+            true,
             context.CancellationToken);
 
         return evaluation.Outcome == FixProviderSafetyOutcome.Safe;

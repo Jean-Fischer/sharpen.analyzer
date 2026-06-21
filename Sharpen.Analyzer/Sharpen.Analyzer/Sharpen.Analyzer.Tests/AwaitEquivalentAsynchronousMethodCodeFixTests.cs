@@ -11,18 +11,14 @@ public class AwaitEquivalentAsynchronousMethodCodeFixTests
     public async Task AwaitEquivalentAsynchronousMethodAnalyzer_InvocationOutsideMethod_ProducesNoDiagnostic()
     {
         const string test = @"
-using System.Threading.Tasks;
+using System.IO;
 
 public class Example
 {
-    private readonly int _ = Task.CompletedTask.GetAwaiter().GetResult();
+    private readonly string _ = new StringReader(""test"").ReadToEnd();
 }";
 
-        var expectedCompilerError = DiagnosticResult.CompilerError("CS0029")
-            .WithSpan(6, 30, 6, 73)
-            .WithArguments("void", "int");
-
-        await Verifier.VerifyAnalyzerAsync(test, expectedCompilerError);
+        await Verifier.VerifyAnalyzerAsync(test);
     }
 
     [Fact]
@@ -78,6 +74,59 @@ public class Example
     }
 
     [Fact]
+    public async Task AwaitEquivalentAsynchronousMethodCodeFix_PreservesInvocationTrivia()
+    {
+        const string original = @"
+using System.IO;
+using System.Threading.Tasks;
+
+public class Example
+{
+    public async Task<string> TestAsync()
+    {
+        var reader = new StringReader(""test"");
+        return /*before*/reader.ReadToEnd();/*after*/
+    }
+}";
+
+        const string fixedText = @"
+using System.IO;
+using System.Threading.Tasks;
+
+public class Example
+{
+    public async Task<string> TestAsync()
+    {
+        var reader = new StringReader(""test"");
+        return /*before*/await reader.ReadToEndAsync();/*after*/
+    }
+}";
+
+        var expected = Verifier.Diagnostic().WithSpan(10, 26, 10, 44).WithArguments("reader.ReadToEnd");
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
+    }
+
+    [Fact]
+    public async Task AwaitEquivalentAsynchronousMethodCodeFix_UnsupportedBinaryExpression_SuppressesCodeAction()
+    {
+        const string original = @"
+using System.IO;
+using System.Threading.Tasks;
+
+public class Example
+{
+    public async Task<string> TestAsync()
+    {
+        var reader = new StringReader(""test"");
+        return ""prefix"" + reader.ReadToEnd();
+    }
+}";
+
+        var expected = Verifier.Diagnostic().WithSpan(10, 27, 10, 45).WithArguments("reader.ReadToEnd");
+        await Verifier.VerifyCodeFixAsync(original, expected, original);
+    }
+
+    [Fact]
     public async Task AwaitEquivalentAsynchronousMethodCodeFix_AssignmentRhs_IsAwaited()
     {
         const string original = @"
@@ -109,6 +158,80 @@ public class Example
 }";
 
         var expected = Verifier.Diagnostic().WithSpan(10, 17, 10, 35).WithArguments("reader.ReadToEnd");
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
+    }
+
+    [Fact]
+    public async Task AwaitEquivalentAsynchronousMethodCodeFix_AssignmentRhs_WithParentheses_IsAwaited()
+    {
+        const string original = @"
+using System.IO;
+using System.Threading.Tasks;
+
+public class Example
+{
+    public async Task<string> TestAsync()
+    {
+        var reader = new StringReader(""test"");
+        var s = """";
+        s = (reader.ReadToEnd());
+        return s;
+    }
+}";
+
+        const string fixedText = @"
+using System.IO;
+using System.Threading.Tasks;
+
+public class Example
+{
+    public async Task<string> TestAsync()
+    {
+        var reader = new StringReader(""test"");
+        var s = """";
+        s = (await reader.ReadToEndAsync());
+        return s;
+    }
+}";
+
+        var expected = Verifier.Diagnostic().WithSpan(11, 14, 11, 32).WithArguments("reader.ReadToEnd");
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
+    }
+
+    [Fact]
+    public async Task AwaitEquivalentAsynchronousMethodCodeFix_AssignmentRhs_WithNestedParentheses_IsAwaited()
+    {
+        const string original = @"
+using System.IO;
+using System.Threading.Tasks;
+
+public class Example
+{
+    public async Task<string> TestAsync()
+    {
+        var reader = new StringReader(""test"");
+        var s = """";
+        s = ((reader.ReadToEnd()));
+        return s;
+    }
+}";
+
+        const string fixedText = @"
+using System.IO;
+using System.Threading.Tasks;
+
+public class Example
+{
+    public async Task<string> TestAsync()
+    {
+        var reader = new StringReader(""test"");
+        var s = """";
+        s = ((await reader.ReadToEndAsync()));
+        return s;
+    }
+}";
+
+        var expected = Verifier.Diagnostic().WithSpan(11, 15, 11, 33).WithArguments("reader.ReadToEnd");
         await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
     }
 
@@ -146,6 +269,121 @@ public class Example
     }
 
     [Fact]
+    public async Task AwaitEquivalentAsynchronousMethodCodeFix_ReturnStatement_WithParentheses_IsReturnAwaited()
+    {
+        const string original = @"
+using System.IO;
+using System.Threading.Tasks;
+
+public class Example
+{
+    public async Task<string> TestAsync()
+    {
+        var reader = new StringReader(""test"");
+        return (reader.ReadToEnd());
+    }
+}";
+
+        const string fixedText = @"
+using System.IO;
+using System.Threading.Tasks;
+
+public class Example
+{
+    public async Task<string> TestAsync()
+    {
+        var reader = new StringReader(""test"");
+        return (await reader.ReadToEndAsync());
+    }
+}";
+
+        var expected = Verifier.Diagnostic().WithSpan(10, 17, 10, 35).WithArguments("reader.ReadToEnd");
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
+    }
+
+    [Fact]
+    public async Task AwaitEquivalentAsynchronousMethodCodeFix_SameTypeEquivalent_IsAwaited()
+    {
+        const string original = @"
+using System.IO;
+using System.Threading.Tasks;
+
+public class Example
+{
+    public string Read() => new StringReader(""test"").ReadToEnd();
+
+    public Task<string> ReadAsync() => Task.FromResult(new StringReader(""test"").ReadToEndAsync().Result);
+
+    public async Task<string> TestAsync()
+    {
+        return Read();
+    }
+}";
+
+        const string fixedText = @"
+using System.IO;
+using System.Threading.Tasks;
+
+public class Example
+{
+    public string Read() => new StringReader(""test"").ReadToEnd();
+
+    public Task<string> ReadAsync() => Task.FromResult(new StringReader(""test"").ReadToEndAsync().Result);
+
+    public async Task<string> TestAsync()
+    {
+        return await ReadAsync();
+    }
+}";
+
+        var expected = Verifier.Diagnostic().WithSpan(13, 16, 13, 22).WithArguments("Read");
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
+    }
+
+    [Fact]
+    public async Task AwaitEquivalentAsynchronousMethodCodeFix_AsyncLocalFunction_IsAwaited()
+    {
+        const string original = @"
+using System.IO;
+using System.Threading.Tasks;
+
+public class Example
+{
+    public async Task<string> TestAsync()
+    {
+        async Task<string> LocalAsync()
+        {
+            var reader = new StringReader(""test"");
+            return reader.ReadToEnd();
+        }
+
+        return await LocalAsync();
+    }
+}";
+
+        const string fixedText = @"
+using System.IO;
+using System.Threading.Tasks;
+
+public class Example
+{
+    public async Task<string> TestAsync()
+    {
+        async Task<string> LocalAsync()
+        {
+            var reader = new StringReader(""test"");
+            return await reader.ReadToEndAsync();
+        }
+
+        return await LocalAsync();
+    }
+}";
+
+        var expected = Verifier.Diagnostic().WithSpan(12, 20, 12, 38).WithArguments("reader.ReadToEnd");
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
+    }
+
+    [Fact]
     public async Task AwaitEquivalentAsynchronousMethodAnalyzer_NonAsyncCaller_ProducesNoDiagnostic()
     {
         const string original = @"
@@ -164,10 +402,8 @@ public class Example
     }
 
     [Fact]
-    public async Task AwaitEquivalentAsynchronousMethodCodeFix_ExtensionMethodEquivalent_IsResolved()
+    public async Task AwaitEquivalentAsynchronousMethodCodeFix_ExtensionMethodEquivalent_IsRewritten()
     {
-        // NOTE: The analyzer intentionally excludes extension methods (see spec/design).
-        // This test is kept as a regression guard to ensure we don't accidentally start reporting on them.
         const string original = @"
 using System.Threading.Tasks;
 
@@ -185,11 +421,72 @@ public class Example
     }
 }";
 
-        await Verifier.VerifyAnalyzerAsync(original);
+        const string fixedText = @"
+using System.Threading.Tasks;
+
+public static class Extensions
+{
+    public static int M(this int x) => x;
+    public static Task<int> MAsync(this int x) => Task.FromResult(x);
+}
+
+public class Example
+{
+    public async Task<int> TestAsync()
+    {
+        return await 1.MAsync();
+    }
+}";
+
+        var expected = Verifier.Diagnostic().WithSpan(14, 16, 14, 21).WithArguments("1.M");
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
      }
- 
-     [Fact]
-     public async Task AwaitEquivalentAsynchronousMethodAnalyzer_NoAsyncEquivalent_ProducesNoDiagnostic()
+
+    [Fact]
+    public async Task AwaitEquivalentAsynchronousMethodCodeFix_OptionalCancellationToken_IsAccepted()
+    {
+        const string original = @"
+using System.Threading;
+using System.Threading.Tasks;
+
+public static class Extensions
+{
+    public static int M(this int x) => x;
+    public static Task<int> MAsync(this int x, CancellationToken cancellationToken = default) => Task.FromResult(x);
+}
+
+public class Example
+{
+    public async Task<int> TestAsync()
+    {
+        return 1.M();
+    }
+}";
+
+        const string fixedText = @"
+using System.Threading;
+using System.Threading.Tasks;
+
+public static class Extensions
+{
+    public static int M(this int x) => x;
+    public static Task<int> MAsync(this int x, CancellationToken cancellationToken = default) => Task.FromResult(x);
+}
+
+public class Example
+{
+    public async Task<int> TestAsync()
+    {
+        return await 1.MAsync();
+    }
+}";
+
+        var expected = Verifier.Diagnostic().WithSpan(15, 16, 15, 21).WithArguments("1.M");
+        await Verifier.VerifyCodeFixAsync(original, expected, fixedText);
+    }
+
+    [Fact]
+    public async Task AwaitEquivalentAsynchronousMethodAnalyzer_NoAsyncEquivalent_ProducesNoDiagnostic()
      {
          const string original = @"
  using System.Threading.Tasks;

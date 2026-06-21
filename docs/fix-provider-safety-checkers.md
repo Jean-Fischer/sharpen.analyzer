@@ -21,14 +21,14 @@ Each fix provider should have a corresponding safety checker:
 - Fix provider: applies the transformation (code action)
 - Safety checker: validates the transformation is safe to offer
 
-The mapping is defined in [`FixProviderSafetyMapping.cs`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/FixProviderSafetyMapping.cs).
+The mapping is validated by [`FixProviderSafetyMappingValidator`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.FixProviders/FixProvider/Common/FixProviderSafetyMappingValidator.cs) and is derived from the shared safety-checked fix provider base types.
 
 ## Mapping summary table
 
 | Fix provider | Safety checker | Notes |
 |---|---|---|
-| [`UseCollectionExpressionCodeFixProvider`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/FixProvider/CSharp12/UseCollectionExpressionCodeFixProvider.cs) | [`CollectionExpressionSafetyChecker`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/CollectionExpressionSafetyChecker.cs) | Implemented |
-| [`UseInterpolatedStringCodeFixProvider`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/FixProvider/CSharp10/UseInterpolatedStringCodeFixProvider.cs) | [`StringInterpolationSafetyChecker`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/StringInterpolationSafetyChecker.cs) | Implemented |
+| [`UseCollectionExpressionCodeFixProvider`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.FixProviders/FixProvider/CSharp12/UseCollectionExpressionCodeFixProvider.cs) | [`CollectionExpressionSafetyChecker`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/CollectionExpressionSafetyChecker.cs) | Implemented |
+| [`UseInterpolatedStringCodeFixProvider`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.FixProviders/FixProvider/CSharp10/UseInterpolatedStringCodeFixProvider.cs) | [`StringInterpolationSafetyChecker`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/StringInterpolationSafetyChecker.cs) | Implemented |
 | [`PreferParamsCollectionsCodeFixProvider`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.FixProviders/FixProvider/CSharp13/PreferParamsCollectionsCodeFixProvider.cs) | [`PreferParamsCollectionsSafetyChecker`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/PreferParamsCollectionsSafetyChecker.cs) | Implemented |
 | [`UseFromEndIndexInObjectInitializersCodeFixProvider`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.FixProviders/FixProvider/CSharp13/UseFromEndIndexInObjectInitializersCodeFixProvider.cs) | [`UseFromEndIndexInObjectInitializersSafetyChecker`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/UseFromEndIndexInObjectInitializersSafetyChecker.cs) | Implemented |
 | [`UseEscapeSequenceECodeFixProvider`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.FixProviders/FixProvider/CSharp13/UseEscapeSequenceECodeFixProvider.cs) | [`UseEscapeSequenceESafetyChecker`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/UseEscapeSequenceESafetyChecker.cs) | Implemented |
@@ -43,27 +43,29 @@ The mapping is defined in [`FixProviderSafetyMapping.cs`](../Sharpen.Analyzer/Sh
 ### Analyzer pipeline
 
 1. Analyzer matches a pattern.
-2. Analyzer calls `FixProviderSafetyRunner` (global stage).
+2. Analyzer calls `FixProviderSafetyRunner.EvaluateOrMatchFailed(...)` with the mapped safety checker.
 3. If safe, analyzer reports a diagnostic.
 
-> Note: analyzer-side local checker evaluation is currently not executed because checkers require a `Document` instance.
+> Note: analyzers evaluate both the global gate and the local safety checker, using syntax tree + semantic model inputs instead of a `Document`.
 > The global stage still ensures diagnostics are suppressed when the global gate blocks.
 
 Example (simplified):
 
 ```csharp
 // Analyzer
-var evaluation = FixProviderSafetyRunner.Evaluate(
-    semanticModel: context.SemanticModel,
-    fixProviderType: typeof(UseCollectionExpressionCodeFixProvider),
-    node: matchedNode,
-    diagnostic: null,
+var diagnostic = Diagnostic.Create(rule, matchedNode.GetLocation());
+var evaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
+    new CollectionExpressionSafetyChecker(),
+    matchedNode.SyntaxTree,
+    context.SemanticModel,
+    diagnostic,
+    matchSucceeded: true,
     cancellationToken: context.CancellationToken);
 
 if (evaluation.Outcome != FixProviderSafetyOutcome.Safe)
     return;
 
-context.ReportDiagnostic(Diagnostic.Create(rule, matchedNode.GetLocation()));
+context.ReportDiagnostic(diagnostic);
 ```
 
 ### Fix provider pipeline
@@ -80,11 +82,12 @@ var semanticModel = await context.Document.GetSemanticModelAsync(context.Cancell
 if (semanticModel is null)
     return;
 
-var evaluation = FixProviderSafetyRunner.Evaluate(
-    semanticModel: semanticModel,
-    fixProviderType: typeof(UseInterpolatedStringCodeFixProvider),
-    node: node,
-    diagnostic: diagnostic,
+var evaluation = FixProviderSafetyRunner.EvaluateOrMatchFailed(
+    new StringInterpolationSafetyChecker(),
+    node.SyntaxTree,
+    semanticModel,
+    diagnostic,
+    matchSucceeded: true,
     cancellationToken: context.CancellationToken);
 
 if (evaluation.Outcome != FixProviderSafetyOutcome.Safe)
@@ -96,7 +99,7 @@ context.RegisterCodeFix(action, diagnostic);
 ## Example: end-to-end (collection expressions)
 
 - Analyzer: [`UseCollectionExpressionAnalyzer`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Analyzers/CSharp12/UseCollectionExpressionAnalyzer.cs)
-- Fix provider: [`UseCollectionExpressionCodeFixProvider`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/FixProvider/CSharp12/UseCollectionExpressionCodeFixProvider.cs)
+- Fix provider: [`UseCollectionExpressionCodeFixProvider`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.FixProviders/FixProvider/CSharp12/UseCollectionExpressionCodeFixProvider.cs)
 - Safety checker: [`CollectionExpressionSafetyChecker`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/CollectionExpressionSafetyChecker.cs)
 
 Flow:
@@ -110,7 +113,7 @@ Flow:
 ## Adding a new fix provider + safety checker
 
 1. Create a new checker implementing [`IFixProviderSafetyChecker`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/IFixProviderSafetyChecker.cs).
-2. Add a mapping entry in [`FixProviderSafetyMapping.cs`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FixProviderSafety/FixProviderSafetyMapping.cs).
+2. Add the fix provider under one of the shared safety-checked base classes so it participates in mapping validation.
 3. Gate the analyzer before `ReportDiagnostic` by calling `FixProviderSafetyRunner`.
 4. Gate the fix provider before `RegisterCodeFix` by calling `FixProviderSafetyRunner`.
 5. Do not call [`FirstPassSafetyRunner`](../Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer/Safety/FirstPassSafetyRunner.cs) directly.

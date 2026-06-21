@@ -23,11 +23,9 @@ public static class SyntaxNodeExtensions
             // TODO-IG: We should assert here that the syntaxNode is really within the enclosingNode.
             //          Define in general how to do asserting.
 
-            var currentNode = syntaxNode;
-            while (currentNode != enclosingNode)
+            for (SyntaxNode? currentNode = syntaxNode; currentNode != null && currentNode != enclosingNode; currentNode = currentNode.Parent)
             {
                 if (currentNode is TNode node) return node;
-                currentNode = currentNode.Parent;
             }
 
             if (includeEnclosingNode && enclosingNode is TNode enclosingNodeAsTNode) return enclosingNodeAsTNode;
@@ -81,13 +79,14 @@ public static class SyntaxNodeExtensions
 
     public static bool IsLeftSideOfAssignExpression(this SyntaxNode node)
     {
-        return node.IsParentKind(SyntaxKind.SimpleAssignmentExpression) &&
-               ((AssignmentExpressionSyntax)node.Parent).Left == node;
+        return node.Parent is AssignmentExpressionSyntax assignmentExpression
+               && assignmentExpression.IsKind(SyntaxKind.SimpleAssignmentExpression)
+               && assignmentExpression.Left == node;
     }
 
     public static bool IsParentKind(this SyntaxNode? node, SyntaxKind kind)
     {
-        return node.Parent.IsKind(kind);
+        return node?.Parent?.IsKind(kind) == true;
     }
 
     extension(SyntaxNode node)

@@ -41,6 +41,17 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
         var diagnostic = context.Diagnostics[0];
         if (!(root.FindNode(diagnostic.Location.SourceSpan) is InvocationExpressionSyntax invocation)) return;
 
+        var semanticModel = await context.Document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+        if (semanticModel is null) return;
+
+        var asyncEquivalent = EquivalentAsynchronousMethodResolver.ResolveAsyncEquivalent(invocation, semanticModel);
+        if (asyncEquivalent is null) return;
+
+        var rewrittenInvocation = RewriteInvocation(invocation, asyncEquivalent.Name);
+        if (rewrittenInvocation is null) return;
+
+        if (ApplyAwaitIfNeeded(invocation, rewrittenInvocation, semanticModel) is null) return;
+
         context.RegisterCodeFix(
             CodeAction.Create(
                 title,
@@ -70,6 +81,7 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
         // - avoid double-await
         // - only apply in known-safe contexts
         var replacementExpression = ApplyAwaitIfNeeded(invocation, rewrittenInvocation, semanticModel);
+        if (replacementExpression is null) return document;
 
         var newRoot = root.ReplaceNode(invocation, replacementExpression);
         return document.WithSyntaxRoot(newRoot);
@@ -91,58 +103,83 @@ internal static class AsyncEquivalentInvocationCodeFixHelper
         return null;
     }
 
-    private static ExpressionSyntax ApplyAwaitIfNeeded(
+    private static ExpressionSyntax? ApplyAwaitIfNeeded(
         InvocationExpressionSyntax originalInvocation,
         InvocationExpressionSyntax rewrittenInvocation,
         SemanticModel semanticModel)
     {
-        // Preserve trivia on the invocation itself.
-        rewrittenInvocation = rewrittenInvocation
+        var effectiveParent = GetEffectiveParent(originalInvocation);
+        var invocationWithTrivia = rewrittenInvocation
             .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
             .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
 
         // Avoid double-await.
-        if (originalInvocation.Parent is AwaitExpressionSyntax) return rewrittenInvocation;
+        if (effectiveParent is AwaitExpressionSyntax) return invocationWithTrivia;
 
         // Only add await when inside an async method/local function.
-        if (!IsWithinAsyncCallable(originalInvocation, semanticModel)) return rewrittenInvocation;
+        if (!IsWithinAsyncCallable(originalInvocation, semanticModel)) return invocationWithTrivia;
+
+        var awaitedInvocation = rewrittenInvocation.WithoutTrivia();
 
         // Expression statement: `X();` -> `await XAsync();`
-        if (originalInvocation.Parent is ExpressionStatementSyntax)
+        if (effectiveParent is ExpressionStatementSyntax)
         {
-            return SyntaxFactory.AwaitExpression(rewrittenInvocation)
+            return SyntaxFactory.AwaitExpression(awaitedInvocation)
                 .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
                 .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
         }
 
         // Assignment RHS: `x = X();` -> `x = await XAsync();`
-        if (originalInvocation.Parent is AssignmentExpressionSyntax assignment &&
-            assignment.Right == originalInvocation)
+        if (effectiveParent is AssignmentExpressionSyntax assignment &&
+            IsInvocationOrParenthesizedInvocation(assignment.Right, originalInvocation))
         {
-            return SyntaxFactory.AwaitExpression(rewrittenInvocation)
+            return SyntaxFactory.AwaitExpression(awaitedInvocation)
                 .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
                 .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
         }
 
         // Variable initializer: `var x = X();` -> `var x = await XAsync();`
-        if (originalInvocation.Parent is EqualsValueClauseSyntax equalsValue &&
-            equalsValue.Value == originalInvocation)
+        if (effectiveParent is EqualsValueClauseSyntax equalsValue &&
+            IsInvocationOrParenthesizedInvocation(equalsValue.Value, originalInvocation))
         {
-            return SyntaxFactory.AwaitExpression(rewrittenInvocation)
+            return SyntaxFactory.AwaitExpression(awaitedInvocation)
                 .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
                 .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
         }
 
         // Return statement: `return X();` -> `return await XAsync();`
-        if (originalInvocation.Parent is ReturnStatementSyntax)
+        if (effectiveParent is ReturnStatementSyntax)
         {
-            return SyntaxFactory.AwaitExpression(rewrittenInvocation)
+            return SyntaxFactory.AwaitExpression(awaitedInvocation)
                 .WithLeadingTrivia(originalInvocation.GetLeadingTrivia())
                 .WithTrailingTrivia(originalInvocation.GetTrailingTrivia());
         }
 
-        // Guardrails: unknown context, don't add await.
-        return rewrittenInvocation;
+        // Guardrails: unknown context, do not offer a potentially-invalid rewrite.
+        return null;
+    }
+
+    private static SyntaxNode? GetEffectiveParent(SyntaxNode node)
+    {
+        var current = node.Parent;
+        while (current is ParenthesizedExpressionSyntax parenthesizedExpression)
+        {
+            current = parenthesizedExpression.Parent;
+        }
+
+        return current;
+    }
+
+    private static bool IsInvocationOrParenthesizedInvocation(
+        ExpressionSyntax expression,
+        InvocationExpressionSyntax originalInvocation)
+    {
+        while (expression is ParenthesizedExpressionSyntax parenthesizedExpression)
+        {
+            expression = parenthesizedExpression.Expression;
+        }
+
+        return expression == originalInvocation;
     }
 
     private static bool IsWithinAsyncCallable(InvocationExpressionSyntax invocation, SemanticModel semanticModel)

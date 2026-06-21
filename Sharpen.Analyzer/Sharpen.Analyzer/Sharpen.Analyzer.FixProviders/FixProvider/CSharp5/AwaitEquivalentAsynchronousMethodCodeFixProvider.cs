@@ -1,11 +1,8 @@
 ﻿using System.Collections.Immutable;
 using System.Composition;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Sharpen.Analyzer.FixProvider.Common;
 
 namespace Sharpen.Analyzer.FixProvider.CSharp5;
@@ -22,21 +19,8 @@ public class AwaitEquivalentAsynchronousMethodCodeFixProvider : CodeFixProvider
         return WellKnownFixAllProviders.BatchFixer;
     }
 
-    public override async Task RegisterCodeFixesAsync(CodeFixContext context)
+    public override Task RegisterCodeFixesAsync(CodeFixContext context)
     {
-        var root = await context.Document
-            .GetSyntaxRootAsync(context.CancellationToken)
-            .ConfigureAwait(false);
-        if (root is null) return;
-
-        var diagnostic = context.Diagnostics[0];
-        if (!(root.FindNode(diagnostic.Location.SourceSpan) is InvocationExpressionSyntax invocation)) return;
-
-        context.RegisterCodeFix(
-            CodeAction.Create(
-                "Use async equivalent",
-                c => AsyncEquivalentInvocationCodeFixHelper.ApplyAsyncEquivalentAsync(context.Document, invocation, c),
-                "UseAsyncEquivalent"),
-            diagnostic);
+        return AsyncEquivalentInvocationCodeFixHelper.RegisterAsyncEquivalentFixAsync(context);
     }
 }

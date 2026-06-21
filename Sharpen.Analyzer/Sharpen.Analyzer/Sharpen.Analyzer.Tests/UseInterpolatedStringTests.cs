@@ -13,22 +13,12 @@ public class UseInterpolatedStringTests
     [Fact]
     public async Task UseInterpolatedString_TriggersAndFixes_ForStringFormat()
     {
-        var source = @"
+        const string source = @"
 class C
 {
     string M(string name)
     {
         return string.Format(""Hello, {0}!"", name);
-    }
-}
-";
-
-        var fixedSource = @"
-class C
-{
-    string M(string name)
-    {
-        return $""Hello, {name}!"";
     }
 }
 ";
@@ -40,7 +30,7 @@ class C
     [Fact]
     public async Task UseInterpolatedString_TriggersAndFixes_ForConcatenationChain()
     {
-        var source = @"
+        const string source = @"
 class C
 {
     string M(string name)
@@ -50,7 +40,7 @@ class C
 }
 ";
 
-        var fixedSource = @"
+        const string fixedSource = @"
 class C
 {
     string M(string name)
@@ -72,7 +62,7 @@ class C
     [Fact]
     public async Task UseInterpolatedString_TriggersAndFixes_ForConstConcatenation()
     {
-        var source = @"
+        const string source = @"
 class C
 {
     const string Prefix = ""Hello"";
@@ -81,7 +71,7 @@ class C
 }
 ";
 
-        var fixedSource = @"
+        const string fixedSource = @"
 class C
 {
     const string Prefix = ""Hello"";

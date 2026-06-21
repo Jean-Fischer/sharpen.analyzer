@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>Sharpen.Analyzer</RootNamespace>
+        <AssemblyName>Sharpen.Analyzer.Core</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="..\Sharpen.Analyzer\Analyzers\CSharp14\NullConditionalAssignmentPattern.cs" Link="Analyzers\CSharp14\NullConditionalAssignmentPattern.cs"/>
+        <Compile Include="..\Sharpen.Analyzer\Common\**\*.cs" Link="Common\%(RecursiveDir)%(Filename)%(Extension)"/>
+        <Compile Include="..\Sharpen.Analyzer\Extensions\**\*.cs" Link="Extensions\%(RecursiveDir)%(Filename)%(Extension)"/>
+        <Compile Include="..\Sharpen.Analyzer\Helpers\**\*.cs" Link="Helpers\%(RecursiveDir)%(Filename)%(Extension)"/>
+        <Compile Include="..\Sharpen.Analyzer\Rules\**\*.cs" Link="Rules\%(RecursiveDir)%(Filename)%(Extension)"/>
+        <Compile Include="..\Sharpen.Analyzer\Safety\**\*.cs" Link="Safety\%(RecursiveDir)%(Filename)%(Extension)"/>
+    </ItemGroup>
+</Project>

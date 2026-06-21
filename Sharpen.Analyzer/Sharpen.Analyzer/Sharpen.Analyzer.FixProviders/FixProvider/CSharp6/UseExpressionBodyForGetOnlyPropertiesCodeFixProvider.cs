@@ -8,7 +8,6 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Editing;
 using Sharpen.Analyzer.Common;
 
 namespace Sharpen.Analyzer.FixProvider.CSharp6;
@@ -55,18 +54,15 @@ public sealed class UseExpressionBodyForGetOnlyPropertiesCodeFixProvider : CodeF
 
         if (!CSharp6SyntaxHelpers.TryGetSingleReturnExpressionFromGetter(getter, out var expression)) return document;
 
-        var generator = SyntaxGenerator.GetGenerator(document);
+        var expressionBody = SyntaxFactory.ArrowExpressionClause(expression.WithoutTrivia())
+            .WithLeadingTrivia(getter.GetLeadingTrivia());
 
         var newProperty = property
             .WithAccessorList(null)
-            .WithExpressionBody(SyntaxFactory.ArrowExpressionClause(expression.WithoutTrivia()))
+            .WithExpressionBody(expressionBody)
             .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken))
             .WithTrailingTrivia(property.GetTrailingTrivia())
             .WithLeadingTrivia(property.GetLeadingTrivia());
-
-        // Preserve trivia around the getter body as best-effort by attaching it to the arrow clause.
-        newProperty =
-            newProperty.WithExpressionBody(newProperty.ExpressionBody.WithLeadingTrivia(getter.GetLeadingTrivia()));
 
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
         if (root == null) return document;

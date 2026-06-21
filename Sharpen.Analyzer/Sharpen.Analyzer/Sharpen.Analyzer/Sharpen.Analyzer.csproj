@@ -29,8 +29,9 @@
 
         <!--
           RS1038: "This compiler extension should not be implemented in an assembly containing a reference to Microsoft.CodeAnalysis.Workspaces".
-    
-          This project contains analyzers + shared infrastructure and must remain Workspaces-free.
+
+          This project contains analyzers only and must remain Workspaces-free.
+          Shared infrastructure lives in Sharpen.Analyzer.Core.
           Code fixes live in Sharpen.Analyzer.FixProviders (which can reference Workspaces).
         -->
     </PropertyGroup>
@@ -71,6 +72,13 @@
         </PackageReference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Remove="Analyzers\CSharp14\NullConditionalAssignmentPattern.cs"/>
+        <Compile Remove="Common\**\*.cs"/>
+        <Compile Remove="Extensions\**\*.cs"/>
+        <Compile Remove="Helpers\**\*.cs"/>
+        <Compile Remove="Rules\**\*.cs"/>
+        <Compile Remove="Safety\**\*.cs"/>
+
         <!-- Pack the analyzer assembly in the conventional analyzer location. -->
         <None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
         <None Update="Readme.md" Pack="true"/>
@@ -93,5 +101,9 @@
             <AutoGen>True</AutoGen>
             <DependentUpon>Resources.resx</DependentUpon>
         </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Sharpen.Analyzer.Core\Sharpen.Analyzer.Core.csproj"/>
     </ItemGroup>
 </Project>

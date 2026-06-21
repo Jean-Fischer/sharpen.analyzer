@@ -54,15 +54,15 @@ public sealed class UseExpressionBodyForGetOnlyIndexersCodeFixProvider : CodeFix
 
         if (!CSharp6SyntaxHelpers.TryGetSingleReturnExpressionFromGetter(getter, out var expression)) return document;
 
+        var expressionBody = SyntaxFactory.ArrowExpressionClause(expression.WithoutTrivia())
+            .WithLeadingTrivia(getter.GetLeadingTrivia());
+
         var newIndexer = indexer
             .WithAccessorList(null)
-            .WithExpressionBody(SyntaxFactory.ArrowExpressionClause(expression.WithoutTrivia()))
+            .WithExpressionBody(expressionBody)
             .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken))
             .WithTrailingTrivia(indexer.GetTrailingTrivia())
             .WithLeadingTrivia(indexer.GetLeadingTrivia());
-
-        newIndexer =
-            newIndexer.WithExpressionBody(newIndexer.ExpressionBody!.WithLeadingTrivia(getter.GetLeadingTrivia()));
 
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
         if (root == null) return document;

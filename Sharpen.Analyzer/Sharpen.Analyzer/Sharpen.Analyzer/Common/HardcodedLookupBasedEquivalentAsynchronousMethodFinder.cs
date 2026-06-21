@@ -7651,6 +7651,9 @@ internal sealed class HardcodedLookupBasedEquivalentAsynchronousMethodFinder : E
 
     protected override bool InvokedMethodPotentiallyHasAsynchronousEquivalent(InvocationExpressionSyntax invocation)
     {
-        return SynchronousMethodsWithAsynchronousEquivalents.Contains(invocation.GetInvokedMemberName());
+        // The shared async-equivalence rules are symbol-based, so any ordinary invocation
+        // can potentially have a valid async equivalent. The heavy lifting is still done
+        // by the base finder and symbol lookup; this method only provides a cheap syntactic gate.
+        return invocation.Expression is MemberAccessExpressionSyntax or IdentifierNameSyntax;
     }
 }
