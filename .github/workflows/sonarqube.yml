@@ -1,6 +1,7 @@
 name: SonarQube Scan
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -10,6 +11,7 @@ on:
 jobs:
   sonarqube:
     name: SonarQube Analysis
+    if: github.actor != 'dependabot[bot]'
     runs-on: windows-latest
 
     steps:

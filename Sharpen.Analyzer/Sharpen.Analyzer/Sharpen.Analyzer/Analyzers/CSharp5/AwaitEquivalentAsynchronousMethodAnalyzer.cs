@@ -27,7 +27,7 @@ public class AwaitEquivalentAsynchronousMethodAnalyzer : DiagnosticAnalyzer
 
 
         // Reuse your existing logic
-        var finder = new HardcodedLookupBasedEquivalentAsynchronousMethodFinder();
+        var finder = HardcodedLookupBasedEquivalentAsynchronousMethodFinder.Instance;
         if (!finder.EquivalentAsynchronousCandidateExistsFor(
                 invocation,
                 semanticModel,

@@ -52,7 +52,7 @@ public sealed class UseInlineArrayCodeFixProvider : CodeFixProvider
     private static async Task<Document> UseInlineArrayAsync(Document document, StructDeclarationSyntax @struct,
         Diagnostic diagnostic, CancellationToken cancellationToken)
     {
-        if (diagnostic.GetMessage() is null)
+        if (!TryGetInlineArrayLength(diagnostic, out var length))
             return document;
 
         var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
@@ -66,84 +66,82 @@ public sealed class UseInlineArrayCodeFixProvider : CodeFixProvider
         var currentStruct = currentRoot.FindNode(@struct.Span, getInnermostNodeForTie: true)
                                 .FirstAncestorOrSelf<StructDeclarationSyntax>()
                             ?? @struct;
+        var updatedStruct = BuildUpdatedStruct(currentStruct, length);
 
-        // Diagnostic message argument 0 is N.
-        var n = 1;
-        if (diagnostic.Descriptor.MessageFormat is not null)
-        {
-            // We don't have access to Diagnostic.Arguments here (internal), so parse from the message.
-            // Message format: "Use [InlineArray({0})] for this fixed-size buffer struct"
-            var message = diagnostic.GetMessage();
-            var start = message.IndexOf("InlineArray(", StringComparison.Ordinal);
-            if (start >= 0)
-            {
-                start += "InlineArray(".Length;
-                var end = message.IndexOf(')', start);
-                if (end > start && int.TryParse(message.Substring(start, end - start), out var parsed))
-                    n = parsed;
-            }
-        }
+        editor.ReplaceNode(currentStruct, updatedStruct);
+        return editor.GetChangedDocument();
+    }
 
-        // Add [System.Runtime.CompilerServices.InlineArray(N)]
-        var attribute = CSharp12SyntaxFactory.InlineArrayAttribute(n);
+    private static bool TryGetInlineArrayLength(Diagnostic diagnostic, out int length)
+    {
+        length = 1;
+        var message = diagnostic.GetMessage();
+        if (message is null)
+            return false;
 
-        var attributeList = SyntaxFactory.AttributeList(SyntaxFactory.SingletonSeparatedList(attribute));
+        var start = message.IndexOf("InlineArray(", StringComparison.Ordinal);
+        if (start < 0)
+            return true;
 
-        // Normalize fields to a single `_element0` field.
-        // NOTE: We rebuild the member list instead of trying to remove nodes from the existing list.
-        // In iterative code-fix application, node identity can drift and `Remove` may no-op.
+        start += "InlineArray(".Length;
+        var end = message.IndexOf(')', start);
+        if (end > start && int.TryParse(message.Substring(start, end - start), out var parsed))
+            length = parsed;
+
+        return true;
+    }
+
+    private static StructDeclarationSyntax BuildUpdatedStruct(StructDeclarationSyntax currentStruct, int length)
+    {
+        var attributeList = SyntaxFactory.AttributeList(
+            SyntaxFactory.SingletonSeparatedList(CSharp12SyntaxFactory.InlineArrayAttribute(length)));
         var originalFields = currentStruct.Members.OfType<FieldDeclarationSyntax>().ToArray();
-        if (originalFields.Length == 0)
-        {
-            var updatedStructWithoutFields =
-                currentStruct.WithAttributeLists(currentStruct.AttributeLists.Insert(0, attributeList));
-            editor.ReplaceNode(currentStruct, updatedStructWithoutFields);
-            return editor.GetChangedDocument();
-        }
 
-        var firstField = originalFields[0];
-        var elementType = firstField.Declaration.Type;
+        var updatedStruct = originalFields.Length == 0
+            ? currentStruct
+            : currentStruct.WithMembers(RebuildMembers(currentStruct, CreateElement0Field(originalFields[0])));
 
-        var element0Field = SyntaxFactory.FieldDeclaration(
+        updatedStruct = updatedStruct.WithAttributeLists(currentStruct.AttributeLists.Insert(0, attributeList));
+        return updatedStruct
+            .WithLeadingTrivia(currentStruct.GetLeadingTrivia())
+            .WithTrailingTrivia(currentStruct.GetTrailingTrivia())
+            .WithOpenBraceToken(currentStruct.OpenBraceToken)
+            .WithCloseBraceToken(currentStruct.CloseBraceToken);
+    }
+
+    private static FieldDeclarationSyntax CreateElement0Field(FieldDeclarationSyntax firstField)
+    {
+        return SyntaxFactory.FieldDeclaration(
                 SyntaxFactory.VariableDeclaration(
-                    elementType,
+                    firstField.Declaration.Type,
                     SyntaxFactory.SingletonSeparatedList(SyntaxFactory.VariableDeclarator("_element0"))))
             .WithModifiers(firstField.Modifiers)
             .WithLeadingTrivia(firstField.GetLeadingTrivia())
             .WithTrailingTrivia(firstField.GetTrailingTrivia());
+    }
 
+    private static SyntaxList<MemberDeclarationSyntax> RebuildMembers(
+        StructDeclarationSyntax currentStruct,
+        FieldDeclarationSyntax element0Field)
+    {
         var newMembers = new SyntaxList<MemberDeclarationSyntax>();
         var element0Inserted = false;
 
         foreach (var member in currentStruct.Members)
         {
-            if (member is FieldDeclarationSyntax)
+            if (member is not FieldDeclarationSyntax)
             {
-                if (!element0Inserted)
-                {
-                    newMembers = newMembers.Add(element0Field);
-                    element0Inserted = true;
-                }
-
-                // Skip all original fields.
+                newMembers = newMembers.Add(member);
                 continue;
             }
 
-            newMembers = newMembers.Add(member);
+            if (element0Inserted)
+                continue;
+
+            newMembers = newMembers.Add(element0Field);
+            element0Inserted = true;
         }
 
-        var updatedStruct = currentStruct
-            .WithMembers(newMembers)
-            .WithAttributeLists(currentStruct.AttributeLists.Insert(0, attributeList));
-
-        // Preserve the original struct's trivia so formatting stays stable.
-        updatedStruct = updatedStruct
-            .WithLeadingTrivia(currentStruct.GetLeadingTrivia())
-            .WithTrailingTrivia(currentStruct.GetTrailingTrivia())
-            .WithOpenBraceToken(currentStruct.OpenBraceToken)
-            .WithCloseBraceToken(currentStruct.CloseBraceToken);
-
-        editor.ReplaceNode(currentStruct, updatedStruct);
-        return editor.GetChangedDocument();
+        return newMembers;
     }
 }

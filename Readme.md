@@ -1,15 +1,23 @@
 # sharpen.analyzer
 
-Roslyn analyzers + code fixes to help modernize C# codebases.
+Roslyn analyzers and optional code fixes for modernizing C# codebases.
+
+`sharpen.analyzer` helps teams adopt newer C# language features, replace older patterns with modern equivalents, and surface safe refactorings during development and build.
+
+## Choose a package
+
+Two NuGet packages are published:
+
+| Package | Includes | Choose it when |
+|---|---|---|
+| `Sharpen.Analyzer` | Diagnostics only | You want analyzer warnings/suggestions without IDE code fixes. |
+| `Sharpen.Analyzer.FixProviders` | Diagnostics and IDE code fixes | You want the full experience, including Quick Actions and bulk fixes. |
+
+For most projects, install **`Sharpen.Analyzer.FixProviders`**.
 
 ## Install
 
-Two packages are published:
-
-- [`Sharpen.Analyzer`](Readme.md:1): diagnostics only (analyzers)
-- [`Sharpen.Analyzer.FixProviders`](Readme.md:1): diagnostics + IDE code fixes (depends on `Sharpen.Analyzer`)
-
-Install **one** of them:
+Install **one** package:
 
 ### Option A: analyzers only
 
@@ -17,55 +25,69 @@ Install **one** of them:
 dotnet add package Sharpen.Analyzer
 ```
 
-### Option B: analyzers + code fixes (recommended)
+### Option B: analyzers and code fixes
 
 ```bash
 dotnet add package Sharpen.Analyzer.FixProviders
 ```
 
-`Sharpen.Analyzer.FixProviders` brings `Sharpen.Analyzer` automatically, so you don’t need to install both.
+`Sharpen.Analyzer.FixProviders` already depends on `Sharpen.Analyzer`, so you do not need to install both.
 
-## Use
+## What happens after installation
 
-Once the package is referenced, diagnostics are produced by Roslyn-based IDEs/editors and during `dotnet build` / `dotnet test`.
+Once the package is referenced:
 
-### Bulk fixes (dotnet format)
+- diagnostics appear in Roslyn-based IDEs and editors
+- diagnostics are reported during `dotnet build`
+- diagnostics are also surfaced during `dotnet test` when the project is built as part of the test run
 
-To apply Sharpen analyzers as **bulk fixes** (outside the IDE), you can use `dotnet format analyzers`.
+Sharpen rules are grouped by the C# language version they target, so the rules you see depend on the language features available in your project.
 
-Example (run from the repo root):
+## Documentation map
 
-```bash
-dotnet format analyzers "Sharpen.Analyzer/Sharpen.Analyzer/Sharpen.Analyzer.Sample/Sharpen.Analyzer.Sample.csproj" --verbosity detailed --severity info
-```
+Use the guide that matches what you are trying to do:
 
-`--severity info` is important: many Sharpen rules are configured at `info` severity by default, and `dotnet format analyzers` will otherwise skip them.
+| Document | Type | Use it when you want to... |
+|---|---|---|
+| [docs/getting-started.md](docs/getting-started.md) | Tutorial | install Sharpen and confirm it is working |
+| [docs/configuring-rules.md](docs/configuring-rules.md) | How-to | change severities or disable specific rules |
+| [docs/applying-code-fixes.md](docs/applying-code-fixes.md) | How-to | apply fixes in the IDE or from the command line |
+| [docs/code-fix-safety.md](docs/code-fix-safety.md) | Explanation | understand why some diagnostics do not offer fixes |
+| [docs/fix-provider-safety-checkers.md](docs/fix-provider-safety-checkers.md) | Reference | inspect the internal safety pipeline in detail |
 
-### Safety gate (code fix suppression)
+## Quick configuration example
 
-Some code fixes are protected by a conservative “first-pass safety gate”. When a match is found but the transformation is deemed unsafe, the analyzer may still report the diagnostic, but the code fix will not be offered.
-
-### Enable / configure rules
-
-Rules can be configured using `.editorconfig` (severity, enable/disable, etc.).
-
-Example:
+Sharpen rules are configured through `.editorconfig` like other Roslyn analyzers.
 
 ```ini
-# .editorconfig
-
 # SHARPEN004: Await Task.Delay instead of calling Thread.Sleep
-# (example severity; adjust to your needs)
 dotnet_diagnostic.SHARPEN004.severity = warning
+
+# Disable a rule
+dotnet_diagnostic.SHARPEN041.severity = none
 ```
 
-## Rules
+For fuller configuration guidance, see [docs/configuring-rules.md](docs/configuring-rules.md).
 
-See the **Supported rules/features** section below (source of truth).
+## Quick bulk-fix example
 
-## Supported rules/features
+To apply supported fixes outside the IDE, use `dotnet format analyzers`.
 
-Rules are grouped by the C# language version they target (when applicable).
+```bash
+dotnet format analyzers "path\to\YourProject.csproj" --severity info
+```
+
+`--severity info` matters because many Sharpen rules are configured at `info` severity by default. For more usage guidance, see [docs/applying-code-fixes.md](docs/applying-code-fixes.md).
+
+## Why a diagnostic may not offer a code fix
+
+Some rules intentionally use conservative safety checks. In those cases, Sharpen may report a diagnostic but withhold the code fix when it cannot prove the transformation is safe enough to offer automatically.
+
+See [docs/code-fix-safety.md](docs/code-fix-safety.md) for the user-facing explanation.
+
+## Supported rules and features
+
+Rules are grouped by the C# language version they target. "Code fix" indicates whether Sharpen currently offers an automated fix or refactoring-style action for that rule.
 
 ### C# 3
 
@@ -145,7 +167,7 @@ Rules are grouped by the C# language version they target (when applicable).
 | Rule ID | Title | Description | Code fix |
 |---|---|---|---|
 | SHARPEN040 | Use file-scoped namespace | Convert `namespace X { ... }` to `namespace X;` when safe. | Yes |
-| SHARPEN041 | Use global using directive | Suggest converting repeated `using` directives to `global using` (per-document fix; use “Fix all” to apply broadly). | Yes |
+| SHARPEN041 | Use global using directive | Suggest converting repeated `using` directives to `global using` (per-document fix; use "Fix all" to apply broadly). | Yes |
 | SHARPEN042 | Use record struct | Convert eligible `struct` value objects to `record struct`. | Yes |
 | SHARPEN043 | Use extended property pattern | Rewrite eligible expressions using C# 10 extended property patterns. | Yes |
 | SHARPEN044 | Use interpolated string | Replace `string.Format(...)` / concatenation with interpolated strings when safe. | Yes |
@@ -157,8 +179,8 @@ Rules are grouped by the C# language version they target (when applicable).
 |---|---|---|---|
 | SHARPEN046 | Use raw string literal | Suggest raw string literals for multi-line or heavily-escaped strings. | Yes |
 | SHARPEN047 | Use required member | Add `required` to eligible properties. | Yes |
-| SHARPEN048 | Use generic math constraints | Suggest adding generic math constraints (e.g., `where T : INumber<T>`) when numeric operators are used on unconstrained type parameters. | No |
-| SHARPEN049 | Use list pattern | Suggest list patterns for common span/array length + indexing patterns. | Yes (limited) |
+| SHARPEN048 | Use generic math constraints | Suggest adding generic math constraints (for example `where T : INumber<T>`) when numeric operators are used on unconstrained type parameters. | No |
+| SHARPEN049 | Use list pattern | Suggest list patterns for common span/array length and indexing patterns. | Yes (limited) |
 | SHARPEN050 | Use UTF-8 string literal | Suggest replacing UTF-8 byte data with `"..."u8` when type-compatible. | Yes |
 
 ### C# 12
@@ -166,7 +188,7 @@ Rules are grouped by the C# language version they target (when applicable).
 | Rule ID | Title | Description | Code fix |
 |---|---|---|---|
 | SHARPEN051 | Use primary constructor | Convert assignment-only constructors to primary constructors when safe. | Yes (experimental) |
-| SHARPEN052 | Use collection expression | Convert eligible array/collection initializers to C# 12 collection expressions (`[...]`). | Yes |
+| SHARPEN052 | Use collection expression | Convert eligible array or collection initializers to C# 12 collection expressions (`[...]`). | Yes |
 | SHARPEN053 | Use default lambda parameters | Use default values in explicitly-typed lambda parameter lists when applicable. | Yes |
 | SHARPEN054 | Use InlineArray | Convert fixed-size buffer-like structs to `[InlineArray(N)]` when safe. | Yes |
 
@@ -175,17 +197,37 @@ Rules are grouped by the C# language version they target (when applicable).
 | Rule ID | Title | Description | Code fix |
 |---|---|---|---|
 | SHARPEN058 | Prefer params collections | Suggest migrating non-public `params T[]` to collection-based `params` when safe. | Yes |
-| SHARPEN059 | Use from-end index in object initializers | Suggest using `^` indices in object/collection initializers when provably equivalent. | Yes |
-| SHARPEN060 | Use \e escape sequence | Suggest replacing `\u001b` / `\x1b` with `\e` when unambiguous. | Yes |
-| SHARPEN061 | Use System.Threading.Lock | Suggest migrating dedicated private lock objects to `System.Threading.Lock` when available and safe. | Yes |
-| SHARPEN062 | Partial properties/indexers refactoring | Suggest/refactor eligible members to C# 13 partial properties/indexers when safe. | No (refactoring) |
+| SHARPEN059 | Use from-end index in object initializers | Suggest using `^` indices in object or collection initializers when provably equivalent. | Yes |
+| SHARPEN060 | Use `\e` escape sequence | Suggest replacing `\u001b` / `\x1b` with `\e` when unambiguous. | Yes |
+| SHARPEN061 | Use `System.Threading.Lock` | Suggest migrating dedicated private lock objects to `System.Threading.Lock` when available and safe. | Yes |
+| SHARPEN062 | Partial properties/indexers refactoring | Suggest or refactor eligible members to C# 13 partial properties or indexers when safe. | No (refactoring) |
 | SHARPEN063 | Suggest allows ref struct constraint | Guidance-only: suggest `allows ref struct` for eligible generic APIs. | No |
-| SHARPEN064 | Suggest OverloadResolutionPriorityAttribute | Guidance-only: suggest `OverloadResolutionPriorityAttribute` for eligible overload sets. | No |
+| SHARPEN064 | Suggest `OverloadResolutionPriorityAttribute` | Guidance-only: suggest `OverloadResolutionPriorityAttribute` for eligible overload sets. | No |
 
-## Development
+Additional details:
 
-Open [Sharpen.Analyzer/Sharpen.Analyzer.sln](Sharpen.Analyzer/Sharpen.Analyzer.sln:1) and run the test project (`Sharpen.Analyzer.Tests`).
+- [docs/csharp-13.md](docs/csharp-13.md)
+- [docs/suggest-allows-ref-struct-constraint.md](docs/suggest-allows-ref-struct-constraint.md)
+- [docs/suggest-overload-resolution-priority.md](docs/suggest-overload-resolution-priority.md)
 
-## Contributing
+### C# 14
 
-See [todo.md](todo.md:1) for the current backlog and notes.
+| Rule ID | Title | Description | Code fix |
+|---|---|---|---|
+| SHARPEN065 | Use field-backed property | Suggest converting eligible manual backing-field properties to field-backed properties. | Yes |
+| SHARPEN066 | Use null-conditional assignment | Suggest replacing simple null-guarded assignments with null-conditional assignment. | Yes |
+| SHARPEN067 | Use unbound generic type in nameof | Suggest replacing constructed generic types in `nameof` with the unbound generic form. | Yes |
+| SHARPEN068 | Use lambda parameter modifiers without types | Suggest removing redundant parameter types from target-typed lambdas that use modifiers. | Yes |
+| SHARPEN069 | Remove redundant span conversion | Suggest removing explicit span conversions when overload resolution does not change. | Yes |
+| SHARPEN070 | Use extension blocks | Suggest grouping multiple extension methods for the same receiver type into an extension block. | Yes (conservative) |
+| SHARPEN071 | Consider partial constructors | Informational guidance for source-generation-oriented initialization patterns. | No |
+| SHARPEN072 | Consider partial events | Informational guidance for event patterns that may fit partial events. | No |
+| SHARPEN073 | Consider compound assignment operators | Informational guidance for user-defined types that may benefit from compound assignment operators. | No |
+
+Additional details:
+
+- [docs/csharp-14.md](docs/csharp-14.md)
+
+## For contributors
+
+Open [`Sharpen.Analyzer\Sharpen.Analyzer.sln`](Sharpen.Analyzer/Sharpen.Analyzer.sln) to work on the analyzer, fix providers, and tests.

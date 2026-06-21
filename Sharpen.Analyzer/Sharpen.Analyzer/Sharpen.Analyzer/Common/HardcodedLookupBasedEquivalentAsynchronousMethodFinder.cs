@@ -11,7 +11,7 @@ namespace Sharpen.Analyzer.Common;
 ///     It's a quick and cheap heuristics that gives surprisingly good results in
 ///     real-life cases.
 /// </summary>
-internal class HardcodedLookupBasedEquivalentAsynchronousMethodFinder : EquivalentAsynchronousMethodFinder
+internal sealed class HardcodedLookupBasedEquivalentAsynchronousMethodFinder : EquivalentAsynchronousMethodFinder
 {
     public static readonly HardcodedLookupBasedEquivalentAsynchronousMethodFinder Instance = new();
 

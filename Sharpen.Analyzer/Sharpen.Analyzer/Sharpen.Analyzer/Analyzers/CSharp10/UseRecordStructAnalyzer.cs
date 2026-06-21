@@ -36,16 +36,30 @@ public sealed class UseRecordStructAnalyzer : DiagnosticAnalyzer
 
         // Conservative heuristics: public struct with only public fields OR get-only auto-properties,
         // optional constructors, and no methods/events/operators/etc.
-        if (!decl.Modifiers.Any(m => m.IsKind(SyntaxKind.PublicKeyword)))
+        if (!HasSupportedDeclarationShape(decl))
             return;
 
-        if (decl.BaseList != null)
+        var nonCtorMembers = decl.Members.Where(m => m is not ConstructorDeclarationSyntax).ToList();
+        if (!ContainsOnlyFieldAndPropertyMembers(nonCtorMembers))
             return;
 
-        if (!decl.Members.Any())
+        if (!AllFieldsAreSupported(nonCtorMembers) || !AllPropertiesAreSupported(nonCtorMembers))
             return;
 
-        var hasDisallowedMember = decl.Members.Any(m => m is MethodDeclarationSyntax
+        context.ReportDiagnostic(Diagnostic.Create(CSharp10Rules.UseRecordStructRule, decl.Identifier.GetLocation()));
+    }
+
+    private static bool HasSupportedDeclarationShape(StructDeclarationSyntax decl)
+    {
+        return decl.Modifiers.Any(m => m.IsKind(SyntaxKind.PublicKeyword))
+               && decl.BaseList == null
+               && decl.Members.Any()
+               && !HasDisallowedMembers(decl);
+    }
+
+    private static bool HasDisallowedMembers(StructDeclarationSyntax decl)
+    {
+        return decl.Members.Any(m => m is MethodDeclarationSyntax
             or EventDeclarationSyntax
             or EventFieldDeclarationSyntax
             or OperatorDeclarationSyntax
@@ -56,50 +70,34 @@ public sealed class UseRecordStructAnalyzer : DiagnosticAnalyzer
             or ClassDeclarationSyntax
             or StructDeclarationSyntax
             or InterfaceDeclarationSyntax);
-        if (hasDisallowedMember)
-            return;
+    }
 
-        // Allow constructors.
-        var nonCtorMembers = decl.Members.Where(m => m is not ConstructorDeclarationSyntax).ToList();
+    private static bool ContainsOnlyFieldAndPropertyMembers(System.Collections.Generic.IEnumerable<MemberDeclarationSyntax> members)
+    {
+        return members.All(m => m is FieldDeclarationSyntax or PropertyDeclarationSyntax);
+    }
 
-        // Must be composed of fields and/or properties.
-        if (nonCtorMembers.Any(m => m is not FieldDeclarationSyntax && m is not PropertyDeclarationSyntax))
-            return;
+    private static bool AllFieldsAreSupported(System.Collections.Generic.IEnumerable<MemberDeclarationSyntax> members)
+    {
+        return members.OfType<FieldDeclarationSyntax>().All(field =>
+            field.Modifiers.Any(m => m.IsKind(SyntaxKind.PublicKeyword))
+            && !field.Modifiers.Any(m => m.IsKind(SyntaxKind.ConstKeyword)));
+    }
 
-        // Fields must be public and not const.
-        foreach (var field in nonCtorMembers.OfType<FieldDeclarationSyntax>())
-        {
-            if (!field.Modifiers.Any(m => m.IsKind(SyntaxKind.PublicKeyword)))
-                return;
+    private static bool AllPropertiesAreSupported(System.Collections.Generic.IEnumerable<MemberDeclarationSyntax> members)
+    {
+        return members.OfType<PropertyDeclarationSyntax>().All(IsSupportedProperty);
+    }
 
-            if (field.Modifiers.Any(m => m.IsKind(SyntaxKind.ConstKeyword)))
-                return;
-        }
+    private static bool IsSupportedProperty(PropertyDeclarationSyntax prop)
+    {
+        if (!prop.Modifiers.Any(m => m.IsKind(SyntaxKind.PublicKeyword)) || prop.AccessorList == null)
+            return false;
 
-        // Properties must be public get-only auto-properties.
-        foreach (var prop in nonCtorMembers.OfType<PropertyDeclarationSyntax>())
-        {
-            if (!prop.Modifiers.Any(m => m.IsKind(SyntaxKind.PublicKeyword)))
-                return;
-
-            if (prop.AccessorList == null)
-                return;
-
-            var accessors = prop.AccessorList.Accessors;
-            if (accessors.Count != 1)
-                return;
-
-            var getter = accessors[0];
-            if (!getter.IsKind(SyntaxKind.GetAccessorDeclaration))
-                return;
-
-            // Auto-property: no body/expression body.
-            if (getter.Body != null || getter.ExpressionBody != null)
-                return;
-
-            // No initializer restrictions.
-        }
-
-        context.ReportDiagnostic(Diagnostic.Create(CSharp10Rules.UseRecordStructRule, decl.Identifier.GetLocation()));
+        var accessors = prop.AccessorList.Accessors;
+        return accessors.Count == 1
+               && accessors[0].IsKind(SyntaxKind.GetAccessorDeclaration)
+               && accessors[0].Body == null
+               && accessors[0].ExpressionBody == null;
     }
 }

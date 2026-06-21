@@ -28,7 +28,7 @@ public sealed class
         var semanticModel = context.SemanticModel;
 
         // Reuse the existing engine finder to keep behavior consistent with the already-migrated rule.
-        var finder = new HardcodedLookupBasedEquivalentAsynchronousMethodFinder();
+        var finder = HardcodedLookupBasedEquivalentAsynchronousMethodFinder.Instance;
         if (!finder.EquivalentAsynchronousCandidateExistsFor(
                 invocation,
                 semanticModel,

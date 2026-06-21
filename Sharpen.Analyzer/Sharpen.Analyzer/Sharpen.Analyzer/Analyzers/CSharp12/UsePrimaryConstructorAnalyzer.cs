@@ -38,27 +38,47 @@ public sealed class UsePrimaryConstructorAnalyzer : DiagnosticAnalyzer
         if (typeDecl.Modifiers.Any(SyntaxKind.PartialKeyword))
             return;
 
-        // Must have exactly one instance constructor.
-        var ctors = typeDecl.Members.OfType<ConstructorDeclarationSyntax>()
-            .Where(c => !c.Modifiers.Any(SyntaxKind.StaticKeyword))
-            .ToArray();
-
-        if (ctors.Length != 1)
+        if (!TryGetSingleInstanceConstructor(typeDecl, out var ctor))
             return;
-
-        var ctor = ctors[0];
 
         // No constructor initializer (base/this chaining).
         if (ctor.Initializer != null)
             return;
 
         // Must have a block body with only simple assignments.
-        if (ctor.Body == null)
+        if (ctor.Body == null || !ctor.ParameterList.Parameters.Any())
             return;
 
-        var parameters = ctor.ParameterList.Parameters;
-        if (!parameters.Any())
+        if (!AllStatementsAssignDistinctParameters(context, ctor))
             return;
+
+        context.ReportDiagnostic(Diagnostic.Create(CSharp12Rules.UsePrimaryConstructorRule,
+            ctor.Identifier.GetLocation()));
+    }
+
+    private static bool TryGetSingleInstanceConstructor(
+        TypeDeclarationSyntax typeDecl,
+        out ConstructorDeclarationSyntax ctor)
+    {
+        var ctors = typeDecl.Members.OfType<ConstructorDeclarationSyntax>()
+            .Where(c => !c.Modifiers.Any(SyntaxKind.StaticKeyword))
+            .ToArray();
+
+        if (ctors.Length == 1)
+        {
+            ctor = ctors[0];
+            return true;
+        }
+
+        ctor = null!;
+        return false;
+    }
+
+    private static bool AllStatementsAssignDistinctParameters(
+        SyntaxNodeAnalysisContext context,
+        ConstructorDeclarationSyntax ctor)
+    {
+        var parameters = ctor.ParameterList.Parameters;
 
         // Each statement must be: <member> = <parameter>;
         // and each parameter must be used exactly once.
@@ -66,54 +86,65 @@ public sealed class UsePrimaryConstructorAnalyzer : DiagnosticAnalyzer
 
         foreach (var statement in ctor.Body.Statements)
         {
-            if (statement is not ExpressionStatementSyntax { Expression: AssignmentExpressionSyntax assignment })
-                return;
-
-            if (!assignment.IsKind(SyntaxKind.SimpleAssignmentExpression))
-                return;
-
-            // RHS must be identifier referencing a parameter.
-            if (assignment.Right is not IdentifierNameSyntax rhsIdentifier)
-                return;
-
-            var paramIndex = parameters.IndexOf(p => p.Identifier.ValueText == rhsIdentifier.Identifier.ValueText);
-            if (paramIndex < 0)
-                return;
-
-            if (usedParameters[paramIndex])
-                return;
-
-            usedParameters[paramIndex] = true;
-
-            switch (assignment.Left)
-            {
-                // LHS must be an instance member access: this.X or X.
-                case IdentifierNameSyntax:
-                case MemberAccessExpressionSyntax { Expression: ThisExpressionSyntax }:
-                    // ok
-                    break;
-                default:
-                    return;
-            }
-
-            // Ensure LHS binds to an instance field/property.
-            var leftSymbol = context.SemanticModel.GetSymbolInfo(assignment.Left, context.CancellationToken).Symbol;
-            if (leftSymbol is not IFieldSymbol and not IPropertySymbol)
-                return;
-
-            if (leftSymbol.IsStatic)
-                return;
-
-            // Ensure RHS binds to the same parameter symbol.
-            var rightSymbol = context.SemanticModel.GetSymbolInfo(rhsIdentifier, context.CancellationToken).Symbol;
-            if (rightSymbol is not IParameterSymbol)
-                return;
+            if (!TryProcessAssignmentStatement(context, parameters, usedParameters, statement))
+                return false;
         }
 
         if (usedParameters.Any(u => !u))
-            return;
+            return false;
 
-        context.ReportDiagnostic(Diagnostic.Create(CSharp12Rules.UsePrimaryConstructorRule,
-            ctor.Identifier.GetLocation()));
+        return true;
+    }
+
+    private static bool TryProcessAssignmentStatement(
+        SyntaxNodeAnalysisContext context,
+        SeparatedSyntaxList<ParameterSyntax> parameters,
+        bool[] usedParameters,
+        StatementSyntax statement)
+    {
+        if (statement is not ExpressionStatementSyntax { Expression: AssignmentExpressionSyntax assignment }
+            || !assignment.IsKind(SyntaxKind.SimpleAssignmentExpression)
+            || assignment.Right is not IdentifierNameSyntax rhsIdentifier
+            || !TryGetParameterIndex(parameters, rhsIdentifier, out var paramIndex)
+            || usedParameters[paramIndex]
+            || !IsSupportedAssignmentTarget(assignment.Left)
+            || !LeftSymbolIsInstanceFieldOrProperty(context, assignment.Left)
+            || !RightSymbolIsParameter(context, rhsIdentifier))
+        {
+            return false;
+        }
+
+        usedParameters[paramIndex] = true;
+        return true;
+    }
+
+    private static bool TryGetParameterIndex(
+        SeparatedSyntaxList<ParameterSyntax> parameters,
+        IdentifierNameSyntax rhsIdentifier,
+        out int parameterIndex)
+    {
+        parameterIndex = parameters.IndexOf(p => p.Identifier.ValueText == rhsIdentifier.Identifier.ValueText);
+        return parameterIndex >= 0;
+    }
+
+    private static bool IsSupportedAssignmentTarget(ExpressionSyntax assignmentLeft)
+    {
+        return assignmentLeft is IdentifierNameSyntax
+               or MemberAccessExpressionSyntax { Expression: ThisExpressionSyntax };
+    }
+
+    private static bool LeftSymbolIsInstanceFieldOrProperty(
+        SyntaxNodeAnalysisContext context,
+        ExpressionSyntax assignmentLeft)
+    {
+        var leftSymbol = context.SemanticModel.GetSymbolInfo(assignmentLeft, context.CancellationToken).Symbol;
+        return leftSymbol is IFieldSymbol or IPropertySymbol && !leftSymbol.IsStatic;
+    }
+
+    private static bool RightSymbolIsParameter(
+        SyntaxNodeAnalysisContext context,
+        IdentifierNameSyntax rhsIdentifier)
+    {
+        return context.SemanticModel.GetSymbolInfo(rhsIdentifier, context.CancellationToken).Symbol is IParameterSymbol;
     }
 }

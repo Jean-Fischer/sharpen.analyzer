@@ -57,6 +57,22 @@ public sealed class ExtensionBlocksSafetyChecker : IFixProviderSafetyChecker
                 "Not enough extension methods.");
         }
 
+        var dominantGroup = extensionMethods
+            .GroupBy(m => m.ParameterList.Parameters[0].Type?.ToString() ?? string.Empty)
+            .OrderByDescending(g => g.Count())
+            .FirstOrDefault();
+        if (dominantGroup is null || dominantGroup.Count() < 2)
+        {
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "no-dominant-group",
+                "No dominant extension method group.");
+        }
+
+        if (dominantGroup.Select(m => m.ParameterList.Parameters[0].Identifier.ValueText).Distinct().Count() != 1)
+        {
+            return FixProviderSafetyResult.Unsafe(FixProviderSafetyStage.Local, "receiver-name-mismatch",
+                "Dominant extension methods must share the same receiver parameter name.");
+        }
+
         _ = semanticModel;
         return FixProviderSafetyResult.Safe();
     }

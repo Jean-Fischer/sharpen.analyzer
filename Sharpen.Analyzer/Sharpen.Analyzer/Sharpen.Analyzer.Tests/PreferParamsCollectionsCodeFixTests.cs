@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp13.PreferParamsCollectionsAnalyzer,
-    Sharpen.Analyzer.PreferParamsCollectionsCodeFixProvider,
+    Sharpen.Analyzer.FixProvider.CSharp13.PreferParamsCollectionsCodeFixProvider,
     Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;

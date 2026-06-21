@@ -4,7 +4,7 @@ using Sharpen.Analyzer.Rules;
 using Xunit;
 using VerifierCodeFix = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp14.UseImplicitSpanConversionsAnalyzer,
-    Sharpen.Analyzer.UseImplicitSpanConversionsCodeFixProvider,
+    Sharpen.Analyzer.FixProvider.CSharp14.UseImplicitSpanConversionsCodeFixProvider,
     Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;

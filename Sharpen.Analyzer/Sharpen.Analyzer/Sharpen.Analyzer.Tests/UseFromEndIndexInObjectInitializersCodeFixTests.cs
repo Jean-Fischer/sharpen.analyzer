@@ -3,7 +3,7 @@ using Sharpen.Analyzer.Rules;
 using Xunit;
 using Verifier = Microsoft.CodeAnalysis.CSharp.Testing.CSharpCodeFixVerifier<
     Sharpen.Analyzer.Analyzers.CSharp13.UseFromEndIndexInObjectInitializersAnalyzer,
-    Sharpen.Analyzer.UseFromEndIndexInObjectInitializersCodeFixProvider,
+    Sharpen.Analyzer.FixProvider.CSharp13.UseFromEndIndexInObjectInitializersCodeFixProvider,
     Microsoft.CodeAnalysis.Testing.DefaultVerifier>;
 
 namespace Sharpen.Analyzer.Tests;
